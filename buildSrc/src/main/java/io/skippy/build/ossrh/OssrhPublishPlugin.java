@@ -125,8 +125,8 @@ public class OssrhPublishPlugin implements Plugin<Project> {
 
                 var version = project.getVersion().toString();
 
-                var snapshotDeployment = version.endsWith("SNAPSHOT") && graph.hasTask(":publishSnapshot");
-                var releaseDeployment = ! version.endsWith("SNAPSHOT") && ! graph.hasTask(":publishSnapshot");
+                var snapshotDeployment = version.endsWith("SNAPSHOT") && graph.hasTask(":%s:publishSnapshot".formatted(project.getName()));
+                var releaseDeployment = ! version.endsWith("SNAPSHOT") && ! graph.hasTask(":%s:publishSnapshot".formatted(project.getName()));
 
                 return snapshotDeployment || releaseDeployment;
             });
