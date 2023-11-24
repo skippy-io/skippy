@@ -64,7 +64,7 @@ public class OssrhPublishPlugin implements Plugin<Project> {
                 publication.pom(pom -> {
                     pom.getName().set(extension.getTitle());
                     pom.getDescription().set(extension.getDescription());
-                    pom.getUrl().set("https://github.com/skippy-io/skippy-junit");
+                    pom.getUrl().set("https://github.com/skippy-io/skippy");
 
                     pom.licenses(licenses -> {
                         licenses.license(license -> {
