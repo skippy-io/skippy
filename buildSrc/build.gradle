@@ -1,0 +1,19 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+group = 'io.skippy'
+
+dependencies {
+    testImplementation gradleTestKit()
+}
+
+gradlePlugin {
+    plugins {
+        skippyPublishPlugin {
+            id = 'io.skippy.ossrh-publish'
+            implementationClass = 'io.skippy.build.ossrh.OssrhPublishPlugin'
+        }
+    }
+    automatedPublishing = false
+}

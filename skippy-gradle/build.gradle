@@ -1,0 +1,59 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+def publishToGradlePluginPortal = false
+
+if ( publishToGradlePluginPortal) {
+
+    // Gradle Plugin Portal
+
+    apply plugin: 'com.gradle.plugin-publish'
+
+} else {
+
+    // SonaType OSSRH
+
+    apply plugin: 'io.skippy.ossrh-publish'
+
+    ossrhPublish {
+        title = 'skippy-gradle'
+        description = 'Skippy\'s Test Impact Analysis for Gradle'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.1'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation gradleTestKit()
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+    useJUnitPlatform()
+}
+
+gradlePlugin {
+
+    website = 'https://github.com/skippy-io/skippy'
+    vcsUrl = 'https://github.com/skippy-io/skippy'
+
+    plugins {
+        skippyPlugin {
+            id = 'io.skippy'
+            displayName = 'skippy-gradle'
+            description = 'Skippy\'s Test Impact Analysis for Gradle'
+            tags.set(['skippy', 'test-impact-analysis'])
+            implementationClass = 'io.skippy.gradle.SkippyPlugin'
+        }
+    }
+    automatedPublishing = publishToGradlePluginPortal
+}
