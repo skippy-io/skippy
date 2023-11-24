@@ -87,7 +87,7 @@ Skippy: Capturing a snapshot of all source files in skippy/sourceSnapshot.md5
 ```
 
 The generated data is consumed by Skippy's testing libraries (e.g., 
-[skippy-junit5](https://github.com/skippy-io/skippy-junit5)).
+[skippy-junit5](../skippy-junit5/README.md)).
 
 ### skippyClean Task
 

@@ -43,7 +43,7 @@ public class FooTest {
 ## Step 3: Running Tests with Skippy
 
 Skippy intelligently decides whether to execute or skip tests based on analysis data in the skippy folder.
-This data is generated using the [skippy-gradle-plugin](https://github.com/skippy-io/skippy-gradle/tree/main/skippy-gradle-plugin)
+This data is generated using the [skippy-gradle](../skippy-gradle/README.md) plugin.
 
 Let's go over the scenarios that you might encounter. 
 
