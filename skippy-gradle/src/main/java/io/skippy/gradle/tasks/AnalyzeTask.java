@@ -18,17 +18,21 @@ import static java.lang.System.lineSeparator;
 import static java.util.stream.Collectors.joining;
 
 /**
- * The tasks that is run via <code>./gradlew skippyAnalysis</code>.
+ * The tasks that is run via <code>./gradlew skippyAnalyze</code>.
  */
-public class AnalysisTask extends DefaultTask {
+public class AnalyzeTask extends DefaultTask {
 
     @Inject
-    public AnalysisTask(List<String> coverageTasks) {
+    public AnalyzeTask(List<String> coverageTasks) {
         setGroup("skippy");
         var dependencies = new ArrayList<String>();
         dependencies.add("skippyClean");
         dependencies.addAll(coverageTasks);
         setDependsOn(dependencies);
+        onlyIf((task) -> coverageTasks.size() > 0);
+        if (coverageTasks.isEmpty()) {
+            getLogger().warn("No skippified tests found.");
+        }
         doLast((task) -> createSourceSnapshot(getProject()));
     }
 

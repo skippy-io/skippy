@@ -20,6 +20,7 @@ public class SourceFileCollector {
     }
 
     private static List<SourceFile> getSourceFiles(SourceSet sourceSet) {
+        String classesTaskName = sourceSet.getClassesTaskName();
         var javaFiles = sourceSet.getJava().getFiles().stream()
                 .map(File::toPath)
                 .toList();

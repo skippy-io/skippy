@@ -4,10 +4,9 @@ import io.skippy.gradle.core.SourceFile;
 import io.skippy.gradle.core.SourceFileCollector;
 import io.skippy.gradle.tasks.CleanTask;
 import io.skippy.gradle.tasks.CoverageTask;
-import io.skippy.gradle.tasks.AnalysisTask;
+import io.skippy.gradle.tasks.AnalyzeTask;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.testing.Test;
@@ -33,7 +32,7 @@ public class SkippyPlugin implements org.gradle.api.Plugin<Project> {
             // add skippy tasks to the regular build
             project.getTasks().register("skippyClean", CleanTask.class);
             var coverageTasks = createCoverageTasks(project);
-            project.getTasks().register("skippyAnalysis", AnalysisTask.class, coverageTasks);
+            project.getTasks().register("skippyAnalyze", AnalyzeTask.class, coverageTasks);
         } else {
 
             var test = String.valueOf(project.property("skippyCoverageBuild"));
