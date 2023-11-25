@@ -19,7 +19,7 @@ version = file('../version.txt').text.trim()
 def publishToGradlePluginPortal = project.hasProperty("publishToGradlePluginPortal")
         && Boolean.valueOf(project.property("publishToGradlePluginPortal"))
 
-if ( ! file('../sandbox-mode.txt').text.toBoolean()) {
+if ( ! file('../sandbox').text.toBoolean()) {
 
     if ( publishToGradlePluginPortal) {
 

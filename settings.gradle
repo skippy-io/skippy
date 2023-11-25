@@ -1,6 +1,6 @@
 include 'skippy-core'
 
-if ( ! file('sandbox-mode.txt').text.toBoolean()) {
+if ( ! file('sandbox').text.toBoolean()) {
     include 'skippy-gradle'
 } else {
     includeBuild 'skippy-gradle'
