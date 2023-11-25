@@ -1,5 +1,7 @@
 package io.skippy.gradle.core;
 
+import org.gradle.api.logging.Logger;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -81,15 +83,15 @@ public class SourceFile {
     /**
      * Returns the MD5 hash of the Java source file in BASE64 encoding.
      */
-    public String getSourceFileHash() {
-        return getHash(sourceFile);
+    public String getSourceFileHash(Logger logger) {
+        return getHash(sourceFile, logger);
     }
 
     /**
      * Returns the MD5 hash of the Java class file in BASE64 encoding.
      */
-    public String getClassFileHash() {
-        return getHash(classFile);
+    public String getClassFileHash(Logger logger) {
+        return getHash(classFile, logger);
     }
 
     /**
@@ -113,11 +115,20 @@ public class SourceFile {
         }
     }
 
-    private String getHash(Path file) {
+    private String getHash(Path file, Logger logger) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(Files.readAllBytes(file));
-            return Base64.getEncoder().encodeToString(md.digest());
+            byte[] bytes = Files.readAllBytes(file);
+            md.update(bytes);
+            var hash = Base64.getEncoder().encodeToString(md.digest());
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Generating hash for file %s:".formatted(file.getFileName()));
+                logger.info("  content=%s".formatted(Base64.getEncoder().encodeToString(bytes)));
+                logger.info("  hash=%s".formatted(hash));
+            }
+
+            return hash;
         } catch (NoSuchAlgorithmException | IOException e) {
             throw new RuntimeException(e);
         }

@@ -6,7 +6,10 @@ import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import static java.util.Comparator.comparing;
 
 public class SourceFileCollector {
 
@@ -16,7 +19,7 @@ public class SourceFileCollector {
         for (SourceSet sourceSet : sourceSetContainer) {
             result.addAll(getSourceFiles(sourceSet));
         }
-        return result;
+        return result.stream().sorted(comparing(SourceFile::getFullyQualifiedClassName)).toList();
     }
 
     private static List<SourceFile> getSourceFiles(SourceSet sourceSet) {

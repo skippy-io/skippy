@@ -16,13 +16,15 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.junit.jupiter:junit-jupiter-api:5.9.2'
-    implementation project(':skippy-core')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+    implementation project(':skippy-junit5')
 }
 
 test {
     testLogging {
         events "passed", "skipped", "failed"
+        showStandardStreams true
     }
     useJUnitPlatform()
 }

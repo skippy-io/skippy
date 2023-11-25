@@ -8,13 +8,14 @@ import org.gradle.api.UncheckedIOException;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.skippy.gradle.core.SkippyConstants.SOURCE_SNAPSHOT_FILE;
 import static io.skippy.gradle.core.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.lang.System.lineSeparator;
+import static java.nio.file.Files.readAllLines;
+import static java.nio.file.Files.writeString;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -43,15 +44,21 @@ public class AnalyzeTask extends DefaultTask {
             var sourceFiles = SourceFileCollector.getAllSources(project);
             getLogger().lifecycle("Capturing a snapshot of all source files in " + project.getProjectDir().toPath().relativize(sourceSnapshotFile));
             logOutputForSkippyFunctionalTest(project, sourceFiles);
-            Files.writeString(sourceSnapshotFile, sourceFiles.stream()
+            writeString(sourceSnapshotFile, sourceFiles.stream()
                             .map(sourceFile -> "%s:%s:%s:%s:%s".formatted(
                                 sourceFile.getFullyQualifiedClassName(),
                                     sourceFile.getSourceFileName(),
                                     sourceFile.getClassFileName(),
-                                    sourceFile.getSourceFileHash(),
-                                    sourceFile.getClassFileHash()
+                                    sourceFile.getSourceFileHash(project.getLogger()),
+                                    sourceFile.getClassFileHash(project.getLogger())
                             ))
                             .collect(joining(lineSeparator())));
+            if (getLogger().isInfoEnabled()) {
+                getLogger().info("Content of %s: ".formatted(sourceSnapshotFile));
+                for (var line: readAllLines(sourceSnapshotFile)) {
+                    getLogger().info(line);
+                }
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -68,17 +75,17 @@ public class AnalyzeTask extends DefaultTask {
         for (var sourceFile : sourceFiles.subList(0, sourceFiles.size() - 1)) {
             getLogger().lifecycle("+--- "
                     + padRight(sourceFile.getFullyQualifiedClassName(), maxLengthClassName)
-                    + sourceFile.getSourceFileHash()
+                    + sourceFile.getSourceFileHash(project.getLogger())
                     + " "
-                    + sourceFile.getClassFileHash()
+                    + sourceFile.getClassFileHash(project.getLogger())
             );
         }
-        var lasSourceFile = sourceFiles.get(sourceFiles.size() - 1);
+        var lastSourceFile = sourceFiles.get(sourceFiles.size() - 1);
         getLogger().lifecycle("\\--- "
-                + padRight(lasSourceFile.getFullyQualifiedClassName(), maxLengthClassName)
-                + lasSourceFile.getSourceFileHash()
+                + padRight(lastSourceFile.getFullyQualifiedClassName(), maxLengthClassName)
+                + lastSourceFile.getSourceFileHash(project.getLogger())
                 + " "
-                + lasSourceFile.getClassFileHash()
+                + lastSourceFile.getClassFileHash(project.getLogger())
         );
     }
 

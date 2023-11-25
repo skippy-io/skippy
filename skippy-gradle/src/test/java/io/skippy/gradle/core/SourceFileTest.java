@@ -1,5 +1,6 @@
 package io.skippy.gradle.core;
 
+import org.gradle.api.logging.Logger;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -8,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class SourceFileTest {
 
@@ -46,7 +48,7 @@ public class SourceFileTest {
     void getSourceFileHash(String fileName, String expectedValue) throws URISyntaxException {
         var sourceFile = Paths.get(getClass().getResource(fileName).toURI());
         var resourcesFolder = getResourceFolder(fileName);
-        assertEquals(expectedValue, SourceFile.of(sourceFile, resourcesFolder, resourcesFolder).getSourceFileHash());
+        assertEquals(expectedValue, SourceFile.of(sourceFile, resourcesFolder, resourcesFolder).getSourceFileHash(mock(Logger.class)));
     }
     @ParameterizedTest
     @CsvSource(value = {
@@ -56,7 +58,7 @@ public class SourceFileTest {
     void getClassFileHash(String fileName, String expectedValue) throws URISyntaxException {
         var sourceFile = Paths.get(getClass().getResource(fileName).toURI());
         var resourcesFolder = getResourceFolder(fileName);
-        assertEquals(expectedValue, SourceFile.of(sourceFile, resourcesFolder, resourcesFolder).getClassFileHash());
+        assertEquals(expectedValue, SourceFile.of(sourceFile, resourcesFolder, resourcesFolder).getClassFileHash(mock(Logger.class)));
     }
 
     private Path getResourceFolder(String filename) throws URISyntaxException {
