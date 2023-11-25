@@ -1,14 +1,14 @@
+buildscript {
+    dependencies {
+        classpath "io.skippy:skippy-gradle:${file('../version.txt').text.trim()}"
+    }
+}
+
 plugins {
     id 'java'
-    id 'io.skippy.ossrh-publish'
 }
 
-version = file('../version.txt').text.trim()
-
-ossrhPublish {
-    title = 'skippy-junit5'
-    description = 'Skippy\'s Conditional Test Execution for JUnit 5'
-}
+apply plugin: io.skippy.gradle.SkippyPlugin;
 
 repositories {
     mavenCentral()

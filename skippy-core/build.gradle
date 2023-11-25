@@ -3,6 +3,8 @@ plugins {
     id 'io.skippy.ossrh-publish'
 }
 
+version = file('../version.txt').text.trim()
+
 ossrhPublish {
     title = 'skippy-core'
     description = 'Skippy functionality that is agnostic to build tools and testing frameworks.'

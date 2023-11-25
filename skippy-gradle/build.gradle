@@ -13,26 +13,33 @@ plugins {
     id 'java-gradle-plugin'
 }
 
+group = 'io.skippy'
+version = file('../version.txt').text.trim()
+
 def publishToGradlePluginPortal = project.hasProperty("publishToGradlePluginPortal")
         && Boolean.valueOf(project.property("publishToGradlePluginPortal"))
 
-if ( publishToGradlePluginPortal) {
+if ( ! file('../sandbox-mode.txt').text.toBoolean()) {
 
-    // Gradle Plugin Portal
+    if ( publishToGradlePluginPortal) {
 
-    apply plugin: 'com.gradle.plugin-publish'
+        // Gradle Plugin Portal
 
-} else {
+        apply plugin: 'com.gradle.plugin-publish'
 
-    // SonaType OSSRH
+    } else {
 
-    apply plugin: 'io.skippy.ossrh-publish'
+        // SonaType OSSRH
 
-    ossrhPublish {
-        title = 'skippy-gradle'
-        description = 'Skippy\'s Test Impact Analysis for Gradle'
+        apply plugin: 'io.skippy.ossrh-publish'
+
+        ossrhPublish {
+            title = 'skippy-gradle'
+            description = 'Skippy\'s Test Impact Analysis for Gradle'
+        }
     }
 }
+
 
 repositories {
     mavenCentral()

@@ -44,7 +44,7 @@ You will see the following output:
 Skippy tasks
 ------------
 skippyClean
-skippyAnalysis
+skippyAnalyze
 ```
 
 You will additionally see a bunch of internal tasks that you don't have to worry about too much: 
@@ -57,21 +57,21 @@ skippyCoverage_com.example.Class2Test
 ...
 ```
 
-Those tasks capture execution data for individal tests, and are executed automatically when you run `skippyAnalysis`.
+Those tasks capture execution data for individal tests, and are executed automatically when you run `skippyAnalyze`.
 
-### skippyAnalysis Task
+### skippyAnalyze Task
 
-`skippyAnalysis` captures execution data for each test that uses Skippy. In addition, the plugin captures a hash of each source 
+`skippyAnalyze` captures execution data for each test that uses Skippy. In addition, the plugin captures a hash of each source 
 file:
 
 ```
-./gradlew skippyAnalysis
+./gradlew skippyAnalyze
 ```
 
 You should see something like this:
 
 ```
-./gradlew clean skippyAnalysis                                  
+./gradlew clean skippyAnalyze                                  
 
 > Task skippyCoverage_com.example.Class0Test
 Skippy: Capturing coverage data for com.example.Class0Test in skippy/com.example.Class0Test.csv
@@ -82,7 +82,7 @@ Skippy: Capturing coverage data for com.example.Class1Test in skippy/com.example
 > Task skippyCoverage_com.example.Class2Test
 Skippy: Capturing coverage data for com.example.Class2Test in skippy/com.example.Class2Test.csv
 
-> Task skippyAnalysis
+> Task skippyAnalyze
 Skippy: Capturing a snapshot of all source files in skippy/sourceSnapshot.md5
 ```
 
