@@ -1,6 +1,6 @@
 package io.skippy.gradle.tasks;
 
-import io.skippy.gradle.core.SourceFile;
+import io.skippy.gradle.core.AnalyzedFile;
 import org.gradle.api.DefaultTask;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
@@ -12,10 +12,34 @@ import java.io.ByteArrayOutputStream;
 import static io.skippy.gradle.core.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.util.Arrays.asList;
 
+/**
+ * Task that performs a JaCoCo coverage analysis for a skippified tests.
+ *
+ * <code>./gradlew skippyAnalyze</code> automatically executes tasks of this type 'under the hood'. It is not meant
+ * to be executed directly.
+ *
+ * <p>Example:</p>
+ *
+ * <pre>
+ * ./gradlew tasks
+ *
+ * ...
+ *
+ * Skippy (internal) tasks
+ * -----------------------
+ * skippyCoverage_com.example.SkippifiedTest1
+ * skippyCoverage_com.example.SkippifiedTest2
+ * </pre>
+ */
 public class CoverageTask extends DefaultTask {
 
+    /**
+     * C'tor.
+     *
+     * @param skippifiedTest {@link AnalyzedFile} representing a skippified test
+     */
     @Inject
-    public CoverageTask(SourceFile test) {
+    public CoverageTask(AnalyzedFile skippifiedTest) {
         setGroup("skippy (internal)");
         setMustRunAfter(asList("skippyClean"));
 
@@ -25,7 +49,7 @@ public class CoverageTask extends DefaultTask {
             try (ProjectConnection connection = connector.connect()) {
                 BuildLauncher build = connection.newBuild();
                 build.forTasks("test", "jacocoTestReport");
-                build.addArguments("-PskippyCoverageBuild=" + test.getFullyQualifiedClassName());
+                build.addArguments("-PskippyCoverageBuild=" + skippifiedTest.getFullyQualifiedClassName());
                 if (getLogging().getLevel() != null) {
                     build.addArguments("--" + getLogging().getLevel().name().toLowerCase());
                 }
@@ -35,9 +59,9 @@ public class CoverageTask extends DefaultTask {
                 var standardOutputStream = new ByteArrayOutputStream();
                 build.setStandardOutput(standardOutputStream);
 
-                var csvFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(test.getFullyQualifiedClassName() + ".csv");
+                var csvFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
                 getLogger().lifecycle("Capturing coverage data for %s in %s".formatted(
-                        test.getFullyQualifiedClassName(),
+                        skippifiedTest.getFullyQualifiedClassName(),
                         getProject().getProjectDir().toPath().relativize(csvFile))
                 );
                 try {

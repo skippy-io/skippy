@@ -1,7 +1,5 @@
-package io.skippy.core.parser;
+package io.skippy.core;
 
-import io.skippy.core.model.FullyQualifiedClassName;
-import io.skippy.core.model.TestImpactAnalysis;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,14 +8,35 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
-class TestImpactAnalysisParser {
+/**
+ * A mapping between tests and the classes they cover.
+ */
+public class TestImpactAnalysis {
 
-    private static final Logger LOGGER = LogManager.getLogger(TestImpactAnalysisParser.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestImpactAnalysis.class);
+
+    /**
+     * Indicates that no test impact analysis was found.
+     */
+    public static final TestImpactAnalysis UNAVAILABLE = new TestImpactAnalysis(emptyMap());
+
+    private final Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> testCoverage;
+
+    /**
+     * C'tor.
+     *
+     * @param testCoverage a mapping between tests and the classes that they cover
+     */
+    private TestImpactAnalysis(Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> testCoverage) {
+        this.testCoverage = testCoverage;
+    }
 
     static TestImpactAnalysis parse(Path directory) {
         var result = new HashMap<FullyQualifiedClassName, List<FullyQualifiedClassName>>();
@@ -26,6 +45,26 @@ class TestImpactAnalysisParser {
             result.put(test, parseCsvFile(csvFile.toPath()));
         }
         return new TestImpactAnalysis(result);
+    }
+
+    /**
+     * Returns the classes that are covered by {@param test}.
+     *
+     * @param test a {@link FullyQualifiedClassName} representing a test
+     * @return a list of {@link FullyQualifiedClassName}s representing the classes that are covered by {@param test}
+     */
+    List<FullyQualifiedClassName> getCoveredClasses(FullyQualifiedClassName test) {
+        return testCoverage.getOrDefault(test, emptyList());
+    }
+
+    /**
+     * Returns {@code true} if no coverage data is available for {@param test}, {@code false} otherwise.
+     *
+     * @param test a {@link FullyQualifiedClassName} representing a test
+     * @return {@code true} if no coverage data is available for {@param test}, {@code false} otherwise
+     */
+    boolean noDataAvailableFor(FullyQualifiedClassName test) {
+        return ! testCoverage.containsKey(test);
     }
 
     private static List<FullyQualifiedClassName> parseCsvFile(Path csvFile) {
@@ -66,5 +105,4 @@ class TestImpactAnalysisParser {
         // com_example_Foo -> com.example.Foo
         return withoutExtension.replaceAll("_", ".");
     }
-
 }

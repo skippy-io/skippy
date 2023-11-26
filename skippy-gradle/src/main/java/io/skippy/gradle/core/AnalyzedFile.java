@@ -14,18 +14,19 @@ import java.util.function.Function;
 import static java.util.Arrays.asList;
 import static java.util.regex.Pattern.quote;
 
+
 /**
- * Skippy representation of a source file:
+ * A file that has been analyzed by Skippy:
  * <ul>
  *     <li>a fully-qualified class name</li>
- *     <li>the path to the source file in the file system</li>
- *     <li>the path to the corresponding class file in the file system</li>
- * </ul>>
+ *     <li>a path to the source file</li>
+ *     <li>a path to the class file</li>
+ * </ul>
  *
  * TODO: Ideally, the corresponding Class object should be stored as well to detect the Skippy extension and to infer the
  * fully qualified class name.
  */
-public class SourceFile {
+public class AnalyzedFile {
 
     private static final List<String> SKIPPY_EXTENSION_PATTERNS = asList(
             "@ExtendWith(Skippy.class)",
@@ -43,24 +44,39 @@ public class SourceFile {
     /**
      * C'tor.
      *
+     * @param fullyQualifiedClassName the fully-qualified class name (e.g., com.example.Foo)
+     * @param sourceFile the source file in the file system (e.g., /User/johndoe/repo/src/main/java/com/example/Foo.java)
+     * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
      */
-    private SourceFile(String fullyQualifiedClassName, Path sourceFile, Path classFile) {
+    private AnalyzedFile(String fullyQualifiedClassName, Path sourceFile, Path classFile) {
         this.fullyQualifiedClassName = fullyQualifiedClassName;
         this.sourceFile = sourceFile;
         this.classFile = classFile;
     }
 
-    public static SourceFile of(Path sourceFile, Path sourceFolder, Path classesFolder) {
+    /**
+     * Factory method that constructs a {@link AnalyzedFile} based of a {@param sourceFile}, {@param sourceFolder} and
+     * {@param classesFolder}.
+     *
+     * @param sourceFile the source file in the file system (e.g., /User/johndoe/repo/src/main/java/com/example/Foo.java)
+     * @param sourceFolder the source folder in the file system (e.g., /User/johndoe/repo/src/main/java)
+     * @param classesFolder the classes file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main)
+     *
+     * @return an {@link AnalyzedFile}
+     */
+    public static AnalyzedFile of(Path sourceFile, Path sourceFolder, Path classesFolder) {
         var pathWithExtension = sourceFolder.relativize(sourceFile.toAbsolutePath()).toString();
         var fullyQualifiedClassName = pathWithExtension
                 .substring(0, pathWithExtension.lastIndexOf("."))
                 .replaceAll("/", ".");
         var classFile = classesFolder.resolve(Path.of(fullyQualifiedClassName.replaceAll(quote("."), "/") + ".class"));
-        return new SourceFile(fullyQualifiedClassName, sourceFile, classFile);
+        return new AnalyzedFile(fullyQualifiedClassName, sourceFile, classFile);
     }
 
     /**
      * Returns the fully qualified class name (e.g., com.example.Foo).
+     *
+     * @return the fully qualified class name (e.g., com.example.Foo)
      */
     public String getFullyQualifiedClassName() {
         return fullyQualifiedClassName;
@@ -68,6 +84,8 @@ public class SourceFile {
 
     /**
      * Returns the fully-qualified filename of the source file (e.g., /user/johndoe/repos/demo/src/main/java/com/example/Foo.java).
+     *
+     * @return the fully-qualified filename of the source file (e.g., /user/johndoe/repos/demo/src/main/java/com/example/Foo.java)
      */
     public String getSourceFileName() {
         return sourceFile.toString();
@@ -75,6 +93,8 @@ public class SourceFile {
 
     /**
      * Returns the fully-qualified filename of the class file (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class).
+     *
+     * @return the fully-qualified filename of the class file (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
      */
     public String getClassFileName() {
         return classFile.toString();
@@ -82,6 +102,9 @@ public class SourceFile {
 
     /**
      * Returns the MD5 hash of the Java source file in BASE64 encoding.
+     *
+     * @param logger the Gradle logger
+     * @return the MD5 hash of the Java source file in BASE64 encoding
      */
     public String getSourceFileHash(Logger logger) {
         return getHash(sourceFile, logger);
@@ -89,13 +112,18 @@ public class SourceFile {
 
     /**
      * Returns the MD5 hash of the Java class file in BASE64 encoding.
+     *
+     * @param logger the Gradle logger
+     * @return the MD5 hash of the Java class file in BASE64 encoding
      */
     public String getClassFileHash(Logger logger) {
         return getHash(classFile, logger);
     }
 
     /**
-     * Returns <code>true</code> if this class is the test that uses the Skippy extension, <code>false</code> otherwise.
+     * Returns {@code true} if this class is the test that uses the Skippy extension, {@code false} otherwise.
+     *
+     * @return {@code true} if this class is the test that uses the Skippy extension, {@code false} otherwise
      */
     public boolean usesSkippyExtension() {
         try {

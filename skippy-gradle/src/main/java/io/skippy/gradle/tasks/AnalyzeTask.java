@@ -1,7 +1,7 @@
 package io.skippy.gradle.tasks;
 
-import io.skippy.gradle.core.SourceFile;
-import io.skippy.gradle.core.SourceFileCollector;
+import io.skippy.gradle.core.AnalyzedFile;
+import io.skippy.gradle.core.Analyzer;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.UncheckedIOException;
@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.skippy.gradle.core.SkippyConstants.SOURCE_SNAPSHOT_FILE;
+import static io.skippy.gradle.core.SkippyConstants.SKIPPY_ANALYSIS_FILE;
 import static io.skippy.gradle.core.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.Files.readAllLines;
@@ -23,6 +23,11 @@ import static java.util.stream.Collectors.joining;
  */
 public class AnalyzeTask extends DefaultTask {
 
+    /**
+     * C'tor
+     *
+     * @param coverageTasks the names of {@link CoverageTask}s that this task depends on.
+     */
     @Inject
     public AnalyzeTask(List<String> coverageTasks) {
         setGroup("skippy");
@@ -34,17 +39,17 @@ public class AnalyzeTask extends DefaultTask {
         if (coverageTasks.isEmpty()) {
             getLogger().warn("No skippified tests found.");
         }
-        doLast((task) -> createSourceSnapshot(getProject()));
+        doLast((task) -> createSkippyAnalysisFile(getProject()));
     }
 
-    private void createSourceSnapshot(Project project) {
+    private void createSkippyAnalysisFile(Project project) {
         try {
-            var sourceSnapshotFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(SOURCE_SNAPSHOT_FILE);
-            sourceSnapshotFile.toFile().createNewFile();
-            var sourceFiles = SourceFileCollector.getAllSources(project);
-            getLogger().lifecycle("Capturing a snapshot of all source files in " + project.getProjectDir().toPath().relativize(sourceSnapshotFile));
+            var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(SKIPPY_ANALYSIS_FILE);
+            skippyAnalysisFile.toFile().createNewFile();
+            var sourceFiles = Analyzer.analyzeProject(project);
+            getLogger().lifecycle("Creating the Skippy analysis file %s.".formatted(project.getProjectDir().toPath().relativize(skippyAnalysisFile)));
             logOutputForSkippyFunctionalTest(project, sourceFiles);
-            writeString(sourceSnapshotFile, sourceFiles.stream()
+            writeString(skippyAnalysisFile, sourceFiles.stream()
                             .map(sourceFile -> "%s:%s:%s:%s:%s".formatted(
                                 sourceFile.getFullyQualifiedClassName(),
                                     sourceFile.getSourceFileName(),
@@ -54,8 +59,8 @@ public class AnalyzeTask extends DefaultTask {
                             ))
                             .collect(joining(lineSeparator())));
             if (getLogger().isInfoEnabled()) {
-                getLogger().info("Content of %s: ".formatted(sourceSnapshotFile));
-                for (var line: readAllLines(sourceSnapshotFile)) {
+                getLogger().info("Content of %s: ".formatted(skippyAnalysisFile));
+                for (var line: readAllLines(skippyAnalysisFile)) {
                     getLogger().info(line);
                 }
             }
@@ -67,7 +72,7 @@ public class AnalyzeTask extends DefaultTask {
     /**
      * Verbose logging with level lifecycle that the functional tests in skippy-gradle rely on.
      */
-    private void logOutputForSkippyFunctionalTest(Project project, List<SourceFile> sourceFiles) {
+    private void logOutputForSkippyFunctionalTest(Project project, List<AnalyzedFile> sourceFiles) {
         if (sourceFiles.isEmpty() || ! project.hasProperty("skippyFunctionalTest")) {
             return;
         }

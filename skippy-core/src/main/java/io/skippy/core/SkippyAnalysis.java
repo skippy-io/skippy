@@ -1,4 +1,4 @@
-package io.skippy.core.model;
+package io.skippy.core;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,49 +8,75 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 /**
- * The result of a Skippy Analysis:
+ * The result of a Skippy analysis:
  * <ul>
- *     <li>{@link SourceFileSnapshot}s for all sources</li>
+ *     <li>a list of {@link AnalyzedFile}s</li>
  *     <li>a {@link TestImpactAnalysis} for all tests that use the Skippy extension</li>
  * </ul>
  */
-public class SkippyAnalysisResult {
+public class SkippyAnalysis {
 
-    private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysisResult.class);
+    private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysis.class);
 
-    public static final SkippyAnalysisResult UNAVAILABLE = new SkippyAnalysisResult(emptyList(), TestImpactAnalysis.UNAVAILABLE);
+    private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(emptyList(), TestImpactAnalysis.UNAVAILABLE);
 
-    private final List<SourceFileSnapshot> sourceFileSnapshots;
+    private final List<AnalyzedFile> analyzedFiles;
     private final TestImpactAnalysis testImpactAnalysis;
 
-    public SkippyAnalysisResult(List<SourceFileSnapshot> sourceFileSnapshots, TestImpactAnalysis testImpactAnalysis) {
-        this.sourceFileSnapshots = sourceFileSnapshots;
+    /**
+     * C'tor.
+     *
+     * @param analyzedFiles all files that have been analyzed by Skippy's analysis
+     * @param testImpactAnalysis the {@link TestImpactAnalysis} created by Skippy's analysis
+     */
+    private SkippyAnalysis(List<AnalyzedFile> analyzedFiles, TestImpactAnalysis testImpactAnalysis) {
+        this.analyzedFiles = analyzedFiles;
         this.testImpactAnalysis = testImpactAnalysis;
     }
 
-    public boolean executionRequired(Class<?> testClass) {
-        var test = new FullyQualifiedClassName(testClass.getName());
-        if (testImpactAnalysis.noDataAvailableFor(test)) {
-            LOGGER.debug("%s: No analysis found. Execution required.".formatted(test.fullyQualifiedClassName()));
+    /**
+     * Parses the content of the skippy folder to generate a {@link SkippyAnalysis}.
+     *
+     * @return a {@link SkippyAnalysis}
+     */
+    public static SkippyAnalysis parse() {
+        if ( ! SkippyConstants.SKIPPY_DIRECTORY.toFile().exists() || ! SkippyConstants.SKIPPY_DIRECTORY.toFile().isDirectory()) {
+            return SkippyAnalysis.UNAVAILABLE;
+        }
+        var sourceFileSnapshots = AnalyzedFile.parse(SkippyConstants.SKIPPY_DIRECTORY.resolve(SkippyConstants.SKIPPY_ANALYSIS_FILE));
+        var testCoverage = TestImpactAnalysis.parse(SkippyConstants.SKIPPY_DIRECTORY);
+        return new SkippyAnalysis(sourceFileSnapshots, testCoverage);
+    }
+
+    /**
+     * Returns {@code true} if {@param test} needs to be executed, {@code false} otherwise.
+     *
+     * @param test a class object representing a test
+     * @return {@code true} if {@param test} needs to be executed, {@code false} otherwise
+     */
+    public boolean executionRequired(Class<?> test) {
+        var testFqn = new FullyQualifiedClassName(test.getName());
+        if (testImpactAnalysis.noDataAvailableFor(testFqn)) {
+            LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.fullyQualifiedClassName()));
             return true;
         }
-        if (getClassesWithSourceChanges().contains(test)) {
+        if (getClassesWithSourceChanges().contains(testFqn)) {
             LOGGER.debug("%s: Source change detected. Execution required.".formatted(
-                    test.fullyQualifiedClassName()
+                    testFqn.fullyQualifiedClassName()
             ));
             return true;
         }
-        if (getClassesWithBytecodeChanges().contains(test)) {
+        if (getClassesWithBytecodeChanges().contains(testFqn)) {
             LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(
-                    test.fullyQualifiedClassName()
+                    testFqn.fullyQualifiedClassName()
             ));
             return true;
         }
-        if (coveredClassHasChanged(test)) {
+        if (coveredClassHasChanged(testFqn)) {
             return true;
         }
         LOGGER.debug("%s: No changes in test or covered classes detected. Execution skipped.".formatted(
-                test.fullyQualifiedClassName()
+                testFqn.fullyQualifiedClassName()
         ));
         return false;
     }
@@ -80,14 +106,14 @@ public class SkippyAnalysisResult {
     }
 
     private List<FullyQualifiedClassName> getClassesWithSourceChanges() {
-        return sourceFileSnapshots.stream()
+        return analyzedFiles.stream()
                 .filter(s -> s.sourceFileHasChanged())
                 .map(s -> s.getFullyQualifiedClassName())
                 .toList();
     }
 
     private List<FullyQualifiedClassName> getClassesWithBytecodeChanges() {
-        return sourceFileSnapshots.stream()
+        return analyzedFiles.stream()
                 .filter(s -> s.classFileHasChanged())
                 .map(s -> s.getFullyQualifiedClassName())
                 .toList();

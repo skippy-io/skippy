@@ -27,7 +27,7 @@ public class SourceFileTest {
     void testUsesSkippyExtension(String fileName, boolean expectedValue) throws URISyntaxException {
         var sourceFile = Paths.get(getClass().getResource(fileName).toURI());
         var resourcesFolder = getResourceFolder(fileName);
-        assertEquals(expectedValue, SourceFile.of(sourceFile, resourcesFolder, resourcesFolder).usesSkippyExtension());
+        assertEquals(expectedValue, AnalyzedFile.of(sourceFile, resourcesFolder, resourcesFolder).usesSkippyExtension());
     }
     @ParameterizedTest
     @CsvSource(value = {
@@ -37,7 +37,7 @@ public class SourceFileTest {
     void testGetFullyQualifiedClassName(String fileName, String expectedValue) throws URISyntaxException {
         var sourceFile = Paths.get(getClass().getResource(fileName).toURI());
         var resourcesFolder = getResourceFolder(fileName);
-        assertEquals(expectedValue, SourceFile.of(sourceFile, resourcesFolder, resourcesFolder).getFullyQualifiedClassName());
+        assertEquals(expectedValue, AnalyzedFile.of(sourceFile, resourcesFolder, resourcesFolder).getFullyQualifiedClassName());
     }
 
     @ParameterizedTest
@@ -48,7 +48,7 @@ public class SourceFileTest {
     void getSourceFileHash(String fileName, String expectedValue) throws URISyntaxException {
         var sourceFile = Paths.get(getClass().getResource(fileName).toURI());
         var resourcesFolder = getResourceFolder(fileName);
-        assertEquals(expectedValue, SourceFile.of(sourceFile, resourcesFolder, resourcesFolder).getSourceFileHash(mock(Logger.class)));
+        assertEquals(expectedValue, AnalyzedFile.of(sourceFile, resourcesFolder, resourcesFolder).getSourceFileHash(mock(Logger.class)));
     }
     @ParameterizedTest
     @CsvSource(value = {
@@ -58,7 +58,7 @@ public class SourceFileTest {
     void getClassFileHash(String fileName, String expectedValue) throws URISyntaxException {
         var sourceFile = Paths.get(getClass().getResource(fileName).toURI());
         var resourcesFolder = getResourceFolder(fileName);
-        assertEquals(expectedValue, SourceFile.of(sourceFile, resourcesFolder, resourcesFolder).getClassFileHash(mock(Logger.class)));
+        assertEquals(expectedValue, AnalyzedFile.of(sourceFile, resourcesFolder, resourcesFolder).getClassFileHash(mock(Logger.class)));
     }
 
     private Path getResourceFolder(String filename) throws URISyntaxException {
