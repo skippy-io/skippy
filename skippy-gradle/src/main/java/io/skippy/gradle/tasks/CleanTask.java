@@ -5,8 +5,14 @@ import javax.inject.Inject;
 
 import static io.skippy.gradle.core.SkippyConstants.SKIPPY_DIRECTORY;
 
+/**
+ * The tasks that is run via <code>./gradlew skippyAnalyze</code>.
+ */
 public class CleanTask extends DefaultTask {
 
+    /**
+     * C'tor.
+     */
     @Inject
     public CleanTask() {
         setGroup("skippy");
