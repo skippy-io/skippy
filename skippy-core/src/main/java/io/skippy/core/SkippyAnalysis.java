@@ -3,9 +3,7 @@ package io.skippy.core;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.List;
-
-import static java.util.Collections.emptyList;
+import java.nio.file.Path;
 
 /**
  * The result of a Skippy analysis:
@@ -18,9 +16,9 @@ public class SkippyAnalysis {
 
     private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysis.class);
 
-    private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(emptyList(), TestImpactAnalysis.UNAVAILABLE);
+    private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(AnalyzedFileList.UNAVAILABLE, TestImpactAnalysis.UNAVAILABLE);
 
-    private final List<AnalyzedFile> analyzedFiles;
+    private final AnalyzedFileList analyzedFiles;
     private final TestImpactAnalysis testImpactAnalysis;
 
     /**
@@ -29,7 +27,7 @@ public class SkippyAnalysis {
      * @param analyzedFiles all files that have been analyzed by Skippy's analysis
      * @param testImpactAnalysis the {@link TestImpactAnalysis} created by Skippy's analysis
      */
-    private SkippyAnalysis(List<AnalyzedFile> analyzedFiles, TestImpactAnalysis testImpactAnalysis) {
+    SkippyAnalysis(AnalyzedFileList analyzedFiles, TestImpactAnalysis testImpactAnalysis) {
         this.analyzedFiles = analyzedFiles;
         this.testImpactAnalysis = testImpactAnalysis;
     }
@@ -40,12 +38,16 @@ public class SkippyAnalysis {
      * @return a {@link SkippyAnalysis}
      */
     public static SkippyAnalysis parse() {
-        if ( ! SkippyConstants.SKIPPY_DIRECTORY.toFile().exists() || ! SkippyConstants.SKIPPY_DIRECTORY.toFile().isDirectory()) {
+        return parse(SkippyConstants.SKIPPY_DIRECTORY);
+    }
+
+    static SkippyAnalysis parse(Path skippyDirectory) {
+        if ( ! skippyDirectory.toFile().exists() || ! skippyDirectory.toFile().isDirectory()) {
             return SkippyAnalysis.UNAVAILABLE;
         }
-        var sourceFileSnapshots = AnalyzedFile.parse(SkippyConstants.SKIPPY_DIRECTORY.resolve(SkippyConstants.SKIPPY_ANALYSIS_FILE));
-        var testCoverage = TestImpactAnalysis.parse(SkippyConstants.SKIPPY_DIRECTORY);
-        return new SkippyAnalysis(sourceFileSnapshots, testCoverage);
+        var analyzedFiles = AnalyzedFileList.parse(skippyDirectory.resolve(SkippyConstants.SKIPPY_ANALYSIS_FILE));
+        var testCoverage = TestImpactAnalysis.parse(skippyDirectory);
+        return new SkippyAnalysis(analyzedFiles, testCoverage);
     }
 
     /**
@@ -57,66 +59,46 @@ public class SkippyAnalysis {
     public boolean executionRequired(Class<?> test) {
         var testFqn = new FullyQualifiedClassName(test.getName());
         if (testImpactAnalysis.noDataAvailableFor(testFqn)) {
-            LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.fullyQualifiedClassName()));
+            LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.value()));
             return true;
         }
-        if (getClassesWithSourceChanges().contains(testFqn)) {
-            LOGGER.debug("%s: Source change detected. Execution required.".formatted(
-                    testFqn.fullyQualifiedClassName()
-            ));
+        if (analyzedFiles.getClassesWithSourceChanges().contains(testFqn)) {
+            LOGGER.debug("%s: Source change detected. Execution required.".formatted(testFqn.value()));
             return true;
         }
-        if (getClassesWithBytecodeChanges().contains(testFqn)) {
-            LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(
-                    testFqn.fullyQualifiedClassName()
-            ));
+        if (analyzedFiles.getClassesWithBytecodeChanges().contains(testFqn)) {
+            LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(testFqn.value()));
             return true;
         }
         if (coveredClassHasChanged(testFqn)) {
             return true;
         }
-        LOGGER.debug("%s: No changes in test or covered classes detected. Execution skipped.".formatted(
-                testFqn.fullyQualifiedClassName()
-        ));
+        LOGGER.debug("%s: No changes in test or covered classes detected. Execution skipped.".formatted(testFqn.value()));
         return false;
     }
 
     private boolean coveredClassHasChanged(FullyQualifiedClassName test) {
-        var changedClassesWithSourceChanges = getClassesWithSourceChanges();
+        var changedClassesWithSourceChanges = analyzedFiles.getClassesWithSourceChanges();
         for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
             if (changedClassesWithSourceChanges.contains(coveredClass)) {
                 LOGGER.debug("%s: Source change in covered class '%s' detected. Execution required.".formatted(
-                        test.fullyQualifiedClassName(),
-                        coveredClass.fullyQualifiedClassName()
+                        test.value(),
+                        coveredClass.value()
                 ));
                 return true;
             }
         }
-        var changedClassesWithBytecodeChanges = getClassesWithBytecodeChanges();
+        var changedClassesWithBytecodeChanges = analyzedFiles.getClassesWithBytecodeChanges();
         for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
             if (changedClassesWithBytecodeChanges.contains(coveredClass)) {
                 LOGGER.debug("%s: Bytecode change in covered class '%s' detected. Execution required.".formatted(
-                        test.fullyQualifiedClassName(),
-                        coveredClass.fullyQualifiedClassName()
+                        test.value(),
+                        coveredClass.value()
                 ));
                 return true;
             }
         }
         return false;
-    }
-
-    private List<FullyQualifiedClassName> getClassesWithSourceChanges() {
-        return analyzedFiles.stream()
-                .filter(s -> s.sourceFileHasChanged())
-                .map(s -> s.getFullyQualifiedClassName())
-                .toList();
-    }
-
-    private List<FullyQualifiedClassName> getClassesWithBytecodeChanges() {
-        return analyzedFiles.stream()
-                .filter(s -> s.classFileHasChanged())
-                .map(s -> s.getFullyQualifiedClassName())
-                .toList();
     }
 
 }
