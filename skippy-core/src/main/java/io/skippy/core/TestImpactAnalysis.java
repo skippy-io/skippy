@@ -18,14 +18,11 @@ import static java.util.Collections.emptyMap;
 /**
  * A mapping between tests and the classes they cover.
  */
-public class TestImpactAnalysis {
+class TestImpactAnalysis {
 
     private static final Logger LOGGER = LogManager.getLogger(TestImpactAnalysis.class);
 
-    /**
-     * Indicates that no test impact analysis was found.
-     */
-    public static final TestImpactAnalysis UNAVAILABLE = new TestImpactAnalysis(emptyMap());
+    static final TestImpactAnalysis UNAVAILABLE = new TestImpactAnalysis(emptyMap());
 
     private final Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> testCoverage;
 

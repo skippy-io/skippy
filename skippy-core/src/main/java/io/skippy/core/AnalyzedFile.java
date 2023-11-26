@@ -23,7 +23,7 @@ import static java.util.Collections.emptyList;
  *     <li>MD5 hash of class file</li>
  * </ul>
  */
-public class AnalyzedFile {
+class AnalyzedFile {
 
     private static final Logger LOGGER = LogManager.getLogger(AnalyzedFile.class);
 
