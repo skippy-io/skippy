@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
-public class SourceFileTest {
+public class AnalyzedFileTest {
 
     @ParameterizedTest
     @CsvSource(value = {
