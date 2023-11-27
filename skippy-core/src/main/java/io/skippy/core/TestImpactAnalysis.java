@@ -21,10 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
@@ -41,6 +38,10 @@ class TestImpactAnalysis {
     private static final Logger LOGGER = LogManager.getLogger(TestImpactAnalysis.class);
 
     static final TestImpactAnalysis UNAVAILABLE = new TestImpactAnalysis(emptyMap());
+
+    private enum JACOCO_CSV_COLUMN {
+        GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+    }
 
     private final Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> testCoverage;
 
@@ -89,7 +90,7 @@ class TestImpactAnalysis {
             content.remove(0);
             var coveredClasses = new ArrayList<FullyQualifiedClassName>();
             for (var line : content) {
-                coveredClasses.addAll(parseCsvFile(line));
+                coveredClasses.addAll(parseCsvLine(line));
             }
             return coveredClasses;
         } catch (Exception e) {
@@ -98,12 +99,24 @@ class TestImpactAnalysis {
         }
     }
 
-    private static List<FullyQualifiedClassName> parseCsvFile(String line) {
+    private static List<FullyQualifiedClassName> parseCsvLine(String line) {
         var csvColumns = line.split(",");
-        var methodsCoveredCount = parseInt(csvColumns[12]);
-        var pkg = csvColumns[1];
-        var clazz = csvColumns[2];
-        if (methodsCoveredCount > 0) {
+        var pkg = csvColumns[JACOCO_CSV_COLUMN.PACKAGE.ordinal()];
+        var clazz = csvColumns[JACOCO_CSV_COLUMN.CLASS.ordinal()];
+
+        boolean coverageDetected = false;
+        for (var column : asList(
+                JACOCO_CSV_COLUMN.INSTRUCTION_COVERED,
+                JACOCO_CSV_COLUMN.BRANCH_COVERED,
+                JACOCO_CSV_COLUMN.LINE_COVERED,
+                JACOCO_CSV_COLUMN.COMPLEXITY_COVERED,
+                JACOCO_CSV_COLUMN.METHOD_COVERED)) {
+            if (parseInt(csvColumns[column.ordinal()]) > 0) {
+                coverageDetected = true;
+            }
+        }
+
+        if (coverageDetected) {
             return asList(new FullyQualifiedClassName(pkg + "." + clazz));
         }
         return emptyList();
@@ -120,4 +133,5 @@ class TestImpactAnalysis {
         // com_example_Foo -> com.example.Foo
         return withoutExtension.replaceAll("_", ".");
     }
+
 }
