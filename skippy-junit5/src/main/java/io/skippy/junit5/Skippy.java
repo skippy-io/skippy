@@ -10,13 +10,22 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  */
 public class Skippy implements ExecutionCondition {
 
+    private final SkippyAnalysis skippyAnalysis;
+
+    public Skippy() {
+        this(SkippyAnalysis.parse());
+    }
+
+    Skippy(final SkippyAnalysis skippyAnalysis) {
+        this.skippyAnalysis = skippyAnalysis;
+    }
+
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         if (context.getTestInstance().isEmpty()) {
             return ConditionEvaluationResult.enabled("");
         }
-        var analysisResult = SkippyAnalysis.parse();
-        if (analysisResult.executionRequired(context.getTestClass().get())) {
+        if (skippyAnalysis.executionRequired(context.getTestClass().get())) {
             return ConditionEvaluationResult.enabled("");
         }
         return ConditionEvaluationResult.disabled("");
