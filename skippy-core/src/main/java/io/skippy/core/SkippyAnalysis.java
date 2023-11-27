@@ -59,21 +59,21 @@ public class SkippyAnalysis {
     public boolean executionRequired(Class<?> test) {
         var testFqn = new FullyQualifiedClassName(test.getName());
         if (testImpactAnalysis.noDataAvailableFor(testFqn)) {
-            LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.value()));
+            LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
         if (analyzedFiles.getClassesWithSourceChanges().contains(testFqn)) {
-            LOGGER.debug("%s: Source change detected. Execution required.".formatted(testFqn.value()));
+            LOGGER.debug("%s: Source change detected. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
         if (analyzedFiles.getClassesWithBytecodeChanges().contains(testFqn)) {
-            LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(testFqn.value()));
+            LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
         if (coveredClassHasChanged(testFqn)) {
             return true;
         }
-        LOGGER.debug("%s: No changes in test or covered classes detected. Execution skipped.".formatted(testFqn.value()));
+        LOGGER.debug("%s: No changes in test or covered classes detected. Execution skipped.".formatted(testFqn.fqn()));
         return false;
     }
 
@@ -82,8 +82,8 @@ public class SkippyAnalysis {
         for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
             if (changedClassesWithSourceChanges.contains(coveredClass)) {
                 LOGGER.debug("%s: Source change in covered class '%s' detected. Execution required.".formatted(
-                        test.value(),
-                        coveredClass.value()
+                        test.fqn(),
+                        coveredClass.fqn()
                 ));
                 return true;
             }
@@ -92,8 +92,8 @@ public class SkippyAnalysis {
         for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
             if (changedClassesWithBytecodeChanges.contains(coveredClass)) {
                 LOGGER.debug("%s: Bytecode change in covered class '%s' detected. Execution required.".formatted(
-                        test.value(),
-                        coveredClass.value()
+                        test.fqn(),
+                        coveredClass.fqn()
                 ));
                 return true;
             }
