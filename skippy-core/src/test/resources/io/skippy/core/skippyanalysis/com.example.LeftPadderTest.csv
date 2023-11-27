@@ -1,0 +1,8 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+getting-started-with-gradle-and-junit5,com.example,TestConstants,3,0,0,0,1,0,1,0,1,0
+getting-started-with-gradle-and-junit5,com.example,StringUtils,14,11,2,2,4,3,3,2,2,1
+getting-started-with-gradle-and-junit5,com.example,LeftPadder,3,4,0,0,1,1,1,1,1,1
+getting-started-with-gradle-and-junit5,com.example,RightPadder,7,0,0,0,2,0,2,0,2,0
+getting-started-with-gradle-and-junit5,com.example,RightPadderTest,11,0,0,0,4,0,2,0,2,0
+getting-started-with-gradle-and-junit5,com.example,LeftPadderTest,0,11,0,0,0,4,0,2,0,2
+getting-started-with-gradle-and-junit5,com.example,StringUtilsTest,19,0,0,0,7,0,3,0,3,0
