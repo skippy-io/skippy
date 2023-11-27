@@ -25,14 +25,14 @@ import java.io.File;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
- * Functional test for the Getting Started With Gradle & JUnit 5 Tutorial.
+ * Smoke test for the Skippy plugin.
  *
  * @author Florian McKee
  */
 public class SkippyPluginSmokeTest {
 
     @Test
-    public void runTestsWithoutAnalysis() throws Exception {
+    public void smokeTestSkippyPlugin() throws Exception {
 
         var buildFile = new File(getClass().getResource("skippyplugin/build.gradle").toURI());
         var projectDir = buildFile.getParentFile();
