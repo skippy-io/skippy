@@ -61,8 +61,8 @@ class AnalyzedClass {
         if ( ! classFile.toFile().exists()) {
             return true;
         }
-        String newClassFileHash = hashFileContent(classFile);
-        if ( ! hash.equals(newClassFileHash)) {
+        String newHash = hashFileContent(classFile);
+        if ( ! hash.equals(newHash)) {
             return true;
         }
         return false;

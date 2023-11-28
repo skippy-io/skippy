@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.skippy.gradle.core;
+package io.skippy.gradle;
 
 import io.skippy.gradle.DecoratedClass;
 import org.gradle.api.logging.Logger;
@@ -36,14 +36,14 @@ public class DecoratedClassTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "SourceFileTest1.class:true",
-            "SourceFileTest2.class:true",
-            "SourceFileTest3.class:true",
-            "SourceFileTest4.class:true",
-            "SourceFileTest5.class:false",
-            "SourceFileTest6.class:false",
-            "SourceFileTest7.class:false",
-            "SourceFileTest8.class:false"
+            "decoratedclass/SourceFileTest1.class:true",
+            "decoratedclass/SourceFileTest2.class:true",
+            "decoratedclass/SourceFileTest3.class:true",
+            "decoratedclass/SourceFileTest4.class:true",
+            "decoratedclass/SourceFileTest5.class:false",
+            "decoratedclass/SourceFileTest6.class:false",
+            "decoratedclass/SourceFileTest7.class:false",
+            "decoratedclass/SourceFileTest8.class:false"
     }, delimiter = ':')
     void testUsesSkippyExtension(String fileName, boolean expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
@@ -51,8 +51,8 @@ public class DecoratedClassTest {
     }
     @ParameterizedTest
     @CsvSource(value = {
-            "SourceFileTest1.class:com.example.SourceFileTest1",
-            "SourceFileTest2.class:com.example.SourceFileTest2"
+            "decoratedclass/SourceFileTest1.class:com.example.SourceFileTest1",
+            "decoratedclass/SourceFileTest2.class:com.example.SourceFileTest2"
     }, delimiter = ':')
     void testGetFullyQualifiedClassName(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
@@ -61,8 +61,8 @@ public class DecoratedClassTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "SourceFileTest1.class:DM/flrfJfkathBz4vkrYkw==",
-            "SourceFileTest2.class:J0uUoArClaJaIlkhCic6vg=="
+            "decoratedclass/SourceFileTest1.class:DM/flrfJfkathBz4vkrYkw==",
+            "decoratedclass/SourceFileTest2.class:J0uUoArClaJaIlkhCic6vg=="
     }, delimiter = ':')
     void getHash(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
