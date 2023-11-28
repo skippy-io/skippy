@@ -80,35 +80,21 @@ public class SkippyAnalysis {
             LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
-        if (analyzedFiles.getClassesWithSourceChanges().contains(testFqn)) {
-            LOGGER.debug("%s: Source change detected. Execution required.".formatted(testFqn.fqn()));
-            return true;
-        }
         if (analyzedFiles.getClassesWithBytecodeChanges().contains(testFqn)) {
             LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
-        if (coveredClassHasChanged(testFqn)) {
+        if (coveredClassHasBytecodeChange(testFqn)) {
             return true;
         }
         LOGGER.debug("%s: No changes in test or covered classes detected. Execution skipped.".formatted(testFqn.fqn()));
         return false;
     }
 
-    private boolean coveredClassHasChanged(FullyQualifiedClassName test) {
-        var changedClassesWithSourceChanges = analyzedFiles.getClassesWithSourceChanges();
+    private boolean coveredClassHasBytecodeChange(FullyQualifiedClassName test) {
+        var classesWithBytecodeChange = analyzedFiles.getClassesWithBytecodeChanges();
         for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
-            if (changedClassesWithSourceChanges.contains(coveredClass)) {
-                LOGGER.debug("%s: Source change in covered class '%s' detected. Execution required.".formatted(
-                        test.fqn(),
-                        coveredClass.fqn()
-                ));
-                return true;
-            }
-        }
-        var changedClassesWithBytecodeChanges = analyzedFiles.getClassesWithBytecodeChanges();
-        for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
-            if (changedClassesWithBytecodeChanges.contains(coveredClass)) {
+            if (classesWithBytecodeChange.contains(coveredClass)) {
                 LOGGER.debug("%s: Bytecode change in covered class '%s' detected. Execution required.".formatted(
                         test.fqn(),
                         coveredClass.fqn()

@@ -53,19 +53,6 @@ public class SkippyAnalysisTest {
     }
 
     @Test
-    void testWithSourceChangeEqualsExecution() {
-        var analyzedFiles = mock(AnalyzedFileList.class);
-        var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
-        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
-
-        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(analyzedFiles.getClassesWithSourceChanges()).thenReturn(asList(skippyAnalysisTest));
-
-        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
-    }
-
-    @Test
     void testWithBytecodeChangeEqualsExecution() {
         var analyzedFiles = mock(AnalyzedFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
@@ -75,22 +62,6 @@ public class SkippyAnalysisTest {
         when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
         when(analyzedFiles.getClassesWithSourceChanges()).thenReturn(emptyList());
         when(analyzedFiles.getClassesWithBytecodeChanges()).thenReturn(asList(skippyAnalysisTest));
-
-        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
-    }
-
-    @Test
-    void testCoveredClassWithSourceChangeEqualsExecution() {
-        var analyzedFiles = mock(AnalyzedFileList.class);
-        var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
-        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
-        var foo = new FullyQualifiedClassName("com.example.Foo");
-
-        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(analyzedFiles.getClassesWithSourceChanges()).thenReturn(asList(foo));
-        when(analyzedFiles.getClassesWithBytecodeChanges()).thenReturn(emptyList());
 
         assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
     }
