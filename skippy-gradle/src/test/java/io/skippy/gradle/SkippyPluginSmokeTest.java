@@ -47,14 +47,10 @@ public class SkippyPluginSmokeTest {
         var output = result.getOutput();
 
         assertThat(output).contains("""             
-            > Task :skippyCoverage_com.example.LeftPadderTest
-            Capturing coverage data for com.example.LeftPadderTest in skippy/com.example.LeftPadderTest.csv
-                        
-            > Task :skippyCoverage_com.example.RightPadderTest
-            Capturing coverage data for com.example.RightPadderTest in skippy/com.example.RightPadderTest.csv
-                        
-            > Task :skippyAnalyze
-            Creating the Skippy analysis file skippy/analyzedFiles.txt.""");
+                > Task :skippyAnalyze
+                Capturing coverage data for com.example.LeftPadderTest in skippy/com.example.LeftPadderTest.csv
+                Capturing coverage data for com.example.RightPadderTest in skippy/com.example.RightPadderTest.csv
+                Creating the Skippy analysis file skippy/analyzedFiles.txt.""");
     }
 
 }

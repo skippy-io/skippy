@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.skippy.gradle.core;
+package io.skippy.gradle;
 
 import java.nio.file.Path;
 
@@ -23,7 +23,7 @@ import java.nio.file.Path;
  *
  * @author Florian McKee
  */
-public class SkippyConstants {
+public final class SkippyConstants {
 
     /**
      * The directory that contains the Skippy analysis.
@@ -31,7 +31,7 @@ public class SkippyConstants {
     public static final Path SKIPPY_DIRECTORY = Path.of("skippy");
 
     /**
-     * The file that contains data for all {@link AnalyzedFile}s.
+     * The file that contains data for all {@link DecoratedClass}s.
      */
     public static final Path SKIPPY_ANALYSIS_FILE = Path.of("analyzedFiles.txt");
 

@@ -24,7 +24,7 @@ import java.nio.file.Path;
 /**
  * The result of a Skippy analysis:
  * <ul>
- *     <li>a list of {@link AnalyzedFile}s</li>
+ *     <li>a {@link AnalyzedClass} list</li>
  *     <li>a {@link TestImpactAnalysis} for all tests that use the Skippy extension</li>
  * </ul>
  *
@@ -34,19 +34,19 @@ public class SkippyAnalysis {
 
     private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysis.class);
 
-    private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(AnalyzedFileList.UNAVAILABLE, TestImpactAnalysis.UNAVAILABLE);
+    private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(AnalyzedClassList.UNAVAILABLE, TestImpactAnalysis.UNAVAILABLE);
 
-    private final AnalyzedFileList analyzedFiles;
+    private final AnalyzedClassList analyzedClasses;
     private final TestImpactAnalysis testImpactAnalysis;
 
     /**
      * C'tor.
      *
-     * @param analyzedFiles all files that have been analyzed by Skippy's analysis
+     * @param analyzedClasses all classes that have been analyzed by Skippy's analysis
      * @param testImpactAnalysis the {@link TestImpactAnalysis} created by Skippy's analysis
      */
-    SkippyAnalysis(AnalyzedFileList analyzedFiles, TestImpactAnalysis testImpactAnalysis) {
-        this.analyzedFiles = analyzedFiles;
+    SkippyAnalysis(AnalyzedClassList analyzedClasses, TestImpactAnalysis testImpactAnalysis) {
+        this.analyzedClasses = analyzedClasses;
         this.testImpactAnalysis = testImpactAnalysis;
     }
 
@@ -63,7 +63,7 @@ public class SkippyAnalysis {
         if ( ! skippyDirectory.toFile().exists() || ! skippyDirectory.toFile().isDirectory()) {
             return SkippyAnalysis.UNAVAILABLE;
         }
-        var analyzedFiles = AnalyzedFileList.parse(skippyDirectory.resolve(SkippyConstants.SKIPPY_ANALYSIS_FILE));
+        var analyzedFiles = AnalyzedClassList.parse(skippyDirectory.resolve(SkippyConstants.SKIPPY_ANALYSIS_FILE));
         var testCoverage = TestImpactAnalysis.parse(skippyDirectory);
         return new SkippyAnalysis(analyzedFiles, testCoverage);
     }
@@ -80,7 +80,7 @@ public class SkippyAnalysis {
             LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
-        if (analyzedFiles.getClassesWithBytecodeChanges().contains(testFqn)) {
+        if (analyzedClasses.getClassesWithBytecodeChanges().contains(testFqn)) {
             LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
@@ -92,7 +92,7 @@ public class SkippyAnalysis {
     }
 
     private boolean coveredClassHasBytecodeChange(FullyQualifiedClassName test) {
-        var classesWithBytecodeChange = analyzedFiles.getClassesWithBytecodeChanges();
+        var classesWithBytecodeChange = analyzedClasses.getClassesWithBytecodeChanges();
         for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
             if (classesWithBytecodeChange.contains(coveredClass)) {
                 LOGGER.debug("%s: Bytecode change in covered class '%s' detected. Execution required.".formatted(
