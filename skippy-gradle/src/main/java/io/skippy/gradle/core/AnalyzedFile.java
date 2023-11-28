@@ -16,6 +16,7 @@
 
 package io.skippy.gradle.core;
 
+import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 
 import java.io.IOException;
@@ -101,21 +102,26 @@ public class AnalyzedFile {
     }
 
     /**
-     * Returns the fully-qualified filename of the source file (e.g., /user/johndoe/repos/demo/src/main/java/com/example/Foo.java).
+     * Returns the filename of the source file relative to the {@param projectDirectory},
+     * (e.g., src/main/java/com/example/Foo.java)
      *
-     * @return the fully-qualified filename of the source file (e.g., /user/johndoe/repos/demo/src/main/java/com/example/Foo.java)
+     * @return the filename of the source file relative to the {@param projectDirectory},
+     *      (e.g., src/main/java/com/example/Foo.java)
      */
-    public String getSourceFileName() {
-        return sourceFile.toString();
+    public String getSourceFileName(Path projectDir) {
+        return projectDir.relativize(sourceFile).toString();
     }
 
     /**
-     * Returns the fully-qualified filename of the class file (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class).
+     * Returns the filename of the class file relative to the {@param projectDirectory},
+     * (e.g., src/main/java/com/example/Foo.java)
      *
-     * @return the fully-qualified filename of the class file (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
+     * @return the filename of the class file relative to the {@param projectDirectory},
+     *      (e.g., src/main/java/com/example/Foo.java)
      */
-    public String getClassFileName() {
-        return classFile.toString();
+
+    public String getClassFileName(Path projectDir) {
+        return projectDir.relativize(classFile).toString();
     }
 
     /**
