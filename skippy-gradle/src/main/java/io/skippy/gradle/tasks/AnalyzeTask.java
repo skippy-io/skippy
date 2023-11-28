@@ -70,8 +70,8 @@ public class AnalyzeTask extends DefaultTask {
             writeString(skippyAnalysisFile, sourceFiles.stream()
                             .map(sourceFile -> "%s:%s:%s:%s:%s".formatted(
                                 sourceFile.getFullyQualifiedClassName(),
-                                    sourceFile.getSourceFileName(),
-                                    sourceFile.getClassFileName(),
+                                    sourceFile.getSourceFileName(getProject().getProjectDir().toPath()),
+                                    sourceFile.getClassFileName(getProject().getProjectDir().toPath()),
                                     sourceFile.getSourceFileHash(project.getLogger()),
                                     sourceFile.getClassFileHash(project.getLogger())
                             ))
