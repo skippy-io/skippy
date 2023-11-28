@@ -16,6 +16,7 @@
 
 package io.skippy.core;
 
+import io.skippy.core.asm.ClassNameExtractor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,62 +26,30 @@ import java.security.MessageDigest;
 import java.util.Base64;
 
 /**
- * A file that has been analyzed by Skippy:
- * <ul>
- *     <li>a fully-qualified class name</li>
- *     <li>a path to the source file</li>
- *     <li>a path to the class file</li>
- *     <li>MD5 hash of source file</li>
- *     <li>MD5 hash of class file</li>
- * </ul>
+ * Wrapper that adds a bunch of functionality on top of a class file that has been analyzed by Skippy.
  *
  * @author Florian McKee
  */
-class AnalyzedFile {
+class AnalyzedClass {
 
-    private static final Logger LOGGER = LogManager.getLogger(AnalyzedFile.class);
+    private static final Logger LOGGER = LogManager.getLogger(AnalyzedClass.class);
 
-    private final FullyQualifiedClassName fullyQualifiedClassName;
-    private final Path sourceFile;
     private final Path classFile;
-    private final String sourceFileHash;
-    private final String classFileHash;
+    private final String hash;
 
     /**
      * C'tor.
      *
-     * @param fullyQualifiedClassName the fully-qualified class name (e.g., com.example.Foo)
-     * @param sourceFile the source file in the file system (e.g., /User/johndoe/repo/src/main/java/com/example/Foo.java)
      * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
-     * @param sourceFileHash the MD5 hash of the content of the source file (e.g., pz1sZJBt6JArm/LYs+UXKg==)
-     * @param classFileHash the MD5 hash of the content of the class file (e.g., YA9ExftvTDku3TUNsbkWIw==)
+     * @param hash the MD5 hash of the content of the class file (e.g., YA9ExftvTDku3TUNsbkWIw==)
      */
-    AnalyzedFile(FullyQualifiedClassName fullyQualifiedClassName, Path sourceFile, Path classFile, String sourceFileHash, String classFileHash) {
-        this.fullyQualifiedClassName = fullyQualifiedClassName;
-        this.sourceFile = sourceFile;
+    AnalyzedClass(Path classFile, String hash) {
         this.classFile = classFile;
-        this.sourceFileHash = sourceFileHash;
-        this.classFileHash = classFileHash;
+        this.hash = hash;
     }
 
     FullyQualifiedClassName getFullyQualifiedClassName() {
-        return fullyQualifiedClassName;
-    }
-
-    /**
-     * Returns {@code true} if the source file has changed since it was analyzed, {@code false} otherwise.
-     *
-     * @return {@code true} if the source file changed since it was analyzed, {@code false} otherwise
-     */
-    boolean sourceFileHasChanged() {
-        if ( ! sourceFile.toFile().exists()) {
-            return true;
-        }
-        String newSourceFileHash = hashFileContent(sourceFile);
-        if ( ! sourceFileHash.equals(newSourceFileHash)) {
-            return true;
-        }
-        return false;
+        return new FullyQualifiedClassName(ClassNameExtractor.getFullyQualifiedClassName(classFile));
     }
 
     /**
@@ -88,12 +57,12 @@ class AnalyzedFile {
      *
      * @return {@code true} if the class file has changed since it was analyzed, {@code false} otherwise.
      */
-    boolean classFileHasChanged() {
+    boolean hasChanged() {
         if ( ! classFile.toFile().exists()) {
             return true;
         }
         String newClassFileHash = hashFileContent(classFile);
-        if ( ! classFileHash.equals(newClassFileHash)) {
+        if ( ! hash.equals(newClassFileHash)) {
             return true;
         }
         return false;

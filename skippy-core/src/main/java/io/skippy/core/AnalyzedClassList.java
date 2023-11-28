@@ -28,38 +28,38 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 /**
- * A list of {@link AnalyzedFile}s with a couple of utility methods that operates on this list.
+ * A list of {@link AnalyzedClass}s with a couple of utility methods that operates on this list.
  *
  * @author Florian McKee
  */
-class AnalyzedFileList {
+class AnalyzedClassList {
 
-    private static final Logger LOGGER = LogManager.getLogger(AnalyzedFileList.class);
+    private static final Logger LOGGER = LogManager.getLogger(AnalyzedClassList.class);
 
-    static final AnalyzedFileList UNAVAILABLE = new AnalyzedFileList(emptyList());
+    static final AnalyzedClassList UNAVAILABLE = new AnalyzedClassList(emptyList());
 
-    private final List<AnalyzedFile> analyzedFiles;
+    private final List<AnalyzedClass> analyzedClasses;
 
     /**
      * C'tor.
      *
-     * @param analyzedFiles a list of {@link AnalyzedFile}s
+     * @param analyzedClasses a list of {@link AnalyzedClass}s
      */
-    private AnalyzedFileList(List<AnalyzedFile> analyzedFiles) {
-        this.analyzedFiles = analyzedFiles;
+    private AnalyzedClassList(List<AnalyzedClass> analyzedClasses) {
+        this.analyzedClasses = analyzedClasses;
     }
 
-    static AnalyzedFileList parse(Path skippyAnalysisFile) {
+    static AnalyzedClassList parse(Path skippyAnalysisFile) {
         if (!skippyAnalysisFile.toFile().exists()) {
             return UNAVAILABLE;
         }
         try {
-            var result = new ArrayList<AnalyzedFile>();
+            var result = new ArrayList<AnalyzedClass>();
             for (var line : Files.readAllLines(skippyAnalysisFile, Charset.forName("UTF8"))) {
                 String[] split = line.split(":");
-                result.add(new AnalyzedFile(new FullyQualifiedClassName(split[0]), Path.of(split[1]), Path.of(split[2]), split[3], split[4]));
+                result.add(new AnalyzedClass(Path.of(split[0]), split[1]));
             }
-            return new AnalyzedFileList(result);
+            return new AnalyzedClassList(result);
         } catch (Exception e) {
             LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(skippyAnalysisFile, e.getMessage()), e);
             throw new RuntimeException(e);
@@ -67,21 +67,14 @@ class AnalyzedFileList {
     }
 
     List<FullyQualifiedClassName> getClasses() {
-        return analyzedFiles.stream()
-                .map(s -> s.getFullyQualifiedClassName())
-                .toList();
-    }
-
-    List<FullyQualifiedClassName> getClassesWithSourceChanges() {
-        return analyzedFiles.stream()
-                .filter(s -> s.sourceFileHasChanged())
+        return analyzedClasses.stream()
                 .map(s -> s.getFullyQualifiedClassName())
                 .toList();
     }
 
     List<FullyQualifiedClassName> getClassesWithBytecodeChanges() {
-        return analyzedFiles.stream()
-                .filter(s -> s.classFileHasChanged())
+        return analyzedClasses.stream()
+                .filter(s -> s.hasChanged())
                 .map(s -> s.getFullyQualifiedClassName())
                 .toList();
     }

@@ -16,10 +16,7 @@
 
 package io.skippy.gradle;
 
-import io.skippy.gradle.core.AnalyzedFile;
-import io.skippy.gradle.core.Analyzer;
 import io.skippy.gradle.tasks.CleanTask;
-import io.skippy.gradle.tasks.CoverageTask;
 import io.skippy.gradle.tasks.AnalyzeTask;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
@@ -30,17 +27,14 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension;
 import org.gradle.testing.jacoco.tasks.JacocoReport;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static io.skippy.gradle.core.SkippyConstants.SKIPPY_DIRECTORY;
+import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 
 /**
  * Adds the {@code skippyClean} and {@code skippyAnalyze} tasks to a project.
  *
  * @author Florian McKee
  */
-public class SkippyPlugin implements org.gradle.api.Plugin<Project> {
+public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
     @Override
     public void apply(Project project) {
@@ -52,8 +46,7 @@ public class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
             // add skippy tasks to the regular build
             project.getTasks().register("skippyClean", CleanTask.class);
-            var coverageTasks = createCoverageTasks(project);
-            project.getTasks().register("skippyAnalyze", AnalyzeTask.class, coverageTasks);
+            project.getTasks().register("skippyAnalyze", AnalyzeTask.class);
         } else {
 
             var test = String.valueOf(project.property("skippyCoverageBuild"));
@@ -88,14 +81,4 @@ public class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         });
     }
 
-    private static List<String> createCoverageTasks(Project project) {
-        var coverageTasks = new ArrayList<String>();
-        var testsUsingSkippy = Analyzer.analyzeProject(project).stream().filter(AnalyzedFile::usesSkippyExtension).toList();
-        for (var testUsingSkippy : testsUsingSkippy) {
-            var task = project.getTasks().register(
-                    "skippyCoverage_%s".formatted(testUsingSkippy.getFullyQualifiedClassName()), CoverageTask.class, testUsingSkippy);
-            coverageTasks.add(task.getName());
-        }
-        return coverageTasks;
-    }
 }

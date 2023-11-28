@@ -19,7 +19,7 @@ package io.skippy.gradle.tasks;
 import org.gradle.api.DefaultTask;
 import javax.inject.Inject;
 
-import static io.skippy.gradle.core.SkippyConstants.SKIPPY_DIRECTORY;
+import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 
 /**
  * The tasks that is run via <code>./gradlew skippyAnalyze</code>.

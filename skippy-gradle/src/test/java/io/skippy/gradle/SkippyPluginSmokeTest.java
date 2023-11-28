@@ -54,7 +54,7 @@ public class SkippyPluginSmokeTest {
             Capturing coverage data for com.example.RightPadderTest in skippy/com.example.RightPadderTest.csv
                         
             > Task :skippyAnalyze
-            Creating the Skippy analysis file skippy/analyzedFiles.txt.""");
+            Creating the Skippy analysis file skippy/analyzedClasses.txt.""");
     }
 
 }
