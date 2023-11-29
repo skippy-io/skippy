@@ -33,7 +33,7 @@ public class AnalyzedClassListTest {
 
     @Test
     void testParse() throws URISyntaxException {
-        var analyzedFilesTxt = Path.of(getClass().getResource("analyzedfiles/analyzedFiles.txt").toURI());
+        var analyzedFilesTxt = Path.of(getClass().getResource("analyzedclasslist/analyzedFiles.txt").toURI());
         var analyzedFiles = AnalyzedClassList.parse(analyzedFilesTxt);
 
         assertEquals(asList(
