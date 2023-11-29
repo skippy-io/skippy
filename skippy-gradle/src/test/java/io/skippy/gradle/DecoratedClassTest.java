@@ -61,8 +61,8 @@ public class DecoratedClassTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "decoratedclass/SourceFileTest1.class:DM/flrfJfkathBz4vkrYkw==",
-            "decoratedclass/SourceFileTest2.class:J0uUoArClaJaIlkhCic6vg=="
+            "decoratedclass/SourceFileTest1.class:w7P+0X1Grw3y8nPkIceITQ==",
+            "decoratedclass/SourceFileTest2.class:V6NEvrWBtOEwb+4ZOEnrfw=="
     }, delimiter = ':')
     void getHash(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
