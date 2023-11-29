@@ -17,6 +17,7 @@
 package io.skippy.core;
 
 import io.skippy.core.asm.ClassNameExtractor;
+import io.skippy.core.asm.DebugAgnosticHash;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -61,22 +62,11 @@ class AnalyzedClass {
         if ( ! classFile.toFile().exists()) {
             return true;
         }
-        String newHash = hashFileContent(classFile);
+        String newHash = DebugAgnosticHash.hash(classFile);
         if ( ! hash.equals(newHash)) {
             return true;
         }
         return false;
-    }
-
-    private static String hashFileContent(Path file) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(Files.readAllBytes(file));
-            return Base64.getEncoder().encodeToString(md.digest());
-        } catch (Exception e) {
-            LOGGER.error("Unable to generate hash for file '%s': '%s'".formatted(file, e.getMessage()), e);
-            throw new RuntimeException(e);
-        }
     }
 
 }

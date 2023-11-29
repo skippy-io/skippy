@@ -17,16 +17,11 @@
 package io.skippy.gradle;
 
 import io.skippy.gradle.asm.ClassNameExtractor;
+import io.skippy.gradle.asm.DebugAgnosticHash;
 import io.skippy.gradle.asm.SkippyJUnit5Detector;
 import org.gradle.api.logging.Logger;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-
 
 /**
  * Wrapper that adds a bunch of functionality on top of a class file.
@@ -68,28 +63,18 @@ public final class DecoratedClass {
     }
 
     /**
-     * Returns a MD5 hash in BASE64 encoding.
+     * Returns a hash of the class file in BASE64 encoding.
      *
      * @param logger the Gradle logger
-     * @return a MD5 hash in BASE64 encoding
+     * @return a hash of the class file in BASE64 encoding
      */
     public String getHash(Logger logger) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] bytes = Files.readAllBytes(classFile);
-            md.update(bytes);
-            var hash = Base64.getEncoder().encodeToString(md.digest());
-
-            if (logger.isInfoEnabled()) {
-                logger.info("Generating hash for file %s:".formatted(classFile.getFileName()));
-                logger.info("  content=%s".formatted(Base64.getEncoder().encodeToString(bytes)));
-                logger.info("  hash=%s".formatted(hash));
-            }
-
-            return hash;
-        } catch (NoSuchAlgorithmException | IOException e) {
-            throw new RuntimeException(e);
+        var hash = DebugAgnosticHash.hash(classFile);
+        if (logger.isInfoEnabled()) {
+            logger.info("Generating hash for file %s:".formatted(classFile.getFileName()));
+            logger.info("  hash=%s".formatted(hash));
         }
+        return hash;
     }
 
     /**
