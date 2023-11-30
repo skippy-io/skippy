@@ -33,7 +33,7 @@ public final class SkippyConstants {
     /**
      * The file that contains data for all {@link DecoratedClass}s.
      */
-    public static final Path SKIPPY_ANALYSIS_FILE = Path.of("analyzedFiles.txt");
+    public static final Path SKIPPY_ANALYSIS_FILES_TXT = Path.of("analyzedFiles.txt");
 
     
 }

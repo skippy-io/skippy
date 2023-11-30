@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.skippy.gradle.SkippyConstants.SKIPPY_ANALYSIS_FILE;
+import static io.skippy.gradle.SkippyConstants.SKIPPY_ANALYSIS_FILES_TXT;
 import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.Files.readAllLines;
@@ -58,7 +58,7 @@ public class AnalyzeTask extends DefaultTask {
         setDependsOn(dependencies);
         doLast((task) -> {
             createCoverageReportsForSkippifiedTests(getProject());
-            createSkippyAnalysisFile(getProject());
+            createAnalyzedFilesTxt(getProject());
         });
     }
 
@@ -100,17 +100,17 @@ public class AnalyzeTask extends DefaultTask {
         }
     }
 
-    private void createSkippyAnalysisFile(Project project) {
+    private void createAnalyzedFilesTxt(Project project) {
         try {
-            var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(SKIPPY_ANALYSIS_FILE);
+            var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(SKIPPY_ANALYSIS_FILES_TXT);
             skippyAnalysisFile.toFile().createNewFile();
-            var sourceFiles = ClassCollector.collect(project);
+            var classFiles = ClassCollector.collect(project);
             getLogger().lifecycle("Creating the Skippy analysis file %s.".formatted(project.getProjectDir().toPath().relativize(skippyAnalysisFile)));
-            logOutputForSkippyFunctionalTest(project, sourceFiles);
-            writeString(skippyAnalysisFile, sourceFiles.stream()
-                            .map(sourceFile -> "%s:%s".formatted(
-                                sourceFile.getClassFileName(getProject().getProjectDir().toPath()),
-                                sourceFile.getHash(project.getLogger())
+            logOutputForSkippyFunctionalTest(project, classFiles);
+            writeString(skippyAnalysisFile, classFiles.stream()
+                            .map(classFile -> "%s:%s".formatted(
+                                classFile.getClassFileName(getProject().getProjectDir().toPath()),
+                                classFile.getHash(project.getLogger())
                             ))
                             .collect(joining(lineSeparator())));
             if (getLogger().isInfoEnabled()) {
@@ -127,21 +127,21 @@ public class AnalyzeTask extends DefaultTask {
     /**
      * Verbose logging with level lifecycle that the functional tests in skippy-gradle rely on.
      */
-    private void logOutputForSkippyFunctionalTest(Project project, List<DecoratedClass> sourceFiles) {
-        if (sourceFiles.isEmpty() || ! project.hasProperty("skippyFunctionalTest")) {
+    private void logOutputForSkippyFunctionalTest(Project project, List<DecoratedClass> classFiles) {
+        if (classFiles.isEmpty() || ! project.hasProperty("skippyFunctionalTest")) {
             return;
         }
-        int maxLengthClassName = sourceFiles.stream().mapToInt(it -> it.getFullyQualifiedClassName().length()).max().getAsInt() + 1;
-        for (var sourceFile : sourceFiles.subList(0, sourceFiles.size() - 1)) {
+        int maxLengthClassName = classFiles.stream().mapToInt(it -> it.getFullyQualifiedClassName().length()).max().getAsInt() + 1;
+        for (var classFile : classFiles.subList(0, classFiles.size() - 1)) {
             getLogger().lifecycle("+--- "
-                    + padRight(sourceFile.getFullyQualifiedClassName(), maxLengthClassName)
-                    + sourceFile.getHash(project.getLogger())
+                    + padRight(classFile.getFullyQualifiedClassName(), maxLengthClassName)
+                    + classFile.getHash(project.getLogger())
             );
         }
-        var lastSourceFile = sourceFiles.get(sourceFiles.size() - 1);
+        var lastClassFile = classFiles.get(classFiles.size() - 1);
         getLogger().lifecycle("\\--- "
-                + padRight(lastSourceFile.getFullyQualifiedClassName(), maxLengthClassName)
-                + lastSourceFile.getHash(project.getLogger())
+                + padRight(lastClassFile.getFullyQualifiedClassName(), maxLengthClassName)
+                + lastClassFile.getHash(project.getLogger())
         );
     }
 
