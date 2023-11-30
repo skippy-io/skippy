@@ -60,7 +60,7 @@ public class SkippyAnalysisTest {
         var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
 
         when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(analyzedFiles.getClassesWithBytecodeChanges()).thenReturn(asList(skippyAnalysisTest));
+        when(analyzedFiles.getChangedClasses()).thenReturn(asList(skippyAnalysisTest));
 
         assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
     }
@@ -75,7 +75,7 @@ public class SkippyAnalysisTest {
 
         when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
         when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(analyzedFiles.getClassesWithBytecodeChanges()).thenReturn(asList(foo));
+        when(analyzedFiles.getChangedClasses()).thenReturn(asList(foo));
 
         assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
     }
@@ -90,7 +90,7 @@ public class SkippyAnalysisTest {
 
         when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
         when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(analyzedFiles.getClassesWithBytecodeChanges()).thenReturn(emptyList());
+        when(analyzedFiles.getChangedClasses()).thenReturn(emptyList());
 
         assertEquals(false, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
     }

@@ -21,10 +21,7 @@ import io.skippy.core.asm.DebugAgnosticHash;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.util.Base64;
 
 /**
  * Wrapper that adds a bunch of functionality on top of a class file that has been analyzed by Skippy.

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.skippy.core.asm;
 
 import org.apache.logging.log4j.LogManager;
@@ -15,19 +31,28 @@ import java.security.MessageDigest;
 import java.util.Base64;
 
 /**
- * Hash that is agnostic of debug information in the class file like LineNumberTable attributes
- * (https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-4.html#jvms-4.7.12). That means the hash will stay the
- * same if the only thing that changes is debug information (e.g., due to a newline or comment in the class file).
+ * Generates hashes for class files that are agnostic of debug information. If the only difference between two class
+ * files is debug information within the bytecode, their hash will be the same.
+ * <br /><br />
+ * This allows Skippy to treat certain changes like
+ * <ul>
+ *     <li>change in formatting and indentation,</li>
+ *     <li>updated JavaDocs and</li>
+ *     <li>addition of newlines and linebreaks</li>
+ * </ul>
+ * as 'no-ops'.
+ *
+ * @author Florian McKee
  */
 public class DebugAgnosticHash {
 
     private static final Logger LOGGER = LogManager.getLogger(DebugAgnosticHash.class);
 
     /**
-     * Returns that is agnostic of debug information in the class file.
+     * Generates a hash for the {@param classfile} that is agnostic of debug information.
      *
      * @param classFile a class file
-     * @return a hash of the class file that is agnostic of debug information
+     * @return a hash of the {@param classfile} that is agnostic of debug information
      */
     public static String hash(Path classFile) {
         try {

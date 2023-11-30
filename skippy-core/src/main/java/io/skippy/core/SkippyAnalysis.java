@@ -80,21 +80,21 @@ public class SkippyAnalysis {
             LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
-        if (analyzedClasses.getClassesWithBytecodeChanges().contains(testFqn)) {
+        if (analyzedClasses.getChangedClasses().contains(testFqn)) {
             LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(testFqn.fqn()));
             return true;
         }
-        if (coveredClassHasBytecodeChange(testFqn)) {
+        if (coveredClassHasChanged(testFqn)) {
             return true;
         }
         LOGGER.debug("%s: No changes in test or covered classes detected. Execution skipped.".formatted(testFqn.fqn()));
         return false;
     }
 
-    private boolean coveredClassHasBytecodeChange(FullyQualifiedClassName test) {
-        var classesWithBytecodeChange = analyzedClasses.getClassesWithBytecodeChanges();
+    private boolean coveredClassHasChanged(FullyQualifiedClassName test) {
+        var changeClasses = analyzedClasses.getChangedClasses();
         for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
-            if (classesWithBytecodeChange.contains(coveredClass)) {
+            if (changeClasses.contains(coveredClass)) {
                 LOGGER.debug("%s: Bytecode change in covered class '%s' detected. Execution required.".formatted(
                         test.fqn(),
                         coveredClass.fqn()

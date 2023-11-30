@@ -54,10 +54,10 @@ public final class DecoratedClass {
      * Returns the filename of the class file relative to the {@param projectDirectory},
      * (e.g., src/main/java/com/example/Foo.java)
      *
+     * @param projectDir the project directory
      * @return the filename of the class file relative to the {@param projectDirectory},
      *      (e.g., src/main/java/com/example/Foo.java)
      */
-
     public String getClassFileName(Path projectDir) {
         return projectDir.relativize(classFile).toString();
     }

@@ -72,7 +72,7 @@ class AnalyzedClassList {
                 .toList();
     }
 
-    List<FullyQualifiedClassName> getClassesWithBytecodeChanges() {
+    List<FullyQualifiedClassName> getChangedClasses() {
         return analyzedClasses.stream()
                 .filter(s -> s.hasChanged())
                 .map(s -> s.getFullyQualifiedClassName())
