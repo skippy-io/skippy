@@ -14,54 +14,58 @@
  * limitations under the License.
  */
 
-package io.skippy.gradle;
+package io.skippy.gradle.util;
 
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
-import java.util.*;
-
-import static java.util.Comparator.comparing;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * Collects all class files in a project.
+ * Utility methods that return / operate on to Gradle {@link org.gradle.api.Project}s.
  *
  * @author Florian McKee
  */
-public final class ClassCollector {
+public final class Projects {
 
     /**
-     * Collects all class files in the {@param project}.
+     * Collects all class files in the {@code project}.
      *
      * @param project a {@link Project}
-     * @return a list of {@link DecoratedClass}s
+     * @return a list of class files
      */
-    public static List<DecoratedClass> collect(Project project) {
-        var result = new ArrayList<DecoratedClass>();
+    public static List<Path> findAllClassFiles(Project project) {
+        var result = new ArrayList<Path>();
         var sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
-        for (SourceSet sourceSet : sourceSetContainer) {
-            result.addAll(collect(sourceSet));
+        for (var sourceSet : sourceSetContainer) {
+            result.addAll(findAllClassFilesInSourceSet(sourceSet));
         }
-        return result.stream().sorted(comparing(DecoratedClass::getFullyQualifiedClassName)).toList();
+        return result;
     }
 
-    private static List<DecoratedClass> collect(SourceSet sourceSet) {
+    private static List<Path> findAllClassFilesInSourceSet(SourceSet sourceSet) {
         var classesDirs = sourceSet.getOutput().getClassesDirs().getFiles();
-        List<File> classes = classesDirs.stream().flatMap(dir -> getAllClasses(dir).stream()).toList();
-        return classes.stream().map(classFile -> new DecoratedClass(classFile.toPath())).toList();
+        var result = new ArrayList<Path>();
+        for (var classesDir : classesDirs) {
+            result.addAll(findAllClassFilesInDirectory(classesDir));
+        }
+        return result;
     }
 
-    private static List<File> getAllClasses(File dir) {
-        var result = new LinkedList<File>();
-        File[] files = dir.listFiles();
+    private static List<Path> findAllClassFilesInDirectory(File directory) {
+        var result = new LinkedList<Path>();
+        File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    result.addAll(getAllClasses(file));
+                    result.addAll(findAllClassFilesInDirectory(file));
                 } else if (file.getName().endsWith(".class")) {
-                    result.add(file);
+                    result.add(file.toPath());
                 }
             }
         }

@@ -49,10 +49,10 @@ public class DebugAgnosticHash {
     private static final Logger LOGGER = LogManager.getLogger(DebugAgnosticHash.class);
 
     /**
-     * Generates a hash for the {@param classfile} that is agnostic of debug information.
+     * Generates a hash for the {@code classfile} that is agnostic of debug information.
      *
      * @param classFile a class file
-     * @return a hash of the {@param classfile} that is agnostic of debug information
+     * @return a hash of the {@code classfile} that is agnostic of debug information
      */
     public static String hash(Path classFile) {
         try {

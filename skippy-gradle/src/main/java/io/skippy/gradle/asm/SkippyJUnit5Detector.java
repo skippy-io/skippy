@@ -31,11 +31,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class SkippyJUnit5Detector {
 
     /**
-     * Returns {@code true} if the {@param classFile} is annotated with the Skippy JUnit 5 Extension, {@code false}
+     * Returns {@code true} if the {@code classFile} is annotated with the Skippy JUnit 5 Extension, {@code false}
      * otherwise.
      *
      * @param classFile a class file.
-     * @return {@code true} if the {@param classFile} is annotated with the Skippy JUnit 5 Extension, {@code false}
+     * @return {@code true} if the {@code classFile} is annotated with the Skippy JUnit 5 Extension, {@code false}
      *      otherwise
      */
     public static boolean usesSkippyExtension(Path classFile) {

@@ -34,10 +34,10 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class ClassNameExtractor {
 
     /**
-     * Extracts the fully-qualified class name (e.g., com.example.Foo) from the {@param classFile}.
+     * Extracts the fully-qualified class name (e.g., com.example.Foo) from the {@code classFile}.
      *
      * @param classFile a class file
-     * @return the fully-qualified class name (e.g., com.example.Foo) of the {@param classFile}
+     * @return the fully-qualified class name (e.g., com.example.Foo) of the {@code classFile}
      */
     public static String getFullyQualifiedClassName(Path classFile) {
         var className = new AtomicReference<String>();

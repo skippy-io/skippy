@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.skippy.gradle.tasks;
+package io.skippy.gradle;
 
 import org.gradle.api.DefaultTask;
 import javax.inject.Inject;
@@ -26,7 +26,7 @@ import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
  *
  * @author Florian McKee
  */
-public class CleanTask extends DefaultTask {
+class CleanTask extends DefaultTask {
 
     /**
      * C'tor.

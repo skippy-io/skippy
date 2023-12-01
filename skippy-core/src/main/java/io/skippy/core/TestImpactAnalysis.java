@@ -64,20 +64,20 @@ class TestImpactAnalysis {
     }
 
     /**
-     * Returns the classes that are covered by {@param test}.
+     * Returns the classes that are covered by {@code test}.
      *
      * @param test a {@link FullyQualifiedClassName} representing a test
-     * @return a list of {@link FullyQualifiedClassName}s representing the classes that are covered by {@param test}
+     * @return a list of {@link FullyQualifiedClassName}s representing the classes that are covered by {@code test}
      */
     List<FullyQualifiedClassName> getCoveredClasses(FullyQualifiedClassName test) {
         return testCoverage.getOrDefault(test, emptyList());
     }
 
     /**
-     * Returns {@code true} if no coverage data is available for {@param test}, {@code false} otherwise.
+     * Returns {@code true} if no coverage data is available for {@code test}, {@code false} otherwise.
      *
      * @param test a {@link FullyQualifiedClassName} representing a test
-     * @return {@code true} if no coverage data is available for {@param test}, {@code false} otherwise
+     * @return {@code true} if no coverage data is available for {@code test}, {@code false} otherwise
      */
     boolean noDataAvailableFor(FullyQualifiedClassName test) {
         return ! testCoverage.containsKey(test);

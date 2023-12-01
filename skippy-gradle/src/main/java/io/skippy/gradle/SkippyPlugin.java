@@ -16,8 +16,6 @@
 
 package io.skippy.gradle;
 
-import io.skippy.gradle.tasks.CleanTask;
-import io.skippy.gradle.tasks.AnalyzeTask;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
@@ -27,7 +25,10 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension;
 import org.gradle.testing.jacoco.tasks.JacocoReport;
 
+import java.nio.file.Path;
+
 import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
+import static java.util.Arrays.asList;
 
 /**
  * Adds the {@code skippyClean} and {@code skippyAnalyze} tasks to a project.
@@ -49,35 +50,39 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
             project.getTasks().register("skippyAnalyze", AnalyzeTask.class);
         } else {
 
-            var test = String.valueOf(project.property("skippyCoverageBuild"));
+            var testClass = new DecoratedClass(project, Path.of(String.valueOf(project.property("skippyClassFile"))));
 
             // modify test and jacocoTestReport tasks in the skippyCoverage builds
             project.getPlugins().apply(JacocoPlugin.class);
-            modifyTestTask(project, test);
-            modifyJacocoTestReportTask(project, test);
+            modifyTestTask(project, testClass);
+            modifyJacocoTestReportTask(project, testClass);
         }
     }
 
-    private static void modifyTestTask(Project project, String testClass) {
-        project.getTasks().named("test", Test.class, test -> {
-            test.filter((filter) -> filter.includeTestsMatching(testClass));
+    private static void modifyTestTask(Project project, DecoratedClass testClass) {
+        project.getTasks().withType(Test.class, test -> {
+            test.filter((filter) -> filter.includeTestsMatching(testClass.getFullyQualifiedClassName()));
             test.getExtensions().configure(JacocoTaskExtension.class, jacoco -> {
-                jacoco.setDestinationFile(project.file(project.getProjectDir() + "/skippy/" + testClass + ".exec"));
+                jacoco.setDestinationFile(project.file(project.getProjectDir() + "/skippy/" + testClass.getFullyQualifiedClassName() + ".exec"));
             });
         });
     }
 
-    private static void modifyJacocoTestReportTask(Project project, String testClass) {
-        project.getTasks().named("jacocoTestReport", JacocoReport.class, jacoco -> {
-            jacoco.reports(reports -> {
-                reports.getXml().getRequired().set(Boolean.FALSE);
-                reports.getCsv().getRequired().set(Boolean.TRUE);
-                reports.getHtml().getOutputLocation().set(project.file(project.getBuildDir() + "/jacoco/html/" + testClass));
-                var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(testClass + ".csv");
-                reports.getCsv().getOutputLocation().set(project.file(csvFile));
+    private static void modifyJacocoTestReportTask(Project project, DecoratedClass testClass) {
+        project.afterEvaluate(action -> {
+            var testTask = testClass.getTestTask().getName();
+            project.getTasks().named("jacocoTestReport", JacocoReport.class, jacoco -> {
+                jacoco.setDependsOn(asList(testTask));
+                jacoco.reports(reports -> {
+                    reports.getXml().getRequired().set(Boolean.FALSE);
+                    reports.getCsv().getRequired().set(Boolean.TRUE);
+                    reports.getHtml().getOutputLocation().set(project.file(project.getBuildDir() + "/jacoco/html/" + testClass.getFullyQualifiedClassName()));
+                    var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(testClass.getFullyQualifiedClassName() + ".csv");
+                    reports.getCsv().getOutputLocation().set(project.file(csvFile));
+                });
+                // capture coverage for all source sets
+                jacoco.sourceSets(project.getExtensions().getByType(SourceSetContainer.class).toArray(new SourceSet[0]));
             });
-            // capture coverage for all source sets
-            jacoco.sourceSets(project.getExtensions().getByType(SourceSetContainer.class).toArray(new SourceSet[0]));
         });
     }
 
