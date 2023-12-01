@@ -19,26 +19,49 @@ package io.skippy.gradle;
 import io.skippy.gradle.asm.ClassNameExtractor;
 import io.skippy.gradle.asm.DebugAgnosticHash;
 import io.skippy.gradle.asm.SkippyJUnit5Detector;
-import org.gradle.api.logging.Logger;
+import io.skippy.gradle.util.Projects;
+import io.skippy.gradle.util.Tasks;
+import org.gradle.api.Project;
+import org.gradle.api.tasks.testing.Test;
 
 import java.nio.file.Path;
+import java.util.List;
+
+import static java.util.Comparator.comparing;
 
 /**
  * Wrapper that adds a bunch of functionality on top of a class file.
  *
  * @author Florian McKee
  */
-public final class DecoratedClass {
+final class DecoratedClass {
 
+    private final Project project;
     private final Path classFile;
 
     /**
      * C'tor.
      *
+     * @param project the Gradle {@link Project}
      * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
      */
-    DecoratedClass(Path classFile) {
+    DecoratedClass(Project project, Path classFile) {
+        this.project = project;
         this.classFile = classFile;
+    }
+
+    static List<DecoratedClass> fromAllClassesIn(Project project) {
+        var classFiles = Projects.findAllClassFiles(project);
+        return classFiles.stream()
+                .map(classFile -> new DecoratedClass(project, classFile))
+                .sorted(comparing(DecoratedClass::getFullyQualifiedClassName))
+                .toList();
+    }
+
+    static List<DecoratedClass> fromAllSkippifiedTestsIn(Project project) {
+        return fromAllClassesIn(project).stream()
+                .filter(clazz -> SkippyJUnit5Detector.usesSkippyExtension(clazz.getAbsolutePath()))
+                .toList();
     }
 
     /**
@@ -46,35 +69,38 @@ public final class DecoratedClass {
      *
      * @return the fully qualified class name (e.g., com.example.Foo)
      */
-    public String getFullyQualifiedClassName() {
+    String getFullyQualifiedClassName() {
         return ClassNameExtractor.getFullyQualifiedClassName(classFile);
     }
 
+
     /**
-     * Returns the filename of the class file relative to the {@param projectDirectory},
+     * Returns the absolute {@link Path} of the class file.
+     *
+     * @return the absolute {@link Path} of the class file.
+     */
+    Path getAbsolutePath() {
+        return classFile;
+    }
+
+    /**
+     * Returns the relative {@link Path} of the class file relative to the project root,
      * (e.g., src/main/java/com/example/Foo.java)
      *
-     * @param projectDir the project directory
-     * @return the filename of the class file relative to the {@param projectDirectory},
+     * @return the relative {@link Path} of the class file relative to the project root,
      *      (e.g., src/main/java/com/example/Foo.java)
      */
-    public String getClassFileName(Path projectDir) {
-        return projectDir.relativize(classFile).toString();
+    Path getRelativePath() {
+        return project.getProjectDir().toPath().relativize(classFile);
     }
 
     /**
      * Returns a hash of the class file in BASE64 encoding.
      *
-     * @param logger the Gradle logger
      * @return a hash of the class file in BASE64 encoding
      */
-    public String getHash(Logger logger) {
-        var hash = DebugAgnosticHash.hash(classFile);
-        if (logger.isInfoEnabled()) {
-            logger.info("Generating hash for file %s:".formatted(classFile.getFileName()));
-            logger.info("  hash=%s".formatted(hash));
-        }
-        return hash;
+    String getHash() {
+        return DebugAgnosticHash.hash(classFile);
     }
 
     /**
@@ -82,9 +108,20 @@ public final class DecoratedClass {
      *
      * @return {@code true} if this class is the test that uses the Skippy extension, {@code false} otherwise
      */
-    public boolean usesSkippyExtension() {
+    boolean usesSkippyExtension() {
         return SkippyJUnit5Detector.usesSkippyExtension(classFile);
     }
 
+    /**
+     * Returns the {@link Test} task that runs this class (assuming it is a test).
+     *
+     * @return the {@link Test} task that runs this class (assuming it is a test)
+     */
+    Test getTestTask() {
+        if ( ! usesSkippyExtension()) {
+            throw new UnsupportedOperationException("The testTask property is only available for skippified tests.");
+        }
+        return Tasks.getTestTaskFor(project, classFile);
+    }
 
 }

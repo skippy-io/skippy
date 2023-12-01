@@ -69,10 +69,10 @@ public class SkippyAnalysis {
     }
 
     /**
-     * Returns {@code true} if {@param test} needs to be executed, {@code false} otherwise.
+     * Returns {@code true} if {@code test} needs to be executed, {@code false} otherwise.
      *
      * @param test a class object representing a test
-     * @return {@code true} if {@param test} needs to be executed, {@code false} otherwise
+     * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
     public boolean executionRequired(Class<?> test) {
         var testFqn = new FullyQualifiedClassName(test.getName());

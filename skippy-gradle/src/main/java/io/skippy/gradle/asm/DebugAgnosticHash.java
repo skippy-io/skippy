@@ -45,10 +45,10 @@ import java.util.Base64;
 public class DebugAgnosticHash {
 
     /**
-     * Generates a hash for the {@param classfile} that is agnostic of debug information.
+     * Generates a hash for the {@code classfile} that is agnostic of debug information.
      *
      * @param classFile a class file
-     * @return a hash of the {@param classfile} that is agnostic of debug information
+     * @return a hash of the {@code classfile} that is agnostic of debug information
      */
     public static String hash(Path classFile) {
         try {

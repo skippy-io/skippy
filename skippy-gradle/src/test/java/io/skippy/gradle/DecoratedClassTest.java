@@ -16,8 +16,7 @@
 
 package io.skippy.gradle;
 
-import io.skippy.gradle.DecoratedClass;
-import org.gradle.api.logging.Logger;
+import org.gradle.api.Project;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -47,7 +46,7 @@ public class DecoratedClassTest {
     }, delimiter = ':')
     void testUsesSkippyExtension(String fileName, boolean expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new DecoratedClass(classFile).usesSkippyExtension());
+        assertEquals(expectedValue, new DecoratedClass(mock(Project.class), classFile).usesSkippyExtension());
     }
     @ParameterizedTest
     @CsvSource(value = {
@@ -56,7 +55,7 @@ public class DecoratedClassTest {
     }, delimiter = ':')
     void testGetFullyQualifiedClassName(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new DecoratedClass(classFile).getFullyQualifiedClassName());
+        assertEquals(expectedValue, new DecoratedClass(mock(Project.class), classFile).getFullyQualifiedClassName());
     }
 
     @ParameterizedTest
@@ -66,7 +65,7 @@ public class DecoratedClassTest {
     }, delimiter = ':')
     void getHash(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new DecoratedClass(classFile).getHash(mock(Logger.class)));
+        assertEquals(expectedValue, new DecoratedClass(mock(Project.class), classFile).getHash());
     }
 
 }
