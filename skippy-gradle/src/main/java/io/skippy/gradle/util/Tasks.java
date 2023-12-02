@@ -23,6 +23,7 @@ import org.gradle.api.tasks.testing.Test;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static io.skippy.gradle.Profiler.profile;
 import static io.skippy.gradle.util.SourceSets.findSourceSetContaining;
 
 /**
@@ -66,17 +67,19 @@ public final class Tasks {
      * @return the {@link Test} task that runs the {@code testClass}
      */
     public static Test getTestTaskFor(Project project, Path testClass) {
-        var sourceSet = findSourceSetContaining(project, testClass);
-        var testTaskRef = new AtomicReference<Test>();
-        project.getTasks().withType(Test.class, testTask -> {
-            if (isTestTaskForSourceSet(testTask, sourceSet)) {
-                testTaskRef.set(testTask);
+        return profile(Tasks.class, "getTestTaskFor", () -> {
+            var sourceSet = findSourceSetContaining(project, testClass);
+            var testTaskRef = new AtomicReference<Test>();
+            project.getTasks().withType(Test.class, testTask -> {
+                if (isTestTaskForSourceSet(testTask, sourceSet)) {
+                    testTaskRef.set(testTask);
+                }
+            });
+            if (testTaskRef.get() == null) {
+                throw new RuntimeException("Unable to determine test task for '%s'.".formatted(testClass));
             }
+            return testTaskRef.get();
         });
-        if (testTaskRef.get() == null) {
-            throw new RuntimeException("Unable to determine test task for '%s'.".formatted(testClass));
-        }
-        return testTaskRef.get();
     }
 
     private static boolean isTestTaskForSourceSet(Test testTask, SourceSet sourceSet) {

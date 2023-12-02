@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static io.skippy.gradle.Profiler.profile;
 import static io.skippy.gradle.SkippyConstants.SKIPPY_ANALYSIS_FILES_TXT;
 import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.lang.System.lineSeparator;
@@ -56,6 +57,7 @@ class AnalyzeTask extends DefaultTask {
         doLast((task) -> {
             createCoverageReportsForSkippifiedTests(getProject());
             createAnalyzedFilesTxt(getProject());
+            Profiler.printResults(getLogger());
         });
     }
 
@@ -70,55 +72,61 @@ class AnalyzeTask extends DefaultTask {
     }
 
     private void runCoverageBuild(ProjectConnection connection, DecoratedClass skippifiedTest) {
-        BuildLauncher buildLauncher = connection.newBuild();
-        var errorOutputStream = new ByteArrayOutputStream();
-        buildLauncher.setStandardError(errorOutputStream);
-        var standardOutputStream = new ByteArrayOutputStream();
-        buildLauncher.setStandardOutput(standardOutputStream);
-        configureCoverageBuild(buildLauncher, skippifiedTest);
-        try {
-            buildLauncher.run();
-        } catch (Exception e) {
-            getLogger().error(e.getMessage(), e);
-            throw e;
-        }
-        var errors = errorOutputStream.toString();
-        if ( ! errors.isEmpty()) {
-            getLogger().error(errorOutputStream.toString());
-        }
+        profile(AnalyzeTask.class, "runCoverageBuild", () -> {
+            BuildLauncher buildLauncher = connection.newBuild();
+            var errorOutputStream = new ByteArrayOutputStream();
+            buildLauncher.setStandardError(errorOutputStream);
+            var standardOutputStream = new ByteArrayOutputStream();
+            buildLauncher.setStandardOutput(standardOutputStream);
+            configureCoverageBuild(buildLauncher, skippifiedTest);
+            try {
+                buildLauncher.run();
+            } catch (Exception e) {
+                getLogger().error(e.getMessage(), e);
+                throw e;
+            }
+            var errors = errorOutputStream.toString();
+            if ( ! errors.isEmpty()) {
+                getLogger().error(errorOutputStream.toString());
+            }
+        });
     }
 
     private void configureCoverageBuild(BuildLauncher build, DecoratedClass skippifiedTest) {
-        var tasks = asList(skippifiedTest.getTestTask().getName(), "jacocoTestReport");
-        var arguments = asList("-PskippyCoverageBuild=true", "-PskippyClassFile=" + skippifiedTest.getAbsolutePath());
-        build.forTasks(tasks.toArray(new String[0]));
-        build.addArguments(arguments.toArray(new String[0]));
-        if (getLogging().getLevel() != null) {
-            build.addArguments("--" + getLogging().getLevel().name().toLowerCase());
-        }
-        var csvFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
-        getLogger().lifecycle("Capturing coverage data for %s in %s".formatted(
-                skippifiedTest.getFullyQualifiedClassName(),
-                getProject().getProjectDir().toPath().relativize(csvFile))
-        );
-        getLogger().info("./gradlew %s %s".formatted(
-                tasks.stream().collect(joining(" ")),
-                arguments.stream().collect(joining(" "))
-        ));
+        profile(AnalyzeTask.class, "configureCoverageBuild", () -> {
+            var tasks = asList(skippifiedTest.getTestTask().getName(), "jacocoTestReport");
+            var arguments = asList("-PskippyCoverageBuild=true", "-PskippyClassFile=" + skippifiedTest.getAbsolutePath());
+            build.forTasks(tasks.toArray(new String[0]));
+            build.addArguments(arguments.toArray(new String[0]));
+            if (getLogging().getLevel() != null) {
+                build.addArguments("--" + getLogging().getLevel().name().toLowerCase());
+            }
+            var csvFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
+            getLogger().lifecycle("Capturing coverage data for %s in %s".formatted(
+                    skippifiedTest.getFullyQualifiedClassName(),
+                    getProject().getProjectDir().toPath().relativize(csvFile))
+            );
+            getLogger().info("./gradlew %s %s".formatted(
+                    tasks.stream().collect(joining(" ")),
+                    arguments.stream().collect(joining(" "))
+            ));
+        });
     }
 
     private void createAnalyzedFilesTxt(Project project) {
-        try {
-            var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(SKIPPY_ANALYSIS_FILES_TXT);
-            skippyAnalysisFile.toFile().createNewFile();
-            var classFiles = DecoratedClass.fromAllClassesIn(project);
-            getLogger().lifecycle("Creating the Skippy analysis file %s.".formatted(project.getProjectDir().toPath().relativize(skippyAnalysisFile)));
-            writeString(skippyAnalysisFile, classFiles.stream()
-                            .map(classFile -> "%s:%s".formatted(classFile.getRelativePath(), classFile.getHash()))
-                            .collect(joining(lineSeparator())));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        profile(AnalyzeTask.class, "createAnalyzedFilesTxt", () -> {
+            try {
+                var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(SKIPPY_ANALYSIS_FILES_TXT);
+                skippyAnalysisFile.toFile().createNewFile();
+                var classFiles = DecoratedClass.fromAllClassesIn(project);
+                getLogger().lifecycle("Creating the Skippy analysis file %s.".formatted(project.getProjectDir().toPath().relativize(skippyAnalysisFile)));
+                writeString(skippyAnalysisFile, classFiles.stream()
+                        .map(classFile -> "%s:%s".formatted(classFile.getRelativePath(), classFile.getHash()))
+                        .collect(joining(lineSeparator())));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 
 }

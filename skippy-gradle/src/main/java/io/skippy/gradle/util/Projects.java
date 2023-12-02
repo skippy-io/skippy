@@ -16,6 +16,7 @@
 
 package io.skippy.gradle.util;
 
+import io.skippy.gradle.Profiler;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -25,6 +26,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import static io.skippy.gradle.Profiler.profile;
 
 /**
  * Utility methods that return / operate on to Gradle {@link org.gradle.api.Project}s.
@@ -40,12 +43,14 @@ public final class Projects {
      * @return a list of class files
      */
     public static List<Path> findAllClassFiles(Project project) {
-        var result = new ArrayList<Path>();
-        var sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
-        for (var sourceSet : sourceSetContainer) {
-            result.addAll(findAllClassFilesInSourceSet(sourceSet));
-        }
-        return result;
+        return profile(Projects.class, "findAllClassFiles", () -> {
+            var result = new ArrayList<Path>();
+            var sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
+            for (var sourceSet : sourceSetContainer) {
+                result.addAll(findAllClassFilesInSourceSet(sourceSet));
+            }
+            return result;
+        });
     }
 
     private static List<Path> findAllClassFilesInSourceSet(SourceSet sourceSet) {
