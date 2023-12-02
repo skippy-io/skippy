@@ -24,6 +24,8 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static io.skippy.gradle.Profiler.profile;
+
 
 /**
  * Extracts the fully-qualified class name (e.g., com.example.Foo) from a class file.
@@ -37,13 +39,15 @@ public final class ClassNameExtractor {
      * @return the fully-qualified class name (e.g., com.example.Foo) of the {@code classFile}
      */
     public static String getFullyQualifiedClassName(Path classFile) {
-        var className = new AtomicReference<String>();
-        try (var inputStream = new FileInputStream(classFile.toFile())) {
-            new ClassReader(inputStream).accept(createClassVisitor(className), 0);
-            return className.get();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        return profile(ClassNameExtractor.class, "getFullyQualifiedClassName", () -> {
+            var className = new AtomicReference<String>();
+            try (var inputStream = new FileInputStream(classFile.toFile())) {
+                new ClassReader(inputStream).accept(createClassVisitor(className), 0);
+                return className.get();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 
     private static ClassVisitor createClassVisitor(AtomicReference<String> className) {
