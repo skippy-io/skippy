@@ -25,8 +25,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static io.skippy.gradle.Profiler.profile;
-
 /**
  * Checks whether a class is annotated with the Skippy JUnit 5 Extension.
  */
@@ -41,15 +39,13 @@ public final class SkippyJUnit5Detector {
      *      otherwise
      */
     public static boolean usesSkippyExtension(Path classFile) {
-        return profile(SkippyJUnit5Detector.class, "usesSkippyExtension", () -> {
-            var usesSkippyJunit5Extension = new AtomicBoolean(false);
-            try (var inputStream = new FileInputStream(classFile.toFile())) {
-                new ClassReader(inputStream).accept(createClassVisitor(usesSkippyJunit5Extension), 0);
-                return usesSkippyJunit5Extension.get();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
+        var usesSkippyJunit5Extension = new AtomicBoolean(false);
+        try (var inputStream = new FileInputStream(classFile.toFile())) {
+            new ClassReader(inputStream).accept(createClassVisitor(usesSkippyJunit5Extension), 0);
+            return usesSkippyJunit5Extension.get();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @NotNull

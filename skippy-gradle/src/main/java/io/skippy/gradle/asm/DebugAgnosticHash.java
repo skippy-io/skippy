@@ -28,8 +28,6 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Base64;
 
-import static io.skippy.gradle.Profiler.profile;
-
 /**
  * Generates hashes for class files that are agnostic of debug information. If the only difference between two class
  * files is debug information within the bytecode, their hash will be the same.
@@ -53,15 +51,13 @@ public class DebugAgnosticHash {
      * @return a hash of the {@code classfile} that is agnostic of debug information
      */
     public static String hash(Path classFile) {
-        return profile(DebugAgnosticHash.class, "hash", () -> {
-            try {
-                MessageDigest md = MessageDigest.getInstance("MD5");
-                md.update(getBytecodeWithoutDebugInformation(classFile));
-                return Base64.getEncoder().encodeToString(md.digest());
-            } catch (Exception e) {
-                throw new RuntimeException("Unable to generate hash for file '%s': '%s'".formatted(classFile, e.getMessage()), e);
-            }
-        });
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(getBytecodeWithoutDebugInformation(classFile));
+            return Base64.getEncoder().encodeToString(md.digest());
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to generate hash for file '%s': '%s'".formatted(classFile, e.getMessage()), e);
+        }
     }
 
     private static byte[] getBytecodeWithoutDebugInformation(Path classFile) {

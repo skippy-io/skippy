@@ -24,8 +24,6 @@ import org.gradle.api.tasks.SourceSetContainer;
 import java.io.File;
 import java.nio.file.Path;
 
-import static io.skippy.gradle.Profiler.profile;
-
 /**
  * Utility methods that return / operate on to Gradle {@link SourceSet}s.
  *
@@ -61,18 +59,16 @@ final class SourceSets {
      *      output directories
      */
     static SourceSet findSourceSetContaining(Project project, Path classFile) {
-        return profile(SourceSets.class, "findSourceSetContaining", () -> {
-            SourceSetContainer sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
-            for (SourceSet sourceSet : sourceSetContainer) {
-                FileCollection classesDirs = sourceSet.getOutput().getClassesDirs();
-                for (File classesDir : classesDirs.getFiles()) {
-                    if (classFile.startsWith(classesDir.toPath())) {
-                        return sourceSet;
-                    }
+        SourceSetContainer sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
+        for (SourceSet sourceSet : sourceSetContainer) {
+            FileCollection classesDirs = sourceSet.getOutput().getClassesDirs();
+            for (File classesDir : classesDirs.getFiles()) {
+                if (classFile.startsWith(classesDir.toPath())) {
+                    return sourceSet;
                 }
             }
-            throw new RuntimeException("Unable to determine SourceSet for class '%s'.".formatted(classFile));
-        });
+        }
+        throw new RuntimeException("Unable to determine SourceSet for class '%s'.".formatted(classFile));
     }
 
 }

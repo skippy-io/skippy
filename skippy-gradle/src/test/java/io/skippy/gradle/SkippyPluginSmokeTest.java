@@ -22,6 +22,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+import static java.lang.System.lineSeparator;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
@@ -46,11 +48,12 @@ public class SkippyPluginSmokeTest {
 
         var output = result.getOutput();
 
-        assertThat(output).contains("""             
-                > Task :skippyAnalyze
-                Capturing coverage data for com.example.LeftPadderTest in skippy/com.example.LeftPadderTest.csv
-                Capturing coverage data for com.example.RightPadderTest in skippy/com.example.RightPadderTest.csv
-                Creating the Skippy analysis file skippy/analyzedFiles.txt.""");
+        assertThat(output.split(lineSeparator())).containsSubsequence(asList(
+                "> Task :skippyAnalyze",
+                "com.example.LeftPadderTest > Capturing coverage data in skippy/com.example.LeftPadderTest.csv",
+                "com.example.RightPadderTest > Capturing coverage data in skippy/com.example.RightPadderTest.csv",
+                "Creating the Skippy analysis file skippy/analyzedFiles.txt.")
+        );
     }
 
 }
