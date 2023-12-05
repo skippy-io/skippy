@@ -32,9 +32,19 @@ public class Profiler {
         });
     }
 
+    public static long stopWatch(Runnable action) {
+        var then = System.currentTimeMillis();
+        try {
+            action.run();
+        } finally {
+            var now = System.currentTimeMillis();
+            return now - then;
+        }
+    }
+
     static void printResults(Logger logger) {
         for (var entry : data.entrySet()) {
-            logger.lifecycle(entry.getKey() + " " + entry.getValue() + "ms");
+            logger.info(entry.getKey() + " " + entry.getValue() + "ms");
         }
     }
 
