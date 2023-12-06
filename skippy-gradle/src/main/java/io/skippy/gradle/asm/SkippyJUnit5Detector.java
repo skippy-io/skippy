@@ -38,7 +38,7 @@ public final class SkippyJUnit5Detector {
      * @return {@code true} if the {@code classFile} is annotated with the Skippy JUnit 5 Extension, {@code false}
      *      otherwise
      */
-    public static boolean usesSkippyExtension(Path classFile) {
+    public static boolean usesSkippyJunit5Extension(Path classFile) {
         var usesSkippyJunit5Extension = new AtomicBoolean(false);
         try (var inputStream = new FileInputStream(classFile.toFile())) {
             new ClassReader(inputStream).accept(createClassVisitor(usesSkippyJunit5Extension), 0);

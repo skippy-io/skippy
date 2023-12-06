@@ -16,6 +16,8 @@
 
 package io.skippy.gradle;
 
+import io.skippy.gradle.model.ClassFile;
+
 import java.nio.file.Path;
 
 /**
@@ -31,7 +33,7 @@ public final class SkippyConstants {
     public static final Path SKIPPY_DIRECTORY = Path.of("skippy");
 
     /**
-     * The file that contains data for all {@link DecoratedClass}s.
+     * The file that contains data for all {@link ClassFile}s.
      */
     public static final Path SKIPPY_ANALYSIS_FILES_TXT = Path.of("analyzedFiles.txt");
 
