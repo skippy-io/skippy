@@ -16,6 +16,7 @@
 
 package io.skippy.gradle;
 
+import io.skippy.gradle.model.ClassFile;
 import org.gradle.api.Project;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -27,27 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 /**
- * Tests for {@link DecoratedClass}.
+ * Tests for {@link ClassFile}.
  *
  * @author Florian McKee
  */
-public class DecoratedClassTest {
+public class ClassFileTest {
 
-    @ParameterizedTest
-    @CsvSource(value = {
-            "decoratedclass/SourceFileTest1.class:true",
-            "decoratedclass/SourceFileTest2.class:true",
-            "decoratedclass/SourceFileTest3.class:true",
-            "decoratedclass/SourceFileTest4.class:true",
-            "decoratedclass/SourceFileTest5.class:false",
-            "decoratedclass/SourceFileTest6.class:false",
-            "decoratedclass/SourceFileTest7.class:false",
-            "decoratedclass/SourceFileTest8.class:false"
-    }, delimiter = ':')
-    void testUsesSkippyExtension(String fileName, boolean expectedValue) throws URISyntaxException {
-        var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new DecoratedClass(mock(Project.class), classFile).usesSkippyExtension());
-    }
     @ParameterizedTest
     @CsvSource(value = {
             "decoratedclass/SourceFileTest1.class:com.example.SourceFileTest1",
@@ -55,7 +41,7 @@ public class DecoratedClassTest {
     }, delimiter = ':')
     void testGetFullyQualifiedClassName(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new DecoratedClass(mock(Project.class), classFile).getFullyQualifiedClassName());
+        assertEquals(expectedValue, new ClassFile(mock(Project.class), classFile).getFullyQualifiedClassName());
     }
 
     @ParameterizedTest
@@ -65,7 +51,7 @@ public class DecoratedClassTest {
     }, delimiter = ':')
     void getHash(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new DecoratedClass(mock(Project.class), classFile).getHash());
+        assertEquals(expectedValue, new ClassFile(mock(Project.class), classFile).getHash());
     }
 
 }

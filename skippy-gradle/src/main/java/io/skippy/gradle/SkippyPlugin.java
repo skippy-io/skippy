@@ -16,6 +16,10 @@
 
 package io.skippy.gradle;
 
+import io.skippy.gradle.collector.ClassFileCollector;
+import io.skippy.gradle.collector.SkippifiedTestCollector;
+import io.skippy.gradle.model.ClassFile;
+import io.skippy.gradle.model.SkippifiedTest;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
@@ -40,6 +44,7 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getPlugins().apply(JavaPlugin.class);
+        project.getExtensions().create("skippy", SkippyPluginExtension.class);
 
         var isSkippyCoverageBuild = project.hasProperty("skippyCoverageBuild");
         
@@ -47,10 +52,16 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
             // add skippy tasks to the regular build
             project.getTasks().register("skippyClean", CleanTask.class);
-            project.getTasks().register("skippyAnalyze", AnalyzeTask.class);
+
+            var classFileCollector = new ClassFileCollector();
+            var skippifiedTestCollector = new SkippifiedTestCollector(classFileCollector);
+
+            project.getTasks().register("skippyAnalyze", AnalyzeTask.class, classFileCollector, skippifiedTestCollector);
         } else {
 
-            var testClass = new DecoratedClass(project, Path.of(String.valueOf(project.property("skippyClassFile"))));
+            var classFile = Path.of(String.valueOf(project.property("skippyClassFile")));
+            var testTaskName = String.valueOf(project.property("skippyTestTask"));
+            var testClass = new SkippifiedTest(new ClassFile(project, classFile), testTaskName);
 
             // modify test and jacocoTestReport tasks in the skippyCoverage builds
             project.getPlugins().apply(JacocoPlugin.class);
@@ -59,25 +70,25 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         }
     }
 
-    private static void modifyTestTask(Project project, DecoratedClass testClass) {
+    private static void modifyTestTask(Project project, SkippifiedTest skippifiedTest) {
         project.getTasks().withType(Test.class, test -> {
-            test.filter((filter) -> filter.includeTestsMatching(testClass.getFullyQualifiedClassName()));
+            test.filter((filter) -> filter.includeTestsMatching(skippifiedTest.getFullyQualifiedClassName()));
             test.getExtensions().configure(JacocoTaskExtension.class, jacoco -> {
-                jacoco.setDestinationFile(project.file(project.getProjectDir() + "/skippy/" + testClass.getFullyQualifiedClassName() + ".exec"));
+                jacoco.setDestinationFile(project.file(project.getProjectDir() + "/skippy/" + skippifiedTest.getFullyQualifiedClassName() + ".exec"));
             });
         });
     }
 
-    private static void modifyJacocoTestReportTask(Project project, DecoratedClass testClass) {
+    private static void modifyJacocoTestReportTask(Project project, SkippifiedTest skippifiedTest) {
         project.afterEvaluate(action -> {
-            var testTask = testClass.getTestTask().getName();
+            var testTask = skippifiedTest.getTestTask();
             project.getTasks().named("jacocoTestReport", JacocoReport.class, jacoco -> {
                 jacoco.setDependsOn(asList(testTask));
                 jacoco.reports(reports -> {
                     reports.getXml().getRequired().set(Boolean.FALSE);
                     reports.getCsv().getRequired().set(Boolean.TRUE);
-                    reports.getHtml().getOutputLocation().set(project.file(project.getBuildDir() + "/jacoco/html/" + testClass.getFullyQualifiedClassName()));
-                    var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(testClass.getFullyQualifiedClassName() + ".csv");
+                    reports.getHtml().getOutputLocation().set(project.file(project.getBuildDir() + "/jacoco/html/" + skippifiedTest.getFullyQualifiedClassName()));
+                    var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
                     reports.getCsv().getOutputLocation().set(project.file(csvFile));
                 });
                 // capture coverage for all source sets

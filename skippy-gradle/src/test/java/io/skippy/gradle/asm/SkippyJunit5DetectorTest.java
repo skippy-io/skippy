@@ -39,7 +39,7 @@ public class SkippyJunit5DetectorTest {
     }, delimiter = ':')
     void testUsesSkippyExtension(String fileName, boolean expected) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expected, SkippyJUnit5Detector.usesSkippyExtension(classFile));
+        assertEquals(expected, SkippyJUnit5Detector.usesSkippyJunit5Extension(classFile));
     }
 
 }

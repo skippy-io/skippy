@@ -10,6 +10,17 @@ plugins {
 
 apply plugin: io.skippy.gradle.SkippyPlugin;
 
+skippy {
+    sourceSet {
+        name = 'test'
+        testTask = 'test'
+    }
+    sourceSet {
+        name = 'intTest'
+        testTask = 'integrationTest'
+    }
+}
+
 repositories {
     mavenCentral()
     maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
