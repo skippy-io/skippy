@@ -28,9 +28,9 @@ import java.nio.file.Path;
  *
  * @author Florian McKee
  */
-class AnalyzedClass {
+class ClassFile {
 
-    private static final Logger LOGGER = LogManager.getLogger(AnalyzedClass.class);
+    private static final Logger LOGGER = LogManager.getLogger(ClassFile.class);
 
     private final Path classFile;
     private final String hash;
@@ -41,7 +41,7 @@ class AnalyzedClass {
      * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
      * @param hash the MD5 hash of the content of the class file (e.g., YA9ExftvTDku3TUNsbkWIw==)
      */
-    AnalyzedClass(Path classFile, String hash) {
+    ClassFile(Path classFile, String hash) {
         this.classFile = classFile;
         this.hash = hash;
     }

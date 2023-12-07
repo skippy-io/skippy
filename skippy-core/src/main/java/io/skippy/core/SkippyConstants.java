@@ -31,7 +31,7 @@ class SkippyConstants {
     static final Path SKIPPY_DIRECTORY = Path.of("skippy");
 
     /**
-     * The file that contains data for all {@link AnalyzedClass}s.
+     * The file that contains data for all {@link ClassFile}s.
      */
     static final Path SKIPPY_ANALYSIS_FILE = Path.of("analyzedFiles.txt");
 

@@ -1,2 +1,2 @@
-build/classes/java/main/io/skippy/core/AnalyzedClass.class:cGN5C7g/BdD4rxxFBgZ7pw==
-build/classes/java/main/io/skippy/core/AnalyzedClassList.class:cGN5C7g/BdD4rxxFBgZ7pw==
+build/classes/java/main/io/skippy/core/ClassFile.class:cGN5C7g/BdD4rxxFBgZ7pw==
+build/classes/java/main/io/skippy/core/ClassFileList.class:cGN5C7g/BdD4rxxFBgZ7pw==

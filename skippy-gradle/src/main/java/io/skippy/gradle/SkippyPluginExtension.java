@@ -22,10 +22,41 @@ import org.gradle.api.Action;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.codehaus.groovy.runtime.InvokerHelper.asList;
+import static java.util.Arrays.asList;
 
 /**
- * Extension that allows for customization of {@link AnalyzeTask}.
+ * Extension that allows build to customize
+ * <ul>
+ *     <li>which SourceSet to consider when looking for skippified tests and</li>
+ *     <li>which  task to use to execute a skippified test in a given SourceSet.</li>
+ * </ul>
+ *
+ * The defaults are:
+ * <ul>
+ *      <li>Look for skippified tests in the {@code test} SourceSet</li>
+ *      <li>Execute skippifed tests using the {@code test} task</li>
+ *  </ul>
+ *
+ * Builds can configure the extension using the {@code skippy} DSL block:
+ * <pre>
+ * skippy {
+ *     sourceSet {
+ *         name = 'test'
+ *         testTask = 'test'
+ *     }
+ *     sourceSet {
+ *         name = 'intTest'
+ *         testTask = 'integrationTest'
+ *     }
+ * }
+ * </pre>
+ *
+ * The above example reads as follows:
+ * <ul>
+ *     <li>Skippy will look for skippified tests in the SourceSets {@code test} and {@code intTest}</li>
+ *     <li>Skippified tests in the {@code test} SourceSet will be executed using the {@code test} task</li>
+ *     <li>Skippified tests in the {@code intTest} SourceSet will be executed using the {@code integrationTest} task</li>
+ * </ul>
  *
  * @author Florian McKee
  */

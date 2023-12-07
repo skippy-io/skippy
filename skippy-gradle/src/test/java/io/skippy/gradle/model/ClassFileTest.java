@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.skippy.gradle;
+package io.skippy.gradle.model;
 
 import io.skippy.gradle.model.ClassFile;
 import org.gradle.api.Project;
@@ -36,8 +36,8 @@ public class ClassFileTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "decoratedclass/SourceFileTest1.class:com.example.SourceFileTest1",
-            "decoratedclass/SourceFileTest2.class:com.example.SourceFileTest2"
+            "SourceFileTest1.class:com.example.SourceFileTest1",
+            "SourceFileTest2.class:com.example.SourceFileTest2"
     }, delimiter = ':')
     void testGetFullyQualifiedClassName(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
@@ -46,8 +46,8 @@ public class ClassFileTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "decoratedclass/SourceFileTest1.class:w7P+0X1Grw3y8nPkIceITQ==",
-            "decoratedclass/SourceFileTest2.class:V6NEvrWBtOEwb+4ZOEnrfw=="
+            "SourceFileTest1.class:w7P+0X1Grw3y8nPkIceITQ==",
+            "SourceFileTest2.class:V6NEvrWBtOEwb+4ZOEnrfw=="
     }, delimiter = ':')
     void getHash(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
