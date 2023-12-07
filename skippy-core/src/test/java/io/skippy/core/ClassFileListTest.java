@@ -37,8 +37,8 @@ public class ClassFileListTest {
         var analyzedFiles = ClassFileList.parse(analyzedFilesTxt);
 
         assertEquals(asList(
-            new FullyQualifiedClassName("io.skippy.core.AnalyzedClass"),
-            new FullyQualifiedClassName("io.skippy.core.AnalyzedClassList")
+            new FullyQualifiedClassName("io.skippy.core.ClassFile"),
+            new FullyQualifiedClassName("io.skippy.core.ClassFileList")
         ), analyzedFiles.getClasses());
     }
 
