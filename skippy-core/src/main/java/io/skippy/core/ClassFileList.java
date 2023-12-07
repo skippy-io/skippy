@@ -28,38 +28,38 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 /**
- * A list of {@link AnalyzedClass}s with a couple of utility methods that operates on this list.
+ * A list of {@link ClassFile}s with a couple of utility methods that operates on this list.
  *
  * @author Florian McKee
  */
-class AnalyzedClassList {
+class ClassFileList {
 
-    private static final Logger LOGGER = LogManager.getLogger(AnalyzedClassList.class);
+    private static final Logger LOGGER = LogManager.getLogger(ClassFileList.class);
 
-    static final AnalyzedClassList UNAVAILABLE = new AnalyzedClassList(emptyList());
+    static final ClassFileList UNAVAILABLE = new ClassFileList(emptyList());
 
-    private final List<AnalyzedClass> analyzedClasses;
+    private final List<ClassFile> classFiles;
 
     /**
      * C'tor.
      *
-     * @param analyzedClasses a list of {@link AnalyzedClass}s
+     * @param classFiles a list of {@link ClassFile}s
      */
-    private AnalyzedClassList(List<AnalyzedClass> analyzedClasses) {
-        this.analyzedClasses = analyzedClasses;
+    private ClassFileList(List<ClassFile> classFiles) {
+        this.classFiles = classFiles;
     }
 
-    static AnalyzedClassList parse(Path skippyAnalysisFile) {
+    static ClassFileList parse(Path skippyAnalysisFile) {
         if (!skippyAnalysisFile.toFile().exists()) {
             return UNAVAILABLE;
         }
         try {
-            var result = new ArrayList<AnalyzedClass>();
+            var result = new ArrayList<ClassFile>();
             for (var line : Files.readAllLines(skippyAnalysisFile, Charset.forName("UTF8"))) {
                 String[] split = line.split(":");
-                result.add(new AnalyzedClass(Path.of(split[0]), split[1]));
+                result.add(new ClassFile(Path.of(split[0]), split[1]));
             }
-            return new AnalyzedClassList(result);
+            return new ClassFileList(result);
         } catch (Exception e) {
             LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(skippyAnalysisFile, e.getMessage()), e);
             throw new RuntimeException(e);
@@ -67,13 +67,13 @@ class AnalyzedClassList {
     }
 
     List<FullyQualifiedClassName> getClasses() {
-        return analyzedClasses.stream()
+        return classFiles.stream()
                 .map(s -> s.getFullyQualifiedClassName())
                 .toList();
     }
 
     List<FullyQualifiedClassName> getChangedClasses() {
-        return analyzedClasses.stream()
+        return classFiles.stream()
                 .filter(s -> s.hasChanged())
                 .map(s -> s.getFullyQualifiedClassName())
                 .toList();

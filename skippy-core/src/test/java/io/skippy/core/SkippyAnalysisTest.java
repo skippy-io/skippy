@@ -43,7 +43,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void noCoverageDataEqualsExecution() {
-        var analyzedFiles = mock(AnalyzedClassList.class);
+        var analyzedFiles = mock(ClassFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
         var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
 
@@ -54,7 +54,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void testWithBytecodeChangeEqualsExecution() {
-        var analyzedFiles = mock(AnalyzedClassList.class);
+        var analyzedFiles = mock(ClassFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
         var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
         var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
@@ -67,7 +67,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void testCoveredClassWithBytecodeChangeEqualsExecution() {
-        var analyzedFiles = mock(AnalyzedClassList.class);
+        var analyzedFiles = mock(ClassFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
         var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
         var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
@@ -82,7 +82,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void testSkipIfNothingHasChanged() {
-        var analyzedFiles = mock(AnalyzedClassList.class);
+        var analyzedFiles = mock(ClassFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
         var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
         var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");

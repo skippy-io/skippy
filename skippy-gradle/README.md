@@ -5,13 +5,18 @@ The Skippy plugin provides Skippy support in Gradle.
 ## Apply the Skippy Plugin
 
 First, you have to apply the Skippy plugin:
-```
+```groovy
 buildscript {
     repositories {
+        
+        // for releases
         mavenCentral()
+        
+        // for snapshots
+        maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     }
     dependencies {
-        classpath 'io.skippy:skippy-gradle-plugin:0.0.4'
+        classpath 'io.skippy:skippy-gradle:0.0.7-SNAPSHOT'
     }
 }
 
@@ -19,58 +24,34 @@ apply plugin: io.skippy.gradle.SkippyPlugin
 ```
 Note: The Skippy plugin automatically applies the `Java` plugin.
 
-Releases and snapshots can be found at:
-```
-    ...
-    repositories {
-        // releases
-        mavenCentral()
-        
-        // snapshots
-        maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
-    }
-    ...
-```
-
-
 ## Tasks
 
 The plugin adds a couple of new tasks to your project:
-```
+```console
 ./gradlew tasks
 ```
 You will see the following output:
-```
+```console
 Skippy tasks
 ------------
 skippyClean
 skippyAnalyze
 ```
 
-You will additionally see a bunch of internal tasks that you don't have to worry about too much: 
-```
-Skippy (internal) tasks
------------------------
-skippyCoverage_com.example.Class0Test
-skippyCoverage_com.example.Class1Test
-skippyCoverage_com.example.Class2Test
-...
-```
-
-Those tasks capture execution data for individal tests, and are executed automatically when you run `skippyAnalyze`.
-
 ### skippyAnalyze Task
 
-`skippyAnalyze` captures execution data for each test that uses Skippy. In addition, the plugin captures a hash of each source 
-file:
+`skippyAnalyze` captures 
+- execution data for each test that uses Skippy and 
+- a hash for each class file in the project.
 
-```
+Example:
+```console
 ./gradlew skippyAnalyze
 ```
 
 You should see something like this:
 
-```
+```console
 ./gradlew clean skippyAnalyze                                  
 
 > Task skippyCoverage_com.example.Class0Test
@@ -86,13 +67,38 @@ Skippy: Capturing coverage data for com.example.Class2Test in skippy/com.example
 Skippy: Capturing a snapshot of all source files in skippy/sourceSnapshot.md5
 ```
 
-The generated data is consumed by Skippy's testing libraries (e.g., 
-[skippy-junit5](../skippy-junit5/README.md)).
+The generated data is consumed by Skippy's testing libraries (e.g., [skippy-junit5](../skippy-junit5/README.md)).
 
 ### skippyClean Task
 
 `skippyClean` removes previously captured execution data and the file that contains a hash for every source file:
 
-```
+```console
 ./gradlew skippyClean
 ```
+
+## Customization
+
+By default, `skippyAnalyze` will 
+- look for skippified tests in the `test` SourceSet and
+- execute skippifed tests using the `test` task.
+
+Builds can customize this behavior using the `skippy` DSL block: 
+
+```groovy
+skippy {
+    sourceSet {
+        name = 'test'
+        testTask = 'test'
+    }
+    sourceSet {
+        name = 'intTest'
+        testTask = 'integrationTest'
+    }
+}
+```
+
+The above example reads as follows:
+- Skippy will look for skippified tests in the SourceSets `test` and `intTest`
+- Skippified tests in the `test` SourceSet will be executed using the `test` task
+- Skippified tests in the `intTest` SourceSet will be executed using the `integrationTest` task

@@ -21,27 +21,25 @@ import org.junit.jupiter.api.Test;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests for {@link AnalyzedClass}.
+ * Tests for {@link ClassFileList}.
  *
  * @author Florian McKee
  */
-public class AnalyzedClassTest {
+public class ClassFileListTest {
 
     @Test
-    void testClassFileHasNotChanged() throws URISyntaxException {
-        var foo = new AnalyzedClass(
-                Path.of(getClass().getResource("analyzedclass/Foo.class").toURI()), "nI8N7FMXjy8oPJ6w17Eajg==");
+    void testParse() throws URISyntaxException {
+        var analyzedFilesTxt = Path.of(getClass().getResource("analyzedclasslist/analyzedFiles.txt").toURI());
+        var analyzedFiles = ClassFileList.parse(analyzedFilesTxt);
 
-        assertEquals(false, foo.hasChanged());
-    }
-
-    @Test
-    void testClassFileHasChanged() throws URISyntaxException {
-        var fooNew = new AnalyzedClass(Path.of(getClass().getResource("analyzedclass/Foo.class").toURI()), "NEW-CLASS-FILE-HASH");
-        assertEquals(true, fooNew.hasChanged());
+        assertEquals(asList(
+            new FullyQualifiedClassName("io.skippy.core.AnalyzedClass"),
+            new FullyQualifiedClassName("io.skippy.core.AnalyzedClassList")
+        ), analyzedFiles.getClasses());
     }
 
 }

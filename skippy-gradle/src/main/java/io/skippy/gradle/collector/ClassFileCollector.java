@@ -29,14 +29,14 @@ import java.util.List;
 import static java.util.Comparator.comparing;
 
 /**
- * Collects {@link ClassFile}s in the project's output directories.
+ * Collects all {@link ClassFile}s in {@link Project}s and {@link SourceSet}s.
  */
 public final class ClassFileCollector {
 
     /**
-     * Collects all {@link ClassFile}s in the output directories the {@param project}.
+     * Collects all {@link ClassFile}s across all output directories of the {@param project}.
      *
-     * @return all {@link ClassFile}s in the output directories the {@param project}
+     * @return all {@link ClassFile}s across all output directories of the {@param project}
      */
     public List<ClassFile> collectAllInProject(Project project) {
         var result = new ArrayList<ClassFile>();

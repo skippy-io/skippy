@@ -7,14 +7,14 @@ This guide helps you integrate Skippy into your project for smarter testing.
 
 First, you have to add a dependency to `skippy-junit5`:
 
-```
+```groovy
 dependencies {
     testImplementation 'io.skippy:skippy-junit5:0.0.4'
 }
 ```
 
 Releases and snapshots can be found at:
-```
+```groovy
 repositories {
     // releases
     mavenCentral()
@@ -26,7 +26,7 @@ repositories {
 
 ## Step 2: Enable Skippy in Your Test Suite
 To use Skippy, annotate your test classes with the Skippy extension:
-```
+```groovy
 import io.skippy.junit5.Skippy;
 
 @ExtendWith(Skippy.class)
@@ -53,7 +53,7 @@ log level for `io.skippy` to `DEBUG`.
 ### No Analysis Data Found
 
 Without prior analysis data, Skippy defaults to executing tests:
-```
+```console
 ./gradlew test
 
 00:00:00.000 [Test worker] DEBUG i.s.c.m.SkippyAnalysisResult - org.example.Test1: No analysis found. Execution required.
@@ -64,7 +64,7 @@ Test1 > name() PASSED
 ### No Changes Detected
 
 Skippy skips tests if no changes are detected in tests or covered classes:
-```
+```console
 ./gradlew test
 
 00:00:00.000 [Test worker] DEBUG i.s.c.m.SkippyAnalysisResult - org.example.Test1: No changes in test or covered classes detected. Execution skipped.
@@ -75,7 +75,7 @@ Test1 > name() SKIPPED
 ### Change in Test Detected
 
 Skippy executes tests if it detects changes in them:
-```
+```console
 ./gradlew test
 
 00:00:00.000 [Test worker] DEBUG i.s.c.m.SkippyAnalysisResult - org.example.Test1: Change in test detected. Execution required.
@@ -86,7 +86,7 @@ Test1 > name() PASSED
 ### Change in Covered Class Detected
 
 Skippy also executes tests if it detects changes in covered classes:
-```
+```console
 ./gradlew test
 
 00:00:00.000 [Test worker] DEBUG i.s.c.m.SkippyAnalysisResult - org.example.Test1: Change in covered class 'org.example.Constant' detected. Execution required.
