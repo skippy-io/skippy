@@ -27,7 +27,7 @@ Note: The Skippy plugin automatically applies the `Java` plugin.
 ## Tasks
 
 The plugin adds a couple of new tasks to your project:
-```shell
+```
 ./gradlew tasks
 ```
 You will see the following output:
@@ -45,7 +45,7 @@ skippyAnalyze
 - a hash for each class file in the project.
 
 Example:
-```shell
+```
 ./gradlew skippyAnalyze
 ```
 
@@ -73,7 +73,7 @@ The generated data is consumed by Skippy's testing libraries (e.g., [skippy-juni
 
 `skippyClean` removes previously captured execution data and the file that contains a hash for every source file:
 
-```shell
+```
 ./gradlew skippyClean
 ```
 

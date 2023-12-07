@@ -53,7 +53,7 @@ log level for `io.skippy` to `DEBUG`.
 ### No Analysis Data Found
 
 Without prior analysis data, Skippy defaults to executing tests:
-```shell
+```
 ./gradlew test
 
 00:00:00.000 [Test worker] DEBUG i.s.c.m.SkippyAnalysisResult - org.example.Test1: No analysis found. Execution required.
@@ -64,7 +64,7 @@ Test1 > name() PASSED
 ### No Changes Detected
 
 Skippy skips tests if no changes are detected in tests or covered classes:
-```shell
+```
 ./gradlew test
 
 00:00:00.000 [Test worker] DEBUG i.s.c.m.SkippyAnalysisResult - org.example.Test1: No changes in test or covered classes detected. Execution skipped.
@@ -75,7 +75,7 @@ Test1 > name() SKIPPED
 ### Change in Test Detected
 
 Skippy executes tests if it detects changes in them:
-```shell
+```
 ./gradlew test
 
 00:00:00.000 [Test worker] DEBUG i.s.c.m.SkippyAnalysisResult - org.example.Test1: Change in test detected. Execution required.
@@ -86,7 +86,7 @@ Test1 > name() PASSED
 ### Change in Covered Class Detected
 
 Skippy also executes tests if it detects changes in covered classes:
-```shell
+```
 ./gradlew test
 
 00:00:00.000 [Test worker] DEBUG i.s.c.m.SkippyAnalysisResult - org.example.Test1: Change in covered class 'org.example.Constant' detected. Execution required.
