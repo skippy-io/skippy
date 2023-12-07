@@ -30,8 +30,6 @@ import java.nio.file.Path;
  */
 class ClassFile {
 
-    private static final Logger LOGGER = LogManager.getLogger(ClassFile.class);
-
     private final Path classFile;
     private final String hash;
 
@@ -56,14 +54,20 @@ class ClassFile {
      * @return {@code true} if the class file has changed since it was analyzed, {@code false} otherwise.
      */
     boolean hasChanged() {
-        if ( ! classFile.toFile().exists()) {
-            return true;
-        }
         String newHash = DebugAgnosticHash.hash(classFile);
         if ( ! hash.equals(newHash)) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the class file exists, {@code false} otherwise.
+     *
+     * @return {@code true} if the class file exists, {@code false} otherwise.
+     */
+    public boolean exists() {
+        return classFile.toFile().exists();
     }
 
 }
