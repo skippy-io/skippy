@@ -74,7 +74,7 @@ class ClassFileList {
 
     List<FullyQualifiedClassName> getChangedClasses() {
         return classFiles.stream()
-                .filter(s -> s.hasChanged())
+                .filter(s -> s.exists() && s.hasChanged())
                 .map(s -> s.getFullyQualifiedClassName())
                 .toList();
     }
