@@ -64,10 +64,10 @@ public final class ClassFileCollector {
     }
 
     /**
-     * Collects all {@link ClassFile}s in the output directories of the {@param sourceSet}.
+     * Collects all {@link ClassFile}s in the output directories of the {@code sourceSet}.
      *
      * @param sourceSet
-     * @return all {@link ClassFile}s in the output directories of the {@param sourceSet}
+     * @return all {@link ClassFile}s in the output directories of the {@code sourceSet}
      */
     List<ClassFile> collect(SourceSet sourceSet) {
         var classesDirs = sourceSet.getOutput().getClassesDirs().getFiles();

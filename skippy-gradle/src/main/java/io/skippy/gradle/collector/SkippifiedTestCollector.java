@@ -69,9 +69,9 @@ public final class SkippifiedTestCollector  {
     }
 
     /**
-     * Collects all {@link SkippifiedTest}s in the SourceSet identified by {@param sourceSetWithTestTask}.
+     * Collects all {@link SkippifiedTest}s in the SourceSet identified by {@code sourceSetWithTestTask}.
      *
-     * @return all {@link SkippifiedTest}s in the SourceSet identified by {@param sourceSetWithTestTask}
+     * @return all {@link SkippifiedTest}s in the SourceSet identified by {@code sourceSetWithTestTask}
      */
     private List<SkippifiedTest> collect(SourceSetWithTestTask sourceSetWithTestTask) {
             var sourceSet = sourceSetContainer.getByName(sourceSetWithTestTask.getSourceSetName());
