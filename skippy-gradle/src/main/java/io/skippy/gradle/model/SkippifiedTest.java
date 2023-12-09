@@ -16,7 +16,13 @@
 
 package io.skippy.gradle.model;
 
+import org.gradle.api.Project;
+
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+
+import static java.util.Arrays.asList;
 
 /**
  * Thin wrapper around a skippified test that stores
@@ -32,21 +38,44 @@ public class SkippifiedTest {
     private final ClassFile testClassFile;
     private final String testTask;
 
+    /**
+     * C'tor
+     *
+     * @param test
+     * @param testTask
+     */
     public SkippifiedTest(ClassFile test, String testTask) {
         this.testClassFile = test;
         this.testTask = testTask;
     }
 
+    /**
+     * Returns the fully qualified class name (e.g., com.example.FooTest).
+     *
+     * @return the fully qualified class name (e.g., com.example.FooTest)
+     */
+
     public String getFullyQualifiedClassName() {
         return testClassFile.getFullyQualifiedClassName();
     }
 
-    public Path getAbsolutePath() {
-        return testClassFile.getAbsolutePath();
-    }
-
+    /**
+     * Returns the name of the {@link org.gradle.api.tasks.testing.Test} task to be used to run this test.
+     *
+     * @return the name of the {@link org.gradle.api.tasks.testing.Test} task to be used to run this test
+     */
     public String getTestTask() {
         return testTask;
     }
 
+    /**
+     * Returns the relative {@link Path} of the class file relative to the project root,
+     * (e.g., src/main/java/com/example/FooTest.java)
+     *
+     * @return the relative {@link Path} of the class file relative to the project root,
+     *      (e.g., src/main/java/com/example/FooTest.java)
+     */
+    public Path getRelativePath() {
+        return testClassFile.getRelativePath();
+    }
 }

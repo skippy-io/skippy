@@ -18,7 +18,6 @@ package io.skippy.gradle;
 
 import io.skippy.gradle.collector.ClassFileCollector;
 import io.skippy.gradle.collector.SkippifiedTestCollector;
-import io.skippy.gradle.model.ClassFile;
 import io.skippy.gradle.model.SkippifiedTest;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
@@ -28,8 +27,6 @@ import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension;
 import org.gradle.testing.jacoco.tasks.JacocoReport;
-
-import java.nio.file.Path;
 
 import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.util.Arrays.asList;
@@ -44,29 +41,30 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getPlugins().apply(JavaPlugin.class);
-        project.getExtensions().create("skippy", SkippyPluginExtension.class);
 
-        var isSkippyCoverageBuild = project.hasProperty("skippyCoverageBuild");
-        
-        if  (! isSkippyCoverageBuild) {
+        var skippyExtension = project.getExtensions().create("skippy", SkippyPluginExtension.class);
 
-            // add skippy tasks to the regular build
-            project.getTasks().register("skippyClean", CleanTask.class);
+        if  (CoverageBuild.isCoverageBuildForSkippifiedTest(project)) {
 
-            var classFileCollector = new ClassFileCollector();
-            var skippifiedTestCollector = new SkippifiedTestCollector(classFileCollector);
+            // this is a nested coverage build triggered by skippyAnalyze: modify test and jacocoTestReport tasks
 
-            project.getTasks().register("skippyAnalyze", AnalyzeTask.class, classFileCollector, skippifiedTestCollector);
+            var skippifiedTest = CoverageBuild.getSkippifiedTest(project);
+
+            project.getPlugins().apply(JacocoPlugin.class);
+            modifyTestTask(project, skippifiedTest);
+            modifyJacocoTestReportTask(project, skippifiedTest);
+
         } else {
 
-            var classFile = Path.of(String.valueOf(project.property("skippyClassFile")));
-            var testTaskName = String.valueOf(project.property("skippyTestTask"));
-            var testClass = new SkippifiedTest(new ClassFile(project, classFile), testTaskName);
+            // this is a regular build: add skippyClean + skippyAnalyze tasks
 
-            // modify test and jacocoTestReport tasks in the skippyCoverage builds
-            project.getPlugins().apply(JacocoPlugin.class);
-            modifyTestTask(project, testClass);
-            modifyJacocoTestReportTask(project, testClass);
+            project.getTasks().register("skippyClean", CleanTask.class);
+
+            var sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
+            var classFileCollector = new ClassFileCollector(project, sourceSetContainer);
+            var skippifiedTestCollector = new SkippifiedTestCollector(project, classFileCollector, sourceSetContainer, skippyExtension);
+
+            project.getTasks().register("skippyAnalyze", AnalyzeTask.class, classFileCollector, skippifiedTestCollector);
         }
     }
 
