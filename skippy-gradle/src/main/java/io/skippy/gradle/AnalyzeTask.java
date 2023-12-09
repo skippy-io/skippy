@@ -18,15 +18,13 @@ package io.skippy.gradle;
 
 import io.skippy.gradle.collector.ClassFileCollector;
 import io.skippy.gradle.collector.SkippifiedTestCollector;
-import io.skippy.gradle.model.SkippifiedTest;
+import io.skippy.gradle.coveragebuild.CoverageBuild;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.UncheckedIOException;
-import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 
 import javax.inject.Inject;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import static io.skippy.gradle.SkippyConstants.SKIPPY_ANALYSIS_FILES_TXT;
@@ -68,54 +66,9 @@ class AnalyzeTask extends DefaultTask {
         connector.forProjectDirectory(getProject().getProjectDir());
         try (ProjectConnection connection = connector.connect()) {
             for (var skippifiedTest : skippifiedTestCollector.collect()) {
-                runCoverageBuild(connection, skippifiedTest);
+                CoverageBuild.run(getProject(), connection.newBuild(), skippifiedTest);
             }
         }
-    }
-
-    private void runCoverageBuild(ProjectConnection connection, SkippifiedTest skippifiedTest) {
-        BuildLauncher buildLauncher = connection.newBuild();
-        var errorOutputStream = new ByteArrayOutputStream();
-        buildLauncher.setStandardError(errorOutputStream);
-        var standardOutputStream = new ByteArrayOutputStream();
-        buildLauncher.setStandardOutput(standardOutputStream);
-        configureCoverageBuild(buildLauncher, skippifiedTest);
-        try {
-            long ms = Profiler.stopWatch(() -> buildLauncher.run());
-            var errors = errorOutputStream.toString();
-            if ( ! errors.isEmpty()) {
-                getLogger().error(errors);
-            }
-            var ouput = standardOutputStream.toString();
-            if ( ! ouput.isEmpty()) {
-                for (var line : ouput.split(System.lineSeparator())) {
-                    getLogger().lifecycle("%s    %s".formatted(skippifiedTest.getFullyQualifiedClassName(), line));
-                }
-            }
-            getLogger().lifecycle("%s".formatted(skippifiedTest.getFullyQualifiedClassName()));
-            getLogger().lifecycle("%s Build executed in %sms.".formatted(skippifiedTest.getFullyQualifiedClassName(), ms));
-        } catch (Exception e) {
-            getLogger().error(e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    private void configureCoverageBuild(BuildLauncher build, SkippifiedTest skippifiedTest) {
-        build.forTasks(CoverageBuild.getTasks(skippifiedTest).toArray(new String[0]));
-        build.addArguments(CoverageBuild.getArguments(skippifiedTest).toArray(new String[0]));
-
-        var csvFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
-
-        getLogger().lifecycle("\n%s > Capturing coverage data in %s".formatted(
-                skippifiedTest.getFullyQualifiedClassName(),
-                getProject().getProjectDir().toPath().relativize(csvFile))
-        );
-        getLogger().lifecycle("%s > ./gradlew %s %s".formatted(
-                skippifiedTest.getFullyQualifiedClassName(),
-                CoverageBuild.getTasks(skippifiedTest).stream().collect(joining(" ")),
-                CoverageBuild.getArguments(skippifiedTest).stream().collect(joining(" "))
-        ));
-        getLogger().lifecycle("%s".formatted(skippifiedTest.getFullyQualifiedClassName()));
     }
 
     private void createAnalyzedFilesTxt() {
