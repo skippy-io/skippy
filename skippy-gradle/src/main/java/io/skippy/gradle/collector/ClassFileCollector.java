@@ -58,7 +58,7 @@ public final class ClassFileCollector {
     public List<ClassFile> collect() {
         var result = new ArrayList<ClassFile>();
         for (var sourceSet : sourceSetContainer) {
-            result.addAll(collectAllInSourceSet(sourceSet));
+            result.addAll(collect(sourceSet));
         }
         return sort(result);
     }
@@ -69,22 +69,22 @@ public final class ClassFileCollector {
      * @param sourceSet
      * @return all {@link ClassFile}s in the output directories of the {@param sourceSet}
      */
-    List<ClassFile> collectAllInSourceSet(SourceSet sourceSet) {
+    List<ClassFile> collect(SourceSet sourceSet) {
         var classesDirs = sourceSet.getOutput().getClassesDirs().getFiles();
         var result = new ArrayList<ClassFile>();
         for (var classesDir : classesDirs) {
-            result.addAll(collectAllInDirectory(classesDir));
+            result.addAll(collect(classesDir));
         }
         return sort(result);
     }
 
-    private List<ClassFile> collectAllInDirectory(File directory) {
+    private List<ClassFile> collect(File directory) {
         var result = new LinkedList<ClassFile>();
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    result.addAll(collectAllInDirectory(file));
+                    result.addAll(collect(file));
                 } else if (file.getName().endsWith(".class")) {
                     result.add(new ClassFile(project, file.toPath()));
                 }

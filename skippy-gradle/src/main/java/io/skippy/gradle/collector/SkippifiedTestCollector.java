@@ -75,7 +75,7 @@ public final class SkippifiedTestCollector  {
      */
     private List<SkippifiedTest> collect(SourceSetWithTestTask sourceSetWithTestTask) {
             var sourceSet = sourceSetContainer.getByName(sourceSetWithTestTask.getSourceSetName());
-            var classFiles = classFileCollector.collectAllInSourceSet(sourceSet);
+            var classFiles = classFileCollector.collect(sourceSet);
             return classFiles.stream()
                     .filter(classFile -> SkippyJUnit5Detector.usesSkippyJunit5Extension(classFile.getAbsolutePath()))
                     .map(classFile -> new SkippifiedTest(classFile, sourceSetWithTestTask.getTestTask()))
