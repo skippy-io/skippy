@@ -33,7 +33,6 @@ import static io.skippy.gradle.SkippyConstants.SKIPPY_ANALYSIS_FILES_TXT;
 import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.Files.writeString;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -43,24 +42,32 @@ import static java.util.stream.Collectors.joining;
  */
 class AnalyzeTask extends DefaultTask {
 
+    private final ClassFileCollector classCollector;
+    private final SkippifiedTestCollector skippifiedTestCollector;
+
     /**
-     * Comment to make the JavaDoc task happy.
+     * C'tor.
+     *
+     * @param classFileCollector
+     * @param skippifiedTestCollector
      */
     @Inject
-    public AnalyzeTask(ClassFileCollector classCollector, SkippifiedTestCollector skippifiedTestCollector) {
+    public AnalyzeTask(ClassFileCollector classFileCollector, SkippifiedTestCollector skippifiedTestCollector) {
+        this.classCollector = classFileCollector;
+        this.skippifiedTestCollector = skippifiedTestCollector;
         setGroup("skippy");
         dependsOn("skippyClean");
         doLast((task) -> {
-            createCoverageReportsForSkippifiedTests(skippifiedTestCollector);
-            createAnalyzedFilesTxt(classCollector);
+            createCoverageReportsForSkippifiedTests();
+            createAnalyzedFilesTxt();
         });
     }
 
-    private void createCoverageReportsForSkippifiedTests(SkippifiedTestCollector skippifiedTestCollector) {
+    private void createCoverageReportsForSkippifiedTests() {
         GradleConnector connector = GradleConnector.newConnector();
         connector.forProjectDirectory(getProject().getProjectDir());
         try (ProjectConnection connection = connector.connect()) {
-            for (var skippifiedTest : skippifiedTestCollector.collectAllIn(getProject())) {
+            for (var skippifiedTest : skippifiedTestCollector.collect()) {
                 runCoverageBuild(connection, skippifiedTest);
             }
         }
@@ -94,17 +101,9 @@ class AnalyzeTask extends DefaultTask {
     }
 
     private void configureCoverageBuild(BuildLauncher build, SkippifiedTest skippifiedTest) {
-        var tasks = asList(skippifiedTest.getTestTask(), "jacocoTestReport");
-        var arguments = asList(
-                "-PskippyCoverageBuild=true",
-                "-PskippyClassFile=" + skippifiedTest.getAbsolutePath(),
-                "-PskippyTestTask=" + skippifiedTest.getTestTask()
-        );
-        build.forTasks(tasks.toArray(new String[0]));
-        build.addArguments(arguments.toArray(new String[0]));
-        if (getLogging().getLevel() != null) {
-            build.addArguments("--" + getLogging().getLevel().name().toLowerCase());
-        }
+        build.forTasks(CoverageBuild.getTasks(skippifiedTest).toArray(new String[0]));
+        build.addArguments(CoverageBuild.getArguments(skippifiedTest).toArray(new String[0]));
+
         var csvFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
 
         getLogger().lifecycle("\n%s > Capturing coverage data in %s".formatted(
@@ -113,18 +112,18 @@ class AnalyzeTask extends DefaultTask {
         );
         getLogger().lifecycle("%s > ./gradlew %s %s".formatted(
                 skippifiedTest.getFullyQualifiedClassName(),
-                tasks.stream().collect(joining(" ")),
-                arguments.stream().collect(joining(" "))
+                CoverageBuild.getTasks(skippifiedTest).stream().collect(joining(" ")),
+                CoverageBuild.getArguments(skippifiedTest).stream().collect(joining(" "))
         ));
         getLogger().lifecycle("%s".formatted(skippifiedTest.getFullyQualifiedClassName()));
     }
 
-    private void createAnalyzedFilesTxt(ClassFileCollector classCollector) {
+    private void createAnalyzedFilesTxt() {
         try {
             var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(SKIPPY_ANALYSIS_FILES_TXT);
             skippyAnalysisFile.toFile().createNewFile();
             getLogger().lifecycle("\nCreating the Skippy analysis file %s.".formatted(getProject().getProjectDir().toPath().relativize(skippyAnalysisFile)));
-            var classFiles = classCollector.collectAllInProject(getProject());
+            var classFiles = classCollector.collect();
             writeString(skippyAnalysisFile, classFiles.stream()
                     .map(classFile -> "%s:%s".formatted(classFile.getRelativePath(), classFile.getHash()))
                     .collect(joining(lineSeparator())));

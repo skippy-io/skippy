@@ -28,27 +28,54 @@ import java.util.List;
 
 import static java.util.Comparator.comparing;
 
+/**
+ * Collects {@link SkippifiedTest}s in a project.
+ *
+ * @author Florian McKee
+ */
 public final class SkippifiedTestCollector  {
 
+    private final Project project;
     private final ClassFileCollector classFileCollector;
+    private final SourceSetContainer sourceSetContainer;
+    private final SkippyPluginExtension skippyPluginExtension;
 
-    public SkippifiedTestCollector(ClassFileCollector classFileCollector) {
+    /**
+     * C'tor.
+     *
+     * @param project
+     * @param classFileCollector
+     * @param sourceSetContainer
+     * @param skippyPluginExtension
+     */
+    public SkippifiedTestCollector(Project project, ClassFileCollector classFileCollector, SourceSetContainer sourceSetContainer, SkippyPluginExtension skippyPluginExtension) {
+        this.project = project;
         this.classFileCollector = classFileCollector;
+        this.sourceSetContainer = sourceSetContainer;
+        this.skippyPluginExtension = skippyPluginExtension;
     }
 
-    public List<SkippifiedTest> collectAllIn(Project project) {
+    /**
+     * Collects all {@link SkippifiedTest}s in the project.
+     *
+     * @return all {@link SkippifiedTest}s in the project
+     */
+    public List<SkippifiedTest> collect() {
         var result = new LinkedList<SkippifiedTest>();
-        var skippyPluginExtension = project.getExtensions().getByType(SkippyPluginExtension.class);
         for (var sourceSetWithTestTask : skippyPluginExtension.getSourceSetsWithTestTasks()) {
-            result.addAll(collectAllInSourceSet(project, sourceSetWithTestTask));
+            result.addAll(collect(sourceSetWithTestTask));
         }
         return result;
     }
 
-    private List<SkippifiedTest> collectAllInSourceSet(Project project, SourceSetWithTestTask sourceSetWithTestTask) {
-            var sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
+    /**
+     * Collects all {@link SkippifiedTest}s in the SourceSet identified by {@param sourceSetWithTestTask}.
+     *
+     * @return all {@link SkippifiedTest}s in the SourceSet identified by {@param sourceSetWithTestTask}
+     */
+    private List<SkippifiedTest> collect(SourceSetWithTestTask sourceSetWithTestTask) {
             var sourceSet = sourceSetContainer.getByName(sourceSetWithTestTask.getSourceSetName());
-            var classFiles = classFileCollector.collectAllInSourceSet(project, sourceSet);
+            var classFiles = classFileCollector.collect(sourceSet);
             return classFiles.stream()
                     .filter(classFile -> SkippyJUnit5Detector.usesSkippyJunit5Extension(classFile.getAbsolutePath()))
                     .map(classFile -> new SkippifiedTest(classFile, sourceSetWithTestTask.getTestTask()))

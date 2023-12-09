@@ -29,20 +29,36 @@ import java.util.List;
 import static java.util.Comparator.comparing;
 
 /**
- * Collects all {@link ClassFile}s in {@link Project}s and {@link SourceSet}s.
+ * Collects {@link ClassFile}s in a project.
+ *
+ * @author Florian McKee
  */
 public final class ClassFileCollector {
 
+    private final Project project;
+    private final SourceSetContainer sourceSetContainer;
+
     /**
-     * Collects all {@link ClassFile}s across all output directories of the {@param project}.
+     * C'tor
      *
-     * @return all {@link ClassFile}s across all output directories of the {@param project}
+     * @param project
+     * @param sourceSetContainer
      */
-    public List<ClassFile> collectAllInProject(Project project) {
+    public ClassFileCollector(Project project, SourceSetContainer sourceSetContainer) {
+        this.project = project;
+        this.sourceSetContainer = sourceSetContainer;
+    }
+
+
+    /**
+     * Collects all {@link ClassFile}s in the project.
+     *
+     * @return all {@link ClassFile}s in the project
+     */
+    public List<ClassFile> collect() {
         var result = new ArrayList<ClassFile>();
-        var sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
         for (var sourceSet : sourceSetContainer) {
-            result.addAll(collectAllInSourceSet(project, sourceSet));
+            result.addAll(collect(sourceSet));
         }
         return sort(result);
     }
@@ -50,24 +66,25 @@ public final class ClassFileCollector {
     /**
      * Collects all {@link ClassFile}s in the output directories of the {@param sourceSet}.
      *
+     * @param sourceSet
      * @return all {@link ClassFile}s in the output directories of the {@param sourceSet}
      */
-    List<ClassFile> collectAllInSourceSet(Project project, SourceSet sourceSet) {
+    List<ClassFile> collect(SourceSet sourceSet) {
         var classesDirs = sourceSet.getOutput().getClassesDirs().getFiles();
         var result = new ArrayList<ClassFile>();
         for (var classesDir : classesDirs) {
-            result.addAll(collectAllInDirectory(project, classesDir));
+            result.addAll(collect(classesDir));
         }
         return sort(result);
     }
 
-    private static List<ClassFile> collectAllInDirectory(Project project, File directory) {
+    private List<ClassFile> collect(File directory) {
         var result = new LinkedList<ClassFile>();
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    result.addAll(collectAllInDirectory(project, file));
+                    result.addAll(collect(file));
                 } else if (file.getName().endsWith(".class")) {
                     result.add(new ClassFile(project, file.toPath()));
                 }
