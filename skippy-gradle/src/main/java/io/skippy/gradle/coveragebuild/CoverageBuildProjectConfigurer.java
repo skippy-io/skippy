@@ -32,14 +32,16 @@ import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.util.Arrays.asList;
 
 /**
- * Configures a {@code project} for the execution of a coverage build.
+ * Configures a {@code project} for the execution of a coverage build for a skippified tests.
  *
  * @author Florian McKee
  */
 final class CoverageBuildProjectConfigurer {
 
     /**
-     * Configures the {@code project} for the execution of a coverage build.
+     * Configures the {@code project} for the execution of a coverage build for a skippified test.
+     * <br /><br />
+     * Note: The skippified test is inferred from the build arguments.
      *
      * @param project
      */

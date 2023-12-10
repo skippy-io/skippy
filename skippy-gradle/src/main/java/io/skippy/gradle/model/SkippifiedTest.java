@@ -16,13 +16,7 @@
 
 package io.skippy.gradle.model;
 
-import org.gradle.api.Project;
-
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.Arrays.asList;
 
 /**
  * Thin wrapper around a skippified test that stores
@@ -54,7 +48,6 @@ public class SkippifiedTest {
      *
      * @return the fully qualified class name (e.g., com.example.FooTest)
      */
-
     public String getFullyQualifiedClassName() {
         return testClassFile.getFullyQualifiedClassName();
     }

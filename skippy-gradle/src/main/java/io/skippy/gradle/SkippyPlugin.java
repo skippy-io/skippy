@@ -24,14 +24,18 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSetContainer;
 
 /**
- * Adds the {@code skippyClean} and {@code skippyAnalyze} tasks to a project.
+ * Adds Skippy support for Gradle:
+ * <ul>
+ *     <li>Add the {@code skippyClean} and {@code skippyAnalyze} tasks if the build has been triggered "normally".</li>
+ *     <li>If the build was triggered by the {@link AnalyzeTask} to capture coverage data for a skippified test,
+ *     the plugin performs the necessary configuration changes.</li>
+ * </ul>
  *
  * @author Florian McKee
  */
 public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
-
-        @Override
+    @Override
     public void apply(Project project) {
         project.getPlugins().apply(JavaPlugin.class);
 
