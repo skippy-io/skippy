@@ -20,7 +20,6 @@ import io.skippy.gradle.SkippyPluginExtension;
 import io.skippy.gradle.asm.SkippyJUnit5Detector;
 import io.skippy.gradle.model.SkippifiedTest;
 import io.skippy.gradle.model.SourceSetWithTestTask;
-import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.util.LinkedList;
@@ -35,7 +34,6 @@ import static java.util.Comparator.comparing;
  */
 public final class SkippifiedTestCollector  {
 
-    private final Project project;
     private final ClassFileCollector classFileCollector;
     private final SourceSetContainer sourceSetContainer;
     private final SkippyPluginExtension skippyPluginExtension;
@@ -43,13 +41,11 @@ public final class SkippifiedTestCollector  {
     /**
      * C'tor.
      *
-     * @param project
-     * @param classFileCollector
-     * @param sourceSetContainer
-     * @param skippyPluginExtension
+     * @param classFileCollector a {@link ClassFileCollector}
+     * @param sourceSetContainer a {@link SourceSetContainer}
+     * @param skippyPluginExtension a {@link SkippyPluginExtension}
      */
-    public SkippifiedTestCollector(Project project, ClassFileCollector classFileCollector, SourceSetContainer sourceSetContainer, SkippyPluginExtension skippyPluginExtension) {
-        this.project = project;
+    public SkippifiedTestCollector(ClassFileCollector classFileCollector, SourceSetContainer sourceSetContainer, SkippyPluginExtension skippyPluginExtension) {
         this.classFileCollector = classFileCollector;
         this.sourceSetContainer = sourceSetContainer;
         this.skippyPluginExtension = skippyPluginExtension;
@@ -79,7 +75,7 @@ public final class SkippifiedTestCollector  {
             return classFiles.stream()
                     .filter(classFile -> SkippyJUnit5Detector.usesSkippyJunit5Extension(classFile.getAbsolutePath()))
                     .map(classFile -> new SkippifiedTest(classFile, sourceSetWithTestTask.getTestTask()))
-                    .sorted(comparing(skippifiedTest -> skippifiedTest.getFullyQualifiedClassName()))
+                    .sorted(comparing(skippifiedTest -> skippifiedTest.classFile().getFullyQualifiedClassName()))
                     .toList();
     }
 

@@ -25,17 +25,12 @@ import static java.util.Arrays.asList;
 /**
  * Represents the tasks and build arguments used to run a coverage build for a skippified test.
  *
+ * @param tasks the tasks that need to be executed for the coverage build for the skippified test
+ * @param arguments The arguments that need to be passed to the coverage build for the skippified test
+ *
  * @author Florian McKee
  */
-final class CoverageBuildTasksAndArguments {
-
-    private final List<String> tasks;
-    private final List<String> arguments;
-
-    private CoverageBuildTasksAndArguments(List<String> tasks, List<String> arguments) {
-        this.tasks = tasks;
-        this.arguments = arguments;
-    }
+record CoverageBuildTasksAndArguments(List<String> tasks, List<String> arguments) {
 
     /**
      * Creates a new instance for a {@link SkippifiedTest}.
@@ -45,33 +40,15 @@ final class CoverageBuildTasksAndArguments {
      */
     static CoverageBuildTasksAndArguments forSkippifiedTest(SkippifiedTest skippifiedTest) {
         var tasks = asList(
-            skippifiedTest.getTestTask(),
+            skippifiedTest.testTask(),
             "jacocoTestReport"
         );
         var arguments = asList(
             "-PskippyCoverageBuild=true",
-            "-PskippyClassFile=" + skippifiedTest.getRelativePath(),
-            "-PskippyTestTask=" + skippifiedTest.getTestTask()
+            "-PskippyClassFile=" + skippifiedTest.classFile().getRelativePath(),
+            "-PskippyTestTask=" + skippifiedTest.testTask()
         );
         return new CoverageBuildTasksAndArguments(tasks, arguments);
-    }
-
-    /**
-     * Returns the tasks that need to be executed for the coverage build for the skippified test.
-     *
-     * @return the tasks that need to be executed for the coverage build for the skippified test
-     */
-    List<String> getTasks() {
-        return tasks;
-    }
-
-    /**
-     * Returns the arguments that need to be passed to the coverage build for the skippified test.
-     *
-     * @return the arguments that need to be passed to the coverage build for the skippified test
-     */
-    List<String> getArguments() {
-        return arguments;
     }
 
 }

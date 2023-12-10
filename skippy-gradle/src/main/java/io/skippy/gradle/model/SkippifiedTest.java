@@ -16,8 +16,6 @@
 
 package io.skippy.gradle.model;
 
-import java.nio.file.Path;
-
 /**
  * Thin wrapper around a skippified test that stores
  * <ul>
@@ -25,50 +23,9 @@ import java.nio.file.Path;
  *     <li>the name of the test task used to execute the test (e.g., <i>integrationTest</i>).</li>
  * </ul>
  *
+ * @param classFile the test's {@link ClassFile}
+ * @param testTask the name of the test task to be used to run this test
+ *
  * @author Florian McKee
  */
-public class SkippifiedTest {
-
-    private final ClassFile testClassFile;
-    private final String testTask;
-
-    /**
-     * C'tor
-     *
-     * @param test
-     * @param testTask
-     */
-    public SkippifiedTest(ClassFile test, String testTask) {
-        this.testClassFile = test;
-        this.testTask = testTask;
-    }
-
-    /**
-     * Returns the fully qualified class name (e.g., com.example.FooTest).
-     *
-     * @return the fully qualified class name (e.g., com.example.FooTest)
-     */
-    public String getFullyQualifiedClassName() {
-        return testClassFile.getFullyQualifiedClassName();
-    }
-
-    /**
-     * Returns the name of the {@link org.gradle.api.tasks.testing.Test} task to be used to run this test.
-     *
-     * @return the name of the {@link org.gradle.api.tasks.testing.Test} task to be used to run this test
-     */
-    public String getTestTask() {
-        return testTask;
-    }
-
-    /**
-     * Returns the relative {@link Path} of the class file relative to the project root,
-     * (e.g., src/main/java/com/example/FooTest.java)
-     *
-     * @return the relative {@link Path} of the class file relative to the project root,
-     *      (e.g., src/main/java/com/example/FooTest.java)
-     */
-    public Path getRelativePath() {
-        return testClassFile.getRelativePath();
-    }
-}
+public record SkippifiedTest(ClassFile classFile, String testTask) {}

@@ -60,23 +60,23 @@ final class CoverageBuildProjectConfigurer {
 
     private static void configureTestTask(Project project, SkippifiedTest skippifiedTest) {
         project.getTasks().withType(Test.class, test -> {
-            test.filter((filter) -> filter.includeTestsMatching(skippifiedTest.getFullyQualifiedClassName()));
+            test.filter((filter) -> filter.includeTestsMatching(skippifiedTest.classFile().getFullyQualifiedClassName()));
             test.getExtensions().configure(JacocoTaskExtension.class, jacoco -> {
-                jacoco.setDestinationFile(project.file(project.getProjectDir() + "/skippy/" + skippifiedTest.getFullyQualifiedClassName() + ".exec"));
+                jacoco.setDestinationFile(project.file(project.getProjectDir() + "/skippy/" + skippifiedTest.classFile().getFullyQualifiedClassName() + ".exec"));
             });
         });
     }
 
     private static void configureJacocoTestReportTask(Project project, SkippifiedTest skippifiedTest) {
         project.afterEvaluate(action -> {
-            var testTask = skippifiedTest.getTestTask();
+            var testTask = skippifiedTest.testTask();
             project.getTasks().named("jacocoTestReport", JacocoReport.class, jacoco -> {
                 jacoco.setDependsOn(asList(testTask));
                 jacoco.reports(reports -> {
                     reports.getXml().getRequired().set(Boolean.FALSE);
                     reports.getCsv().getRequired().set(Boolean.TRUE);
-                    reports.getHtml().getOutputLocation().set(project.file(project.getBuildDir() + "/jacoco/html/" + skippifiedTest.getFullyQualifiedClassName()));
-                    var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
+                    reports.getHtml().getOutputLocation().set(project.file(project.getBuildDir() + "/jacoco/html/" + skippifiedTest.classFile().getFullyQualifiedClassName()));
+                    var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.classFile().getFullyQualifiedClassName() + ".csv");
                     reports.getCsv().getOutputLocation().set(project.file(csvFile));
                 });
                 // capture coverage for all source sets
