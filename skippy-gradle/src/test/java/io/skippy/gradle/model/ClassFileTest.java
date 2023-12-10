@@ -16,16 +16,17 @@
 
 package io.skippy.gradle.model;
 
-import io.skippy.gradle.model.ClassFile;
 import org.gradle.api.Project;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link ClassFile}.
@@ -42,6 +43,18 @@ public class ClassFileTest {
     void testGetFullyQualifiedClassName(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
         assertEquals(expectedValue, new ClassFile(mock(Project.class), classFile).getFullyQualifiedClassName());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "SourceFileTest1.class:model/SourceFileTest1.class",
+            "SourceFileTest2.class:model/SourceFileTest2.class"
+    }, delimiter = ':')
+    void testGetRelativePath(String fileName, String expectedValue) throws URISyntaxException {
+        var classFile = Paths.get(getClass().getResource(fileName).toURI());
+        var project = mock(Project.class);
+        when(project.getProjectDir()).thenReturn(classFile.toFile().getParentFile().getParentFile());
+        assertEquals(Path.of(expectedValue), new ClassFile(project, classFile).getRelativePath());
     }
 
     @ParameterizedTest

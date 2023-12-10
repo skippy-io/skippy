@@ -49,7 +49,6 @@ public final class ClassFileCollector {
         this.sourceSetContainer = sourceSetContainer;
     }
 
-
     /**
      * Collects all {@link ClassFile}s in the project.
      *
