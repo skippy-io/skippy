@@ -42,9 +42,9 @@ public final class SkippifiedTestCollector  {
     /**
      * C'tor.
      *
-     * @param classFileCollector
-     * @param sourceSetContainer
-     * @param skippyPluginExtension
+     * @param classFileCollector a {@link ClassFileCollector}
+     * @param sourceSetContainer a {@link SourceSetContainer}
+     * @param skippyPluginExtension a {@link SkippyPluginExtension}
      */
     public SkippifiedTestCollector(ClassFileCollector classFileCollector, SourceSetContainer sourceSetContainer, SkippyPluginExtension skippyPluginExtension) {
         this.classFileCollector = classFileCollector;

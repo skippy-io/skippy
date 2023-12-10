@@ -41,8 +41,8 @@ public final class ClassFileCollector {
     /**
      * C'tor
      *
-     * @param project
-     * @param sourceSetContainer
+     * @param project a {@link Project}
+     * @param sourceSetContainer a {@link SourceSetContainer}
      */
     public ClassFileCollector(Project project, SourceSetContainer sourceSetContainer) {
         this.project = project;

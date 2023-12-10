@@ -27,12 +27,11 @@ import org.gradle.tooling.BuildLauncher;
  */
 public final class CoverageBuild {
 
-
     /**
-     * Returns {@code true} if the {@project} represents a coverage build for a skippified test, {@code false} otherwise.
+     * Returns {@code true} if the {@param project} represents a coverage build for a skippified test, {@code false} otherwise.
      *
-     * @param project
-     * @return {@code true} if the {@project} represents a coverage build for a skippified test, {@code false} otherwise
+     * @param project a {@link Project}
+     * @return {@code true} if the {@param project} represents a coverage build for a skippified test, {@code false} otherwise
      */
     public static boolean isCoverageBuild(Project project) {
         return project.hasProperty("skippyCoverageBuild");
@@ -41,7 +40,7 @@ public final class CoverageBuild {
     /**
      * Configures the {@param project} for the execution of a coverage build for a skippified test.
      *
-     * @param project
+     * @param project a {@link Project}
      */
     public static void configure(Project project) {
         CoverageBuildProjectConfigurer.configure(project);
@@ -50,9 +49,9 @@ public final class CoverageBuild {
     /**
      * Runs a coverage build for the {@code skippifiedTest}.
      *
-     * @param project
-     * @param buildLauncher
-     * @param skippifiedTest
+     * @param project a {@link Project}
+     * @param buildLauncher a {@link BuildLauncher}
+     * @param skippifiedTest a {@link SkippifiedTest}
      */
     public static void run(Project project, BuildLauncher buildLauncher, SkippifiedTest skippifiedTest) {
         CoverageBuildRunner.run(project, buildLauncher, skippifiedTest);
