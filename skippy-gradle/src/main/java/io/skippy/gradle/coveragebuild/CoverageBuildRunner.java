@@ -24,18 +24,27 @@ import org.gradle.tooling.BuildLauncher;
 
 import java.io.ByteArrayOutputStream;
 
-import static io.skippy.gradle.Profiler.stopWatch;
+import static io.skippy.gradle.util.StopWatch.measureInMs;
 import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.util.stream.Collectors.joining;
 
 /**
+ * Runs coverage builds for skippified tests.
+ *
  * @author Florian McKee
  */
 final class CoverageBuildRunner {
 
+    /**
+     * Runs a coverage build for the {@code skippifiedTest}.
+     *
+     * @param project
+     * @param buildLauncher
+     * @param skippifiedTest
+     */
     static void run(Project project, BuildLauncher buildLauncher, SkippifiedTest skippifiedTest) {
         try {
-            var args = CoverageBuildArguments.forSkippifiedTest(skippifiedTest);
+            var args = CoverageBuildTasksAndArguments.forSkippifiedTest(skippifiedTest);
             var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
             var fqn = skippifiedTest.getFullyQualifiedClassName();
 
@@ -47,7 +56,7 @@ final class CoverageBuildRunner {
             ));
             project.getLogger().lifecycle("%s".formatted(skippifiedTest.getFullyQualifiedClassName()));
 
-            long ms = stopWatch(() -> runInternal(project.getLogger(), buildLauncher, skippifiedTest));
+            long ms = measureInMs(() -> runInternal(project.getLogger(), buildLauncher, skippifiedTest));
             project.getLogger().lifecycle("%s".formatted(skippifiedTest.getFullyQualifiedClassName()));
             project.getLogger().lifecycle("%s Build executed in %sms.".formatted(skippifiedTest.getFullyQualifiedClassName(), ms));
         } catch (Exception e) {
@@ -58,7 +67,7 @@ final class CoverageBuildRunner {
 
     private static void runInternal(Logger logger, BuildLauncher buildLauncher, SkippifiedTest skippifiedTest) {
         // configure tasks and arguments
-        var args = CoverageBuildArguments.forSkippifiedTest(skippifiedTest);
+        var args = CoverageBuildTasksAndArguments.forSkippifiedTest(skippifiedTest);
         buildLauncher.forTasks(args.getTasks().toArray(new String[0]));
         buildLauncher.addArguments(args.getArguments().toArray(new String[0]));
 

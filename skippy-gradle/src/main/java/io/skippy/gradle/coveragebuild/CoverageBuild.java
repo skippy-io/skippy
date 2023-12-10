@@ -21,6 +21,7 @@ import org.gradle.api.Project;
 import org.gradle.tooling.BuildLauncher;
 
 /**
+ * API that is used by plugins and task to detect, configure and run coverage builds.
  *
  * @author Florian McKee
  */
@@ -37,10 +38,22 @@ public final class CoverageBuild {
         return project.hasProperty("skippyCoverageBuild");
     }
 
+    /**
+     * Configures the {@param project} for the execution of a coverage build for a skippified test.
+     *
+     * @param project
+     */
     public static void configure(Project project) {
         CoverageBuildProjectConfigurer.configure(project);
     }
 
+    /**
+     * Runs a coverage build for the {@code skippifiedTest}.
+     *
+     * @param project
+     * @param buildLauncher
+     * @param skippifiedTest
+     */
     public static void run(Project project, BuildLauncher buildLauncher, SkippifiedTest skippifiedTest) {
         CoverageBuildRunner.run(project, buildLauncher, skippifiedTest);
     }

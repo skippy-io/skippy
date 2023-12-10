@@ -23,19 +23,27 @@ import java.util.List;
 import static java.util.Arrays.asList;
 
 /**
+ * Represents the tasks and build arguments used to run a coverage build for a skippified test.
+ *
  * @author Florian McKee
  */
-final class CoverageBuildArguments {
+final class CoverageBuildTasksAndArguments {
 
     private final List<String> tasks;
     private final List<String> arguments;
 
-    private CoverageBuildArguments(List<String> tasks, List<String> arguments) {
+    private CoverageBuildTasksAndArguments(List<String> tasks, List<String> arguments) {
         this.tasks = tasks;
         this.arguments = arguments;
     }
 
-    static CoverageBuildArguments forSkippifiedTest(SkippifiedTest skippifiedTest) {
+    /**
+     * Creates a new instance for a {@link SkippifiedTest}.
+     *
+     * @param skippifiedTest
+     * @return a new instance for a {@link SkippifiedTest}
+     */
+    static CoverageBuildTasksAndArguments forSkippifiedTest(SkippifiedTest skippifiedTest) {
         var tasks = asList(
             skippifiedTest.getTestTask(),
             "jacocoTestReport"
@@ -45,13 +53,23 @@ final class CoverageBuildArguments {
             "-PskippyClassFile=" + skippifiedTest.getRelativePath(),
             "-PskippyTestTask=" + skippifiedTest.getTestTask()
         );
-        return new CoverageBuildArguments(tasks, arguments);
+        return new CoverageBuildTasksAndArguments(tasks, arguments);
     }
 
+    /**
+     * Returns the tasks that need to be executed for the coverage build for the skippified test.
+     *
+     * @return the tasks that need to be executed for the coverage build for the skippified test
+     */
     List<String> getTasks() {
         return tasks;
     }
 
+    /**
+     * Returns the arguments that need to be passed to the coverage build for the skippified test.
+     *
+     * @return the arguments that need to be passed to the coverage build for the skippified test
+     */
     List<String> getArguments() {
         return arguments;
     }
