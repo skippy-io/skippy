@@ -20,7 +20,6 @@ import io.skippy.gradle.SkippyPluginExtension;
 import io.skippy.gradle.asm.SkippyJUnit5Detector;
 import io.skippy.gradle.model.SkippifiedTest;
 import io.skippy.gradle.model.SourceSetWithTestTask;
-import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.util.LinkedList;
