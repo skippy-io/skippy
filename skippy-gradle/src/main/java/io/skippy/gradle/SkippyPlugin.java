@@ -53,7 +53,7 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
             var sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
             var classFileCollector = new ClassFileCollector(project, sourceSetContainer);
-            var skippifiedTestCollector = new SkippifiedTestCollector(project, classFileCollector, sourceSetContainer, skippyExtension);
+            var skippifiedTestCollector = new SkippifiedTestCollector(classFileCollector, sourceSetContainer, skippyExtension);
 
             project.getTasks().register("skippyAnalyze", AnalyzeTask.class, classFileCollector, skippifiedTestCollector);
         }

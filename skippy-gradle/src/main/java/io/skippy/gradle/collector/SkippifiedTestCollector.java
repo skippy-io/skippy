@@ -35,7 +35,6 @@ import static java.util.Comparator.comparing;
  */
 public final class SkippifiedTestCollector  {
 
-    private final Project project;
     private final ClassFileCollector classFileCollector;
     private final SourceSetContainer sourceSetContainer;
     private final SkippyPluginExtension skippyPluginExtension;
@@ -43,13 +42,11 @@ public final class SkippifiedTestCollector  {
     /**
      * C'tor.
      *
-     * @param project
      * @param classFileCollector
      * @param sourceSetContainer
      * @param skippyPluginExtension
      */
-    public SkippifiedTestCollector(Project project, ClassFileCollector classFileCollector, SourceSetContainer sourceSetContainer, SkippyPluginExtension skippyPluginExtension) {
-        this.project = project;
+    public SkippifiedTestCollector(ClassFileCollector classFileCollector, SourceSetContainer sourceSetContainer, SkippyPluginExtension skippyPluginExtension) {
         this.classFileCollector = classFileCollector;
         this.sourceSetContainer = sourceSetContainer;
         this.skippyPluginExtension = skippyPluginExtension;
@@ -79,7 +76,7 @@ public final class SkippifiedTestCollector  {
             return classFiles.stream()
                     .filter(classFile -> SkippyJUnit5Detector.usesSkippyJunit5Extension(classFile.getAbsolutePath()))
                     .map(classFile -> new SkippifiedTest(classFile, sourceSetWithTestTask.getTestTask()))
-                    .sorted(comparing(skippifiedTest -> skippifiedTest.getFullyQualifiedClassName()))
+                    .sorted(comparing(skippifiedTest -> skippifiedTest.classFile().getFullyQualifiedClassName()))
                     .toList();
     }
 

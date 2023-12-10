@@ -45,20 +45,20 @@ final class CoverageBuildRunner {
     static void run(Project project, BuildLauncher buildLauncher, SkippifiedTest skippifiedTest) {
         try {
             var args = CoverageBuildTasksAndArguments.forSkippifiedTest(skippifiedTest);
-            var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.getFullyQualifiedClassName() + ".csv");
-            var fqn = skippifiedTest.getFullyQualifiedClassName();
+            var csvFile = project.getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(skippifiedTest.classFile().getFullyQualifiedClassName() + ".csv");
+            var fqn = skippifiedTest.classFile().getFullyQualifiedClassName();
 
             project.getLogger().lifecycle("\n%s > Capturing coverage data in %s".formatted(
                     fqn, project.getProjectDir().toPath().relativize(csvFile))
             );
             project.getLogger().lifecycle("%s > ./gradlew %s %s".formatted(
-                    fqn, args.getTasks().stream().collect(joining(" ")), args.getArguments().stream().collect(joining(" "))
+                    fqn, args.tasks().stream().collect(joining(" ")), args.arguments().stream().collect(joining(" "))
             ));
-            project.getLogger().lifecycle("%s".formatted(skippifiedTest.getFullyQualifiedClassName()));
+            project.getLogger().lifecycle("%s".formatted(skippifiedTest.classFile().getFullyQualifiedClassName()));
 
             long ms = measureInMs(() -> runInternal(project.getLogger(), buildLauncher, skippifiedTest));
-            project.getLogger().lifecycle("%s".formatted(skippifiedTest.getFullyQualifiedClassName()));
-            project.getLogger().lifecycle("%s Build executed in %sms.".formatted(skippifiedTest.getFullyQualifiedClassName(), ms));
+            project.getLogger().lifecycle("%s".formatted(skippifiedTest.classFile().getFullyQualifiedClassName()));
+            project.getLogger().lifecycle("%s Build executed in %sms.".formatted(skippifiedTest.classFile().getFullyQualifiedClassName(), ms));
         } catch (Exception e) {
             project.getLogger().error(e.getMessage(), e);
             throw e;
@@ -68,8 +68,8 @@ final class CoverageBuildRunner {
     private static void runInternal(Logger logger, BuildLauncher buildLauncher, SkippifiedTest skippifiedTest) {
         // configure tasks and arguments
         var args = CoverageBuildTasksAndArguments.forSkippifiedTest(skippifiedTest);
-        buildLauncher.forTasks(args.getTasks().toArray(new String[0]));
-        buildLauncher.addArguments(args.getArguments().toArray(new String[0]));
+        buildLauncher.forTasks(args.tasks().toArray(new String[0]));
+        buildLauncher.addArguments(args.arguments().toArray(new String[0]));
 
         // intercept logs
         var errorOutputStream = new ByteArrayOutputStream();
@@ -89,7 +89,7 @@ final class CoverageBuildRunner {
         var output = outputStream.toString();
         if ( ! output.isEmpty()) {
             for (var line : output.split(System.lineSeparator())) {
-                logger.log(logLevel, "%s    %s".formatted(skippifiedTest.getFullyQualifiedClassName(), line));
+                logger.log(logLevel, "%s    %s".formatted(skippifiedTest.classFile().getFullyQualifiedClassName(), line));
             }
         }
     }

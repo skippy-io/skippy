@@ -25,23 +25,12 @@ import java.nio.file.Path;
 /**
  * Thin wrapper around a class file in a {@link Project} that adds a couple of convenience methods.
  *
+ * @param project the Gradle {@link Project}
+ * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
+ *
  * @author Florian McKee
  */
-public final class ClassFile {
-
-    private final Project project;
-    private final Path classFile;
-
-    /**
-     * C'tor.
-     *
-     * @param project the Gradle {@link Project}
-     * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
-     */
-    public ClassFile(Project project, Path classFile) {
-        this.project = project;
-        this.classFile = classFile;
-    }
+public record ClassFile(Project project, Path classFile) {
 
     /**
      * Returns the fully qualified class name (e.g., com.example.Foo).
@@ -51,7 +40,6 @@ public final class ClassFile {
     public String getFullyQualifiedClassName() {
         return ClassNameExtractor.getFullyQualifiedClassName(classFile);
     }
-
 
     /**
      * Returns the absolute {@link Path} of the class file.
