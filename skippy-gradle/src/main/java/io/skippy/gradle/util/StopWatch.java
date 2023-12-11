@@ -13,11 +13,8 @@ public class StopWatch {
      */
     public static long measureInMs(Runnable runnable) {
         var then = System.currentTimeMillis();
-        try {
-            runnable.run();
-        } finally {
-            return System.currentTimeMillis() - then;
-        }
+        runnable.run();
+        return System.currentTimeMillis() - then;
     }
 
 }

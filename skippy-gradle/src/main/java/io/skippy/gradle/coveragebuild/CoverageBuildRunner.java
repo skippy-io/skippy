@@ -21,8 +21,11 @@ import org.gradle.api.Project;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.Logger;
 import org.gradle.tooling.BuildLauncher;
+import org.gradle.tooling.GradleConnectionException;
+import org.gradle.tooling.ResultHandler;
 
 import java.io.ByteArrayOutputStream;
+import java.util.concurrent.CountDownLatch;
 
 import static io.skippy.gradle.util.StopWatch.measureInMs;
 import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
@@ -78,7 +81,26 @@ final class CoverageBuildRunner {
         buildLauncher.setStandardOutput(standardOutputStream);
 
         // execute
-        buildLauncher.run();
+
+        var latch = new CountDownLatch(1);
+        buildLauncher.run(new ResultHandler<>() {
+            @Override
+            public void onComplete(Void unused) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(GradleConnectionException e) {
+                latch.countDown();
+                logger.error("Coverage build failed", e);
+            }
+        });
+
+        try {
+             latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         // propagate logs to root build
         log(logger, errorOutputStream, LogLevel.ERROR, skippifiedTest);

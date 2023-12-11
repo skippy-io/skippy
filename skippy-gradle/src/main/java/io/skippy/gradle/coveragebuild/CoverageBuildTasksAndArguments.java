@@ -45,7 +45,7 @@ record CoverageBuildTasksAndArguments(List<String> tasks, List<String> arguments
         );
         var arguments = asList(
             "-PskippyCoverageBuild=true",
-            "-PskippyClassFile=" + skippifiedTest.classFile().getRelativePath(),
+            "-PskippyClassFile=" + skippifiedTest.classFile().getAbsolutePath(),
             "-PskippyTestTask=" + skippifiedTest.testTask()
         );
         return new CoverageBuildTasksAndArguments(tasks, arguments);

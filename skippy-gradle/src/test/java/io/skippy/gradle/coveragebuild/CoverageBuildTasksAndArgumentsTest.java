@@ -48,7 +48,7 @@ public class CoverageBuildTasksAndArgumentsTest {
         );
         assertThat(tasksAndArgs.arguments()).contains(
                 "-PskippyCoverageBuild=true",
-                "-PskippyClassFile=coveragebuild/LeftPadderTest.class",
+                "-PskippyClassFile=%s/coveragebuild/LeftPadderTest.class".formatted(project.getProjectDir().toString()),
                 "-PskippyTestTask=test"
         );
     }
