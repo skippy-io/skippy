@@ -21,6 +21,7 @@ import io.skippy.gradle.collector.SkippifiedTestCollector;
 import io.skippy.gradle.coveragebuild.CoverageBuild;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.UncheckedIOException;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 
@@ -54,6 +55,9 @@ class AnalyzeTask extends DefaultTask {
         this.classCollector = classFileCollector;
         this.skippifiedTestCollector = skippifiedTestCollector;
         setGroup("skippy");
+        for (var sourceSet : getProject().getExtensions().getByType(SourceSetContainer.class)) {
+             dependsOn(sourceSet.getClassesTaskName());
+        }
         dependsOn("skippyClean");
         doLast((task) -> {
             createCoverageReportsForSkippifiedTests();

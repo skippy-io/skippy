@@ -42,7 +42,8 @@ public class SkippyPluginSmokeTest {
         BuildResult result = GradleRunner.create()
                 .withProjectDir(projectDir)
                 .withPluginClasspath()
-                .withArguments("-b", "build-with-plugin.gradle", "clean", "build", "skippyAnalyze")
+                .withDebug(true)
+                .withArguments("-b", "build-with-plugin.gradle", "clean", "skippyAnalyze")
                 .forwardOutput()
                 .build();
 

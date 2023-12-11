@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Extracts the fully-qualified class name (e.g., com.example.Foo) from a class file.
+ *
+ * @author Florian McKee
  */
 public final class ClassNameExtractor {
 
