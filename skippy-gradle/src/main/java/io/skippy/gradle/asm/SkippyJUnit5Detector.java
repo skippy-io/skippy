@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Checks whether a class is annotated with the Skippy JUnit 5 Extension.
+ *
+ * @author Florian McKee
  */
 public final class SkippyJUnit5Detector {
 
