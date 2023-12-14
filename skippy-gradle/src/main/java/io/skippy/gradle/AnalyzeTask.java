@@ -28,7 +28,7 @@ import org.gradle.tooling.ProjectConnection;
 import javax.inject.Inject;
 import java.io.IOException;
 
-import static io.skippy.gradle.SkippyConstants.SKIPPY_ANALYSIS_FILES_TXT;
+import static io.skippy.gradle.SkippyConstants.CLASSES_MD5_FILE;
 import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.Files.writeString;
@@ -77,9 +77,9 @@ class AnalyzeTask extends DefaultTask {
 
     private void createAnalyzedFilesTxt() {
         try {
-            var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(SKIPPY_ANALYSIS_FILES_TXT);
+            var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(CLASSES_MD5_FILE);
             skippyAnalysisFile.toFile().createNewFile();
-            getLogger().lifecycle("\nCreating the Skippy analysis file %s.".formatted(getProject().getProjectDir().toPath().relativize(skippyAnalysisFile)));
+            getLogger().lifecycle("\nStoring hashes for all class files in %s.".formatted(getProject().getProjectDir().toPath().relativize(skippyAnalysisFile)));
             var classFiles = classCollector.collect();
             writeString(skippyAnalysisFile, classFiles.stream()
                     .map(classFile -> "%s:%s".formatted(classFile.getRelativePath(), classFile.getHash()))

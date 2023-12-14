@@ -53,7 +53,7 @@ public class SkippyPluginSmokeTest {
                 "> Task :skippyAnalyze",
                 "com.example.LeftPadderTest > Capturing coverage data in skippy/com.example.LeftPadderTest.csv",
                 "com.example.RightPadderTest > Capturing coverage data in skippy/com.example.RightPadderTest.csv",
-                "Creating the Skippy analysis file skippy/analyzedFiles.txt.")
+                "Storing hashes for all class files in skippy/classes.md5.")
         );
     }
 

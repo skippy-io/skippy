@@ -64,6 +64,10 @@ public class SkippyPluginExtension {
 
     private List<SourceSetWithTestTask> sourceSetsWithTestTask = new ArrayList<>();
 
+    /**
+     * Returns the {@link SourceSetWithTestTask}s that will be considered by Skippy.
+     * @return the {@link SourceSetWithTestTask}s that will be considered by Skippy
+     */
     public List<SourceSetWithTestTask> getSourceSetsWithTestTasks() {
         if (sourceSetsWithTestTask.isEmpty()) {
             return asList(new SourceSetWithTestTask("test", "test"));
