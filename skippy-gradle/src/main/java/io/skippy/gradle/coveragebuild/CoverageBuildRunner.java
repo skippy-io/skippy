@@ -99,6 +99,7 @@ final class CoverageBuildRunner {
         try {
              latch.await();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
 
