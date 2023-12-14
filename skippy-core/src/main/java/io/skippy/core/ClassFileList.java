@@ -49,19 +49,19 @@ class ClassFileList {
         this.classFiles = classFiles;
     }
 
-    static ClassFileList parse(Path skippyAnalysisFile) {
-        if (!skippyAnalysisFile.toFile().exists()) {
+    static ClassFileList parse(Path classesMd5File) {
+        if (!classesMd5File.toFile().exists()) {
             return UNAVAILABLE;
         }
         try {
             var result = new ArrayList<ClassFile>();
-            for (var line : Files.readAllLines(skippyAnalysisFile, Charset.forName("UTF8"))) {
+            for (var line : Files.readAllLines(classesMd5File, Charset.forName("UTF8"))) {
                 String[] split = line.split(":");
                 result.add(new ClassFile(Path.of(split[0]), split[1]));
             }
             return new ClassFileList(result);
         } catch (Exception e) {
-            LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(skippyAnalysisFile, e.getMessage()), e);
+            LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(classesMd5File, e.getMessage()), e);
             throw new RuntimeException(e);
         }
     }
@@ -79,4 +79,7 @@ class ClassFileList {
                 .toList();
     }
 
+    public boolean noDataFor(FullyQualifiedClassName fqn) {
+        return ! classFiles.stream().anyMatch(classFile -> fqn.equals(classFile.getFullyQualifiedClassName()));
+    }
 }

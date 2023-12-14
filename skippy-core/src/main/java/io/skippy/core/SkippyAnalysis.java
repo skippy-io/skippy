@@ -63,7 +63,7 @@ public class SkippyAnalysis {
         if ( ! skippyDirectory.toFile().exists() || ! skippyDirectory.toFile().isDirectory()) {
             return SkippyAnalysis.UNAVAILABLE;
         }
-        var analyzedFiles = ClassFileList.parse(skippyDirectory.resolve(SkippyConstants.SKIPPY_ANALYSIS_FILE));
+        var analyzedFiles = ClassFileList.parse(skippyDirectory.resolve(SkippyConstants.CLASSES_MD5_FILE));
         var testCoverage = TestImpactAnalysis.parse(skippyDirectory);
         return new SkippyAnalysis(analyzedFiles, testCoverage);
     }
@@ -77,27 +77,38 @@ public class SkippyAnalysis {
     public boolean executionRequired(Class<?> test) {
         var testFqn = new FullyQualifiedClassName(test.getName());
         if (testImpactAnalysis.noDataAvailableFor(testFqn)) {
-            LOGGER.debug("%s: No analysis found. Execution required.".formatted(testFqn.fqn()));
+            LOGGER.debug("%s: No coverage data found: Execution required".formatted(testFqn.fqn()));
+            return true;
+        }
+        if (classFiles.noDataFor(testFqn)) {
+            LOGGER.debug("%s: No hash found: Execution required".formatted(testFqn.fqn()));
             return true;
         }
         if (classFiles.getChangedClasses().contains(testFqn)) {
-            LOGGER.debug("%s: Bytecode change detected. Execution required.".formatted(testFqn.fqn()));
+            LOGGER.debug("%s: Bytecode change detected: Execution required".formatted(testFqn.fqn()));
             return true;
         }
         if (coveredClassHasChanged(testFqn)) {
             return true;
         }
-        LOGGER.debug("%s: No changes in test or covered classes detected. Execution skipped.".formatted(testFqn.fqn()));
+        LOGGER.debug("%s: No changes in test or covered classes detected: Execution skipped".formatted(testFqn.fqn()));
         return false;
     }
 
-    private boolean coveredClassHasChanged(FullyQualifiedClassName test) {
+    private boolean coveredClassHasChanged(FullyQualifiedClassName testFqn) {
         var changeClasses = classFiles.getChangedClasses();
-        for (var coveredClass : testImpactAnalysis.getCoveredClasses(test)) {
-            if (changeClasses.contains(coveredClass)) {
-                LOGGER.debug("%s: Bytecode change in covered class '%s' detected. Execution required.".formatted(
-                        test.fqn(),
-                        coveredClass.fqn()
+        for (var coveredClassFqn : testImpactAnalysis.getCoveredClasses(testFqn)) {
+            if (changeClasses.contains(coveredClassFqn)) {
+                LOGGER.debug("%s: Bytecode change in covered class '%s' detected: Execution required".formatted(
+                        testFqn.fqn(),
+                        coveredClassFqn.fqn()
+                ));
+                return true;
+            }
+            if (classFiles.noDataFor(coveredClassFqn)) {
+                LOGGER.debug("%s: No hash for covered class '%s' found: Execution required".formatted(
+                        testFqn.fqn(),
+                        coveredClassFqn.fqn()
                 ));
                 return true;
             }

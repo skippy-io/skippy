@@ -33,13 +33,22 @@ public class ClassFileListTest {
 
     @Test
     void testParse() throws URISyntaxException {
-        var analyzedFilesTxt = Path.of(getClass().getResource("analyzedclasslist/analyzedFiles.txt").toURI());
-        var analyzedFiles = ClassFileList.parse(analyzedFilesTxt);
+        var classesMd5 = Path.of(getClass().getResource("classfilelist/classes.md5").toURI());
+        var classFileList = ClassFileList.parse(classesMd5);
 
         assertEquals(asList(
             new FullyQualifiedClassName("io.skippy.core.ClassFile"),
             new FullyQualifiedClassName("io.skippy.core.ClassFileList")
-        ), analyzedFiles.getClasses());
+        ), classFileList.getClasses());
+    }
+
+    @Test
+    void testNoDataFor() throws URISyntaxException {
+        var classesMd5 = Path.of(getClass().getResource("classfilelist/classes.md5").toURI());
+        var classFileList = ClassFileList.parse(classesMd5);
+
+        assertEquals(false, classFileList.noDataFor(new FullyQualifiedClassName("io.skippy.core.ClassFile")));
+        assertEquals(false, classFileList.noDataFor(new FullyQualifiedClassName("io.skippy.core.ClassFileList")));
     }
 
 }
