@@ -33,14 +33,14 @@ public class ClassFileTest {
     @Test
     void testClassFileHasNotChanged() throws URISyntaxException {
         var foo = new ClassFile(
-                Path.of(getClass().getResource("analyzedclass/Foo.class").toURI()), "nI8N7FMXjy8oPJ6w17Eajg==");
+                Path.of(getClass().getResource("classfile/Foo.class").toURI()), "nI8N7FMXjy8oPJ6w17Eajg==");
 
         assertEquals(false, foo.hasChanged());
     }
 
     @Test
     void testClassFileHasChanged() throws URISyntaxException {
-        var fooNew = new ClassFile(Path.of(getClass().getResource("analyzedclass/Foo.class").toURI()), "NEW-CLASS-FILE-HASH");
+        var fooNew = new ClassFile(Path.of(getClass().getResource("classfile/Foo.class").toURI()), "NEW-CLASS-FILE-HASH");
         assertEquals(true, fooNew.hasChanged());
     }
 

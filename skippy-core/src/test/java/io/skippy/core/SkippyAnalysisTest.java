@@ -43,9 +43,9 @@ public class SkippyAnalysisTest {
 
     @Test
     void noCoverageDataEqualsExecution() {
-        var analyzedFiles = mock(ClassFileList.class);
+        var classFileList = mock(ClassFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
+        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
 
         when(testImpactAnalysis.noDataAvailableFor(new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest"))).thenReturn(true);
 
@@ -54,43 +54,82 @@ public class SkippyAnalysisTest {
 
     @Test
     void testWithBytecodeChangeEqualsExecution() {
-        var analyzedFiles = mock(ClassFileList.class);
+        var classFileList = mock(ClassFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
+        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
         var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
 
         when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(analyzedFiles.getChangedClasses()).thenReturn(asList(skippyAnalysisTest));
+        when(classFileList.getChangedClasses()).thenReturn(asList(skippyAnalysisTest));
+        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(false);
 
         assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
     }
 
     @Test
     void testCoveredClassWithBytecodeChangeEqualsExecution() {
-        var analyzedFiles = mock(ClassFileList.class);
+        var classFileList = mock(ClassFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
+        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
         var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
         var foo = new FullyQualifiedClassName("com.example.Foo");
 
         when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
         when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(analyzedFiles.getChangedClasses()).thenReturn(asList(foo));
+        when(classFileList.getChangedClasses()).thenReturn(asList(foo));
+        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(false);
+        when(classFileList.noDataFor(foo)).thenReturn(true);
+
+        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
+    }
+
+    @Test
+    void testMissingHashForTestEqualsExecution() {
+        var classFileList = mock(ClassFileList.class);
+        var testImpactAnalysis = mock(TestImpactAnalysis.class);
+        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
+        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
+        var foo = new FullyQualifiedClassName("com.example.Foo");
+
+        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
+        when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
+        when(classFileList.getChangedClasses()).thenReturn(emptyList());
+        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(true);
+        when(classFileList.noDataFor(foo)).thenReturn(false);
+
+        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
+    }
+
+    @Test
+    void testMissingHashForCoveredClassEqualsExecution() {
+        var classFileList = mock(ClassFileList.class);
+        var testImpactAnalysis = mock(TestImpactAnalysis.class);
+        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
+        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
+        var foo = new FullyQualifiedClassName("com.example.Foo");
+
+        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
+        when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
+        when(classFileList.getChangedClasses()).thenReturn(emptyList());
+        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(false);
+        when(classFileList.noDataFor(foo)).thenReturn(true);
 
         assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
     }
 
     @Test
     void testSkipIfNothingHasChanged() {
-        var analyzedFiles = mock(ClassFileList.class);
+        var classFileList = mock(ClassFileList.class);
         var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(analyzedFiles, testImpactAnalysis);
+        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
         var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
         var foo = new FullyQualifiedClassName("com.example.Foo");
 
         when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
         when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(analyzedFiles.getChangedClasses()).thenReturn(emptyList());
+        when(classFileList.getChangedClasses()).thenReturn(emptyList());
+        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(false);
+        when(classFileList.noDataFor(foo)).thenReturn(false);
 
         assertEquals(false, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
     }

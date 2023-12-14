@@ -33,6 +33,6 @@ class SkippyConstants {
     /**
      * The file that contains data for all {@link ClassFile}s.
      */
-    static final Path SKIPPY_ANALYSIS_FILE = Path.of("analyzedFiles.txt");
+    static final Path CLASSES_MD5_FILE = Path.of("classes.md5");
 
 }
