@@ -51,8 +51,6 @@ public class SkippyPluginSmokeTest {
 
         assertThat(output.split(lineSeparator())).containsSubsequence(asList(
                 "> Task :skippyAnalyze",
-                "com.example.LeftPadderTest > Capturing coverage data in skippy/com.example.LeftPadderTest.csv",
-                "com.example.RightPadderTest > Capturing coverage data in skippy/com.example.RightPadderTest.csv",
                 "Storing hashes for all class files in skippy/classes.md5.")
         );
     }

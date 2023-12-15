@@ -53,7 +53,7 @@ public class SkippyTest {
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
         when(context.getTestClass()).thenReturn(Optional.of(Object.class));
-        when(skippyAnalysis.executionRequired(any())).thenReturn(false);
+        when(skippyAnalysis.execute(any())).thenReturn(false);
 
         assertEquals(true, skippy.evaluateExecutionCondition(context).isDisabled());
     }
@@ -66,7 +66,7 @@ public class SkippyTest {
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
         when(context.getTestClass()).thenReturn(Optional.of(Object.class));
-        when(skippyAnalysis.executionRequired(any())).thenReturn(true);
+        when(skippyAnalysis.execute(any())).thenReturn(true);
 
         assertEquals(false, skippy.evaluateExecutionCondition(context).isDisabled());
     }

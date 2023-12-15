@@ -19,12 +19,11 @@ package io.skippy.core;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static java.lang.Integer.parseInt;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
@@ -39,10 +38,6 @@ class TestImpactAnalysis {
 
     static final TestImpactAnalysis UNAVAILABLE = new TestImpactAnalysis(emptyMap());
 
-    private enum JACOCO_CSV_COLUMN {
-        GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-    }
-
     private final Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> testCoverage;
 
     /**
@@ -56,9 +51,9 @@ class TestImpactAnalysis {
 
     static TestImpactAnalysis parse(Path directory) {
         var result = new HashMap<FullyQualifiedClassName, List<FullyQualifiedClassName>>();
-        for (var csvFile : directory.toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"))) {
-            var test = new FullyQualifiedClassName(toClassName(csvFile.toPath()));
-            result.put(test, parseCsvFile(csvFile.toPath()));
+        for (var covFile : directory.toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov"))) {
+            var test = new FullyQualifiedClassName(toClassName(covFile.toPath()));
+            result.put(test, parseCovFile(covFile.toPath()));
         }
         return new TestImpactAnalysis(result);
     }
@@ -83,55 +78,21 @@ class TestImpactAnalysis {
         return ! testCoverage.containsKey(test);
     }
 
-    private static List<FullyQualifiedClassName> parseCsvFile(Path csvFile) {
+    private static List<FullyQualifiedClassName> parseCovFile(Path csvFile) {
         try {
-            var content = new ArrayList<>(Files.readAllLines(csvFile));
-            // remove header
-            content.remove(0);
-            var coveredClasses = new ArrayList<FullyQualifiedClassName>();
-            for (var line : content) {
-                coveredClasses.addAll(parseCsvLine(line));
-            }
-            return coveredClasses;
+             return Files.readAllLines(csvFile, StandardCharsets.UTF_8).stream()
+                     .map(line -> new FullyQualifiedClassName(line))
+                     .toList();
         } catch (Exception e) {
             LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(csvFile, e), e);
             throw new RuntimeException(e);
         }
     }
 
-    private static List<FullyQualifiedClassName> parseCsvLine(String line) {
-        var csvColumns = line.split(",");
-        var pkg = csvColumns[JACOCO_CSV_COLUMN.PACKAGE.ordinal()];
-        var clazz = csvColumns[JACOCO_CSV_COLUMN.CLASS.ordinal()];
-
-        boolean coverageDetected = false;
-        for (var column : asList(
-                JACOCO_CSV_COLUMN.INSTRUCTION_COVERED,
-                JACOCO_CSV_COLUMN.BRANCH_COVERED,
-                JACOCO_CSV_COLUMN.LINE_COVERED,
-                JACOCO_CSV_COLUMN.COMPLEXITY_COVERED,
-                JACOCO_CSV_COLUMN.METHOD_COVERED)) {
-            if (parseInt(csvColumns[column.ordinal()]) > 0) {
-                coverageDetected = true;
-            }
-        }
-
-        if (coverageDetected) {
-            return asList(new FullyQualifiedClassName(pkg + "." + clazz));
-        }
-        return emptyList();
-    }
-
-    private static String toClassName(Path csvFile) {
-
-        // /a/b/c/com_example_Foo.csv -> com_example_Foo.csv
-        var filename = csvFile.getFileName().toString();
-
-        // com_example_Foo.csv -> com_example_Foo
-        var withoutExtension = filename.substring(0, filename.length() - 4);
-
-        // com_example_Foo -> com.example.Foo
-        return withoutExtension.replaceAll("_", ".");
+    private static String toClassName(Path covFile) {
+        // /a/b/c/com.example.Foo.cov -> com.example.Foo.cov
+        var filename = covFile.getFileName().toString();
+        return filename.substring(0, filename.indexOf(".cov"));
     }
 
 }

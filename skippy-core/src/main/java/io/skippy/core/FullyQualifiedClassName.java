@@ -22,4 +22,11 @@ package io.skippy.core;
  *
  * @author Florian McKee
  */
-record FullyQualifiedClassName(String fqn) {}
+record FullyQualifiedClassName(String fqn) {
+
+    @Override
+    public String toString() {
+        return fqn;
+    }
+
+}

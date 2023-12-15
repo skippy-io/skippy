@@ -47,6 +47,16 @@ public class ClassFileTest {
 
     @ParameterizedTest
     @CsvSource(value = {
+            "SourceFileTest1.class:c.e.SourceFileTest1",
+            "SourceFileTest2.class:c.e.SourceFileTest2"
+    }, delimiter = ':')
+    void testGetShortClassName(String fileName, String expectedValue) throws URISyntaxException {
+        var classFile = Paths.get(getClass().getResource(fileName).toURI());
+        assertEquals(expectedValue, new ClassFile(mock(Project.class), classFile).getShortClassName());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
             "SourceFileTest1.class:model/SourceFileTest1.class",
             "SourceFileTest2.class:model/SourceFileTest2.class"
     }, delimiter = ':')
@@ -54,7 +64,7 @@ public class ClassFileTest {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
         var project = mock(Project.class);
         when(project.getProjectDir()).thenReturn(classFile.toFile().getParentFile().getParentFile());
-        assertEquals(Path.of(expectedValue), new ClassFile(project, classFile).getRelativePath());
+        assertEquals(Path.of(expectedValue), classFile.getParent().getParent().relativize(new ClassFile(project, classFile).getAbsolutePath()));
     }
 
     @ParameterizedTest

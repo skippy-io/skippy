@@ -34,7 +34,6 @@ public class ClassFileTest {
     void testClassFileHasNotChanged() throws URISyntaxException {
         var foo = new ClassFile(
                 Path.of(getClass().getResource("classfile/Foo.class").toURI()), "nI8N7FMXjy8oPJ6w17Eajg==");
-
         assertEquals(false, foo.hasChanged());
     }
 

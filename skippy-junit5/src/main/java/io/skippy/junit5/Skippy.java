@@ -17,16 +17,32 @@
 package io.skippy.junit5;
 
 import io.skippy.core.SkippyAnalysis;
-import org.junit.jupiter.api.extension.ConditionEvaluationResult;
-import org.junit.jupiter.api.extension.ExecutionCondition;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jacoco.agent.rt.IAgent;
+import org.jacoco.agent.rt.RT;
+import org.jacoco.core.data.ExecutionData;
+import org.jacoco.core.data.ExecutionDataReader;
+import org.jacoco.core.data.IExecutionDataVisitor;
+import org.jacoco.core.data.SessionInfoStore;
+import org.junit.jupiter.api.extension.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.LinkedList;
 
 /**
  * Decides whether a test case needs to run based on a {@link SkippyAnalysis}.
  *
  * @author Florian McKee
  */
-public class Skippy implements ExecutionCondition {
+public class Skippy implements ExecutionCondition, TestInstancePreDestroyCallback {
+
+    private final Logger LOGGER = LogManager.getLogger(Skippy.class);
 
     private final SkippyAnalysis skippyAnalysis;
 
@@ -46,11 +62,39 @@ public class Skippy implements ExecutionCondition {
         if (context.getTestInstance().isEmpty()) {
             return ConditionEvaluationResult.enabled("");
         }
-        if (skippyAnalysis.executionRequired(context.getTestClass().get())) {
+        if (skippyAnalysis.execute(context.getTestClass().get())) {
             return ConditionEvaluationResult.enabled("");
         }
         return ConditionEvaluationResult.disabled("");
     }
 
+    @Override
+    public void preDestroyTestInstance(ExtensionContext context) {
+        if ( ! Boolean.valueOf(System.getenv().get("skippyAnalyzeBuild"))) {
+            return;
+        }
+        IAgent agent = RT.getAgent();
+        var coveredClasses = new LinkedList<String>();
+        byte[] executionData = agent.getExecutionData(true);
+        ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(executionData));
+        executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
+        executionDataReader.setExecutionDataVisitor(new IExecutionDataVisitor() {
+            @Override
+            public void visitClassExecution(ExecutionData executionData) {
+                coveredClasses.add(executionData.getName());
+            }
+        });
+        try {
+            executionDataReader.read();
+            var name = context.getTestInstance().get().getClass().getName();
+            System.err.println(Path.of("skippy/%s.cov".formatted(name)).toAbsolutePath());
+            Files.write(Path.of("skippy/%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(Path.of("skippy/%s.exec".formatted(name)), executionData, StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
+        }
+    }
 
 }

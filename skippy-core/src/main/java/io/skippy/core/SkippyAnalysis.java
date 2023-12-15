@@ -21,6 +21,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
 
+import static io.skippy.core.SkippyAnalysis.Reason.*;
+
 /**
  * The result of a Skippy analysis:
  * <ul>
@@ -31,6 +33,16 @@ import java.nio.file.Path;
  * @author Florian McKee
  */
 public class SkippyAnalysis {
+
+    enum Reason {
+        NO_CHANGE,
+        NO_COVERAGE_DATA_FOR_TEST,
+        BYTECODE_CHANGE_IN_TEST,
+        NO_HASH_FOR_TEST,
+        NO_HASH_FOR_COVERED_CLASS, BYTECODE_CHANGE_IN_COVERED_CLASS
+    }
+
+    record DecisionWithReason(boolean execute, Reason reason) {}
 
     private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysis.class);
 
@@ -63,9 +75,9 @@ public class SkippyAnalysis {
         if ( ! skippyDirectory.toFile().exists() || ! skippyDirectory.toFile().isDirectory()) {
             return SkippyAnalysis.UNAVAILABLE;
         }
-        var analyzedFiles = ClassFileList.parse(skippyDirectory.resolve(SkippyConstants.CLASSES_MD5_FILE));
+        var classFiles = ClassFileList.parse(skippyDirectory.resolve(SkippyConstants.CLASSES_MD5_FILE));
         var testCoverage = TestImpactAnalysis.parse(skippyDirectory);
-        return new SkippyAnalysis(analyzedFiles, testCoverage);
+        return new SkippyAnalysis(classFiles, testCoverage);
     }
 
     /**
@@ -74,28 +86,32 @@ public class SkippyAnalysis {
      * @param test a class object representing a test
      * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
-    public boolean executionRequired(Class<?> test) {
-        var testFqn = new FullyQualifiedClassName(test.getName());
-        if (testImpactAnalysis.noDataAvailableFor(testFqn)) {
-            LOGGER.debug("%s: No coverage data found: Execution required".formatted(testFqn.fqn()));
-            return true;
-        }
-        if (classFiles.noDataFor(testFqn)) {
-            LOGGER.debug("%s: No hash found: Execution required".formatted(testFqn.fqn()));
-            return true;
-        }
-        if (classFiles.getChangedClasses().contains(testFqn)) {
-            LOGGER.debug("%s: Bytecode change detected: Execution required".formatted(testFqn.fqn()));
-            return true;
-        }
-        if (coveredClassHasChanged(testFqn)) {
-            return true;
-        }
-        LOGGER.debug("%s: No changes in test or covered classes detected: Execution skipped".formatted(testFqn.fqn()));
-        return false;
+    public boolean execute(Class<?> test) {
+        return execute(new FullyQualifiedClassName(test.getName())).execute();
     }
 
-    private boolean coveredClassHasChanged(FullyQualifiedClassName testFqn) {
+    DecisionWithReason execute(FullyQualifiedClassName testFqn) {
+        if (testImpactAnalysis.noDataAvailableFor(testFqn)) {
+            LOGGER.debug("%s: No coverage data found: Execution required".formatted(testFqn));
+            return new DecisionWithReason(true, NO_COVERAGE_DATA_FOR_TEST);
+        }
+        if (classFiles.noDataFor(testFqn)) {
+            LOGGER.debug("%s: No hash found: Execution required".formatted(testFqn));
+            return new DecisionWithReason(true, NO_HASH_FOR_TEST);
+        }
+        if (classFiles.getChangedClasses().contains(testFqn)) {
+            LOGGER.debug("%s: Bytecode change detected: Execution required".formatted(testFqn));
+            return new DecisionWithReason(true, BYTECODE_CHANGE_IN_TEST);
+        }
+        var decisionBasedOnCoveredClasses = coveredClassHasChanged(testFqn);
+        if (decisionBasedOnCoveredClasses.execute()) {
+            return decisionBasedOnCoveredClasses;
+        }
+        LOGGER.debug("%s: No changes in test or covered classes detected: Execution skipped".formatted(testFqn));
+        return new DecisionWithReason(false, Reason.NO_CHANGE);
+    }
+
+    private DecisionWithReason coveredClassHasChanged(FullyQualifiedClassName testFqn) {
         var changeClasses = classFiles.getChangedClasses();
         for (var coveredClassFqn : testImpactAnalysis.getCoveredClasses(testFqn)) {
             if (changeClasses.contains(coveredClassFqn)) {
@@ -103,17 +119,17 @@ public class SkippyAnalysis {
                         testFqn.fqn(),
                         coveredClassFqn.fqn()
                 ));
-                return true;
+                return new DecisionWithReason(true, BYTECODE_CHANGE_IN_COVERED_CLASS);
             }
             if (classFiles.noDataFor(coveredClassFqn)) {
                 LOGGER.debug("%s: No hash for covered class '%s' found: Execution required".formatted(
                         testFqn.fqn(),
                         coveredClassFqn.fqn()
                 ));
-                return true;
+                return new DecisionWithReason(true, NO_HASH_FOR_COVERED_CLASS);
             }
         }
-        return false;
+        return new DecisionWithReason(false, null);
     }
 
 }

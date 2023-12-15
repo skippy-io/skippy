@@ -32,23 +32,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ClassFileListTest {
 
     @Test
-    void testParse() throws URISyntaxException {
+    void testGetClasses() throws URISyntaxException {
         var classesMd5 = Path.of(getClass().getResource("classfilelist/classes.md5").toURI());
         var classFileList = ClassFileList.parse(classesMd5);
 
         assertEquals(asList(
-            new FullyQualifiedClassName("io.skippy.core.ClassFile"),
-            new FullyQualifiedClassName("io.skippy.core.ClassFileList")
+            new FullyQualifiedClassName("com.example.LeftPadder"),
+            new FullyQualifiedClassName("com.example.StringUtils"),
+            new FullyQualifiedClassName("com.example.UnrelatedClass")
         ), classFileList.getClasses());
+    }
+
+    @Test
+    void testChangedClasses() throws URISyntaxException {
+        var classesMd5 = Path.of(getClass().getResource("classfilelist/classes.md5").toURI());
+        var classFileList = ClassFileList.parse(classesMd5);
+
+        assertEquals(asList(
+            new FullyQualifiedClassName("com.example.UnrelatedClass")
+        ), classFileList.getChangedClasses());
     }
 
     @Test
     void testNoDataFor() throws URISyntaxException {
         var classesMd5 = Path.of(getClass().getResource("classfilelist/classes.md5").toURI());
         var classFileList = ClassFileList.parse(classesMd5);
-
-        assertEquals(false, classFileList.noDataFor(new FullyQualifiedClassName("io.skippy.core.ClassFile")));
-        assertEquals(false, classFileList.noDataFor(new FullyQualifiedClassName("io.skippy.core.ClassFileList")));
+        assertEquals(false, classFileList.noDataFor(new FullyQualifiedClassName("com.example.LeftPadder")));
+        assertEquals(true, classFileList.noDataFor(new FullyQualifiedClassName("com.example.UnknownClass")));
     }
 
 }

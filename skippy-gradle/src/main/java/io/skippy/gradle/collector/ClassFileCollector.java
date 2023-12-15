@@ -22,9 +22,8 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.nio.file.Path;
+import java.util.*;
 
 import static java.util.Comparator.comparing;
 
@@ -54,27 +53,27 @@ public final class ClassFileCollector {
      *
      * @return all {@link ClassFile}s in the project
      */
-    public List<ClassFile> collect() {
-        var result = new ArrayList<ClassFile>();
+    public Map<Path, List<ClassFile>> collect() {
+        var result = new HashMap<Path, List<ClassFile>>();
         for (var sourceSet : sourceSetContainer) {
-            result.addAll(collect(sourceSet));
+            result.putAll(collect(sourceSet));
         }
-        return sort(result);
+        return result;
     }
 
     /**
-     * Collects all {@link ClassFile}s in the output directories of the {@code sourceSet}.
+     * Collects all {@link ClassFile}s in the output directories of the {@code sourceSet} organized by classes folders.
      *
      * @param sourceSet
-     * @return all {@link ClassFile}s in the output directories of the {@code sourceSet}
+     * @return all {@link ClassFile}s in the output directories of the {@code sourceSet} organized by classes folders
      */
-    List<ClassFile> collect(SourceSet sourceSet) {
+     Map<Path, List<ClassFile>> collect(SourceSet sourceSet) {
         var classesDirs = sourceSet.getOutput().getClassesDirs().getFiles();
-        var result = new ArrayList<ClassFile>();
+        var result = new HashMap<Path, List<ClassFile>>();
         for (var classesDir : classesDirs) {
-            result.addAll(collect(classesDir));
+            result.put(classesDir.toPath(), sort(collect(classesDir)));
         }
-        return sort(result);
+        return result;
     }
 
     private List<ClassFile> collect(File directory) {
