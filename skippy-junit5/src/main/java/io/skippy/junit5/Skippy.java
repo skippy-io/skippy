@@ -62,7 +62,7 @@ public class Skippy implements ExecutionCondition, TestInstancePreDestroyCallbac
         if (context.getTestInstance().isEmpty()) {
             return ConditionEvaluationResult.enabled("");
         }
-        if (skippyAnalysis.execute(context.getTestClass().get())) {
+        if (skippyAnalysis.testNeedsToBeExecuted(context.getTestClass().get())) {
             return ConditionEvaluationResult.enabled("");
         }
         return ConditionEvaluationResult.disabled("");
@@ -87,7 +87,6 @@ public class Skippy implements ExecutionCondition, TestInstancePreDestroyCallbac
         try {
             executionDataReader.read();
             var name = context.getTestInstance().get().getClass().getName();
-            System.err.println(Path.of("skippy/%s.cov".formatted(name)).toAbsolutePath());
             Files.write(Path.of("skippy/%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             Files.write(Path.of("skippy/%s.exec".formatted(name)), executionData, StandardOpenOption.CREATE,

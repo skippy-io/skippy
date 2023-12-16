@@ -48,10 +48,10 @@ public class SkippyAnalysis {
     }
 
     record DecisionWithReason(Decision decision, Reason reason) {
-        static DecisionWithReason execute(Reason reason) {
+        static DecisionWithReason executeTest(Reason reason) {
             return new DecisionWithReason(Decision.EXECUTE_TEST, reason);
         }
-        static DecisionWithReason skip(Reason reason) {
+        static DecisionWithReason skipTest(Reason reason) {
             return new DecisionWithReason(Decision.SKIP_TEST, reason);
         }
     }
@@ -98,27 +98,27 @@ public class SkippyAnalysis {
      * @param test a class object representing a test
      * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
-    public boolean execute(Class<?> test) {
+    public boolean testNeedsToBeExecuted(Class<?> test) {
         return decide(new FullyQualifiedClassName(test.getName())).decision == Decision.EXECUTE_TEST;
     }
 
     DecisionWithReason decide(FullyQualifiedClassName testFqn) {
         if (testImpactAnalysis.noDataAvailableFor(testFqn)) {
             LOGGER.debug("%s: No coverage data found: Execution required".formatted(testFqn));
-            return DecisionWithReason.execute(NO_COVERAGE_DATA_FOR_TEST);
+            return DecisionWithReason.executeTest(NO_COVERAGE_DATA_FOR_TEST);
         }
         if (classFiles.noDataFor(testFqn)) {
             LOGGER.debug("%s: No hash found: Execution required".formatted(testFqn));
-            return DecisionWithReason.execute(NO_HASH_FOR_TEST);
+            return DecisionWithReason.executeTest(NO_HASH_FOR_TEST);
         }
         if (classFiles.getChangedClasses().contains(testFqn)) {
             LOGGER.debug("%s: Bytecode change detected: Execution required".formatted(testFqn));
-            return DecisionWithReason.execute(BYTECODE_CHANGE_IN_TEST);
+            return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_TEST);
         }
-        return coveredClassHasChanged(testFqn);
+        return decideBasedOnCoveredClasses(testFqn);
     }
 
-    private DecisionWithReason coveredClassHasChanged(FullyQualifiedClassName testFqn) {
+    private DecisionWithReason decideBasedOnCoveredClasses(FullyQualifiedClassName testFqn) {
         var changeClasses = classFiles.getChangedClasses();
         for (var coveredClassFqn : testImpactAnalysis.getCoveredClasses(testFqn)) {
             if (changeClasses.contains(coveredClassFqn)) {
@@ -126,18 +126,18 @@ public class SkippyAnalysis {
                         testFqn.fqn(),
                         coveredClassFqn.fqn()
                 ));
-                return DecisionWithReason.execute(BYTECODE_CHANGE_IN_COVERED_CLASS);
+                return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_COVERED_CLASS);
             }
             if (classFiles.noDataFor(coveredClassFqn)) {
                 LOGGER.debug("%s: No hash for covered class '%s' found: Execution required".formatted(
                         testFqn.fqn(),
                         coveredClassFqn.fqn()
                 ));
-                return DecisionWithReason.execute(NO_HASH_FOR_COVERED_CLASS);
+                return DecisionWithReason.executeTest(NO_HASH_FOR_COVERED_CLASS);
             }
         }
         LOGGER.debug("%s: No changes in test or covered classes detected: Execution skipped".formatted(testFqn));
-        return DecisionWithReason.skip(Reason.NO_CHANGE);
+        return DecisionWithReason.skipTest(Reason.NO_CHANGE);
     }
 
 }
