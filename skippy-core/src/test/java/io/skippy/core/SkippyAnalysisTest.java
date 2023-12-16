@@ -22,6 +22,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static io.skippy.core.SkippyAnalysis.Reason;
+import static io.skippy.core.SkippyAnalysis.Decision;
 
 /**
  * Tests for {@link SkippyAnalysis}.
@@ -35,10 +37,10 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test1/skippy").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.execute(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(false, decisonWithReason.execute());
-        assertEquals(SkippyAnalysis.Reason.NO_CHANGE, decisonWithReason.reason());
+        assertEquals(Decision.SKIP_TEST, decisonWithReason.decision());
+        assertEquals(Reason.NO_CHANGE, decisonWithReason.reason());
     }
 
     @Test
@@ -46,10 +48,10 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test2/skippy").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.execute(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, decisonWithReason.execute());
-        assertEquals(SkippyAnalysis.Reason.NO_COVERAGE_DATA_FOR_TEST, decisonWithReason.reason());
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.NO_COVERAGE_DATA_FOR_TEST, decisonWithReason.reason());
     }
 
     @Test
@@ -57,10 +59,10 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test3/skippy").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.execute(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, decisonWithReason.execute());
-        assertEquals(SkippyAnalysis.Reason.BYTECODE_CHANGE_IN_TEST, decisonWithReason.reason());
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.BYTECODE_CHANGE_IN_TEST, decisonWithReason.reason());
     }
 
     @Test
@@ -68,10 +70,10 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test4/skippy").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.execute(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, decisonWithReason.execute());
-        assertEquals(SkippyAnalysis.Reason.BYTECODE_CHANGE_IN_COVERED_CLASS, decisonWithReason.reason());
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.BYTECODE_CHANGE_IN_COVERED_CLASS, decisonWithReason.reason());
     }
 
     @Test
@@ -79,10 +81,10 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test5/skippy").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.execute(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, decisonWithReason.execute());
-        assertEquals(SkippyAnalysis.Reason.NO_HASH_FOR_TEST, decisonWithReason.reason());
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.NO_HASH_FOR_TEST, decisonWithReason.reason());
     }
 
     @Test
@@ -90,10 +92,10 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test6/skippy").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.execute(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, decisonWithReason.execute());
-        assertEquals(SkippyAnalysis.Reason.NO_HASH_FOR_COVERED_CLASS, decisonWithReason.reason());
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.NO_HASH_FOR_COVERED_CLASS, decisonWithReason.reason());
     }
 
 }
