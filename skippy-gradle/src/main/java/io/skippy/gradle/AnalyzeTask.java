@@ -39,6 +39,8 @@ class AnalyzeTask extends DefaultTask {
     @Inject
     public AnalyzeTask(ClassesMd5Writer classesMd5Writer, CoverageFileCompactor coverageFileCompactor) {
         setGroup("skippy");
+
+        // set up task dependencies
         for (var sourceSet : getProject().getExtensions().getByType(SourceSetContainer.class)) {
             dependsOn(sourceSet.getClassesTaskName());
         }
