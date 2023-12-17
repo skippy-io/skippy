@@ -19,7 +19,7 @@ package io.skippy.core;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -55,9 +55,9 @@ class ClassFileList {
         }
         try {
             var result = new ArrayList<ClassFile>();
-            for (var line : Files.readAllLines(classesMd5File, Charset.forName("UTF8"))) {
+            for (var line : Files.readAllLines(classesMd5File, StandardCharsets.UTF_8)) {
                 String[] split = line.split(":");
-                result.add(new ClassFile(Path.of(split[0]), split[1]));
+                result.add(new ClassFile(Path.of("%s/%s".formatted(split[0], split[1])), split[2]));
             }
             return new ClassFileList(result);
         } catch (Exception e) {

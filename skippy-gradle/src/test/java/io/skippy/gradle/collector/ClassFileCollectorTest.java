@@ -16,16 +16,20 @@
 
 package io.skippy.gradle.collector;
 
-import io.skippy.gradle.model.ClassFile;
 import org.gradle.api.Project;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.SourceSetOutput;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Set;
 
-import static io.skippy.gradle.collector.CollectorTestUtils.mockSourceSetContainer;
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,27 +48,57 @@ public class ClassFileCollectorTest {
         var project = mock(Project.class);
         when(project.getProjectDir()).thenReturn(currentDir.getParentFile().getParentFile());
 
-        var classFileCollector = new ClassFileCollector(project, mockSourceSetContainer("sourceset1", "sourceset2"));
+        var sourceSetContainer = mockSourceSetContainer("sourceset1", "sourceset2");
 
-        var classFiles = classFileCollector.collect();
-        assertEquals(4, classFiles.size());
+        var classFileCollector = new ClassFileCollector(project, sourceSetContainer);
 
-        var classFile0 = classFiles.get(0);
-        assertEquals("com.example.NormalClass1", classFile0.getFullyQualifiedClassName());
-        assertEquals(Path.of("collector/sourceset1/NormalClass1.class"), classFile0.getRelativePath());
+        var directoriesWithClassFiles = classFileCollector.collect();
 
-        var classFile1 = classFiles.get(1);
-        assertEquals("com.example.NormalClass2", classFile1.getFullyQualifiedClassName());
-        assertEquals(Path.of("collector/sourceset2/NormalClass2.class"), classFile1.getRelativePath());
+        assertEquals(2, directoriesWithClassFiles.size());
 
-        var classFile2 = classFiles.get(2);
-        assertEquals("com.example.SkippifiedTest1", classFile2.getFullyQualifiedClassName());
-        assertEquals(Path.of("collector/sourceset1/SkippifiedTest1.class"), classFile2.getRelativePath());
+        var dir0 = directoriesWithClassFiles.get(0);
+        var dir1 = directoriesWithClassFiles.get(1);
 
-        var classFile3 = classFiles.get(3);
-        assertEquals("com.example.SkippifiedTest2", classFile3.getFullyQualifiedClassName());
-        assertEquals(Path.of("collector/sourceset2/SkippifiedTest2.class"), classFile3.getRelativePath());
+        assertEquals(2, dir0.classFiles().size());
+        assertEquals(2, dir1.classFiles().size());
 
+        assertEquals("com.example.NormalClass1", dir0.classFiles().get(0).getFullyQualifiedClassName());
+        assertEquals(Path.of("sourceset1/NormalClass1.class"), dir0.directory().getParent().relativize(dir0.classFiles().get(0).getAbsolutePath()));
+
+        assertEquals("com.example.SkippifiedTest1", dir0.classFiles().get(1).getFullyQualifiedClassName());
+        assertEquals(Path.of("sourceset1/SkippifiedTest1.class"), dir0.directory().getParent().relativize(dir0.classFiles().get(1).getAbsolutePath()));
+
+
+        assertEquals("com.example.NormalClass2", dir1.classFiles().get(0).getFullyQualifiedClassName());
+        assertEquals(Path.of("sourceset2/NormalClass2.class"), dir1.directory().getParent().relativize(dir1.classFiles().get(0).getAbsolutePath()));
+
+        assertEquals("com.example.SkippifiedTest2", dir1.classFiles().get(1).getFullyQualifiedClassName());
+        assertEquals(Path.of("sourceset2/SkippifiedTest2.class"), dir1.directory().getParent().relativize(dir1.classFiles().get(1).getAbsolutePath()));
     }
 
+
+    private static SourceSetContainer mockSourceSetContainer(String... sourceSetDirectories) {
+        var sourceSetContainer = mock(SourceSetContainer.class);
+        var sourceSets = asList(sourceSetDirectories).stream().map(ClassFileCollectorTest::mockSourceSet).toList();
+        for (int i = 0; i < sourceSets.size(); i++) {
+            when(sourceSetContainer.getByName(sourceSetDirectories[i])).thenReturn(sourceSets.get(i));
+        }
+        when(sourceSetContainer.iterator()).thenReturn(sourceSets.iterator());
+        return sourceSetContainer;
+    }
+
+    private static SourceSet mockSourceSet(String directory) {
+        try {
+            File outputDirectory = Paths.get(ClassFileCollectorTest.class.getResource(directory).toURI()).toFile();
+            var sourceSet = mock(SourceSet.class);
+            var sourceSetOutput = mock(SourceSetOutput.class);
+            when(sourceSet.getOutput()).thenReturn(sourceSetOutput);
+            var classesDir = mock(FileCollection.class);
+            when(sourceSetOutput.getClassesDirs()).thenReturn(classesDir);
+            when(classesDir.getFiles()).thenReturn(Set.of(outputDirectory));
+            return sourceSet;
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

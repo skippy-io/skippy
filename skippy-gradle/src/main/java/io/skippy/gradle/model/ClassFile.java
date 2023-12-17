@@ -25,12 +25,25 @@ import java.nio.file.Path;
 /**
  * Thin wrapper around a class file in a {@link Project} that adds a couple of convenience methods.
  *
- * @param project the Gradle {@link Project}
- * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
- *
  * @author Florian McKee
  */
-public record ClassFile(Project project, Path classFile) {
+public class ClassFile {
+
+    private final Project project;
+    private final Path classFile;
+    private final String fullyQualifiedClassName;
+
+    /**
+     * C'tor.
+     *
+     * @param project the Gradle {@link Project}
+     * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
+     */
+    public ClassFile(Project project, Path classFile) {
+        this.project = project;
+        this.classFile = classFile;
+        this.fullyQualifiedClassName = ClassNameExtractor.getFullyQualifiedClassName(classFile);
+    }
 
     /**
      * Returns the fully qualified class name (e.g., com.example.Foo).
@@ -38,7 +51,25 @@ public record ClassFile(Project project, Path classFile) {
      * @return the fully qualified class name (e.g., com.example.Foo)
      */
     public String getFullyQualifiedClassName() {
-        return ClassNameExtractor.getFullyQualifiedClassName(classFile);
+        return fullyQualifiedClassName;
+    }
+
+    /**
+     * Returns the fully qualified class name (e.g., c.e.Foo).
+     *
+     * @return the fully qualified class name (e.g., c.e.Foo)
+     */
+    public String getShortClassName() {
+        var result = "";
+        String[] split = fullyQualifiedClassName.split("\\.");
+        for (int i = 0; i < split.length; i++) {
+            if (i < split.length - 1) {
+                result += split[i].charAt(0) + ".";
+            } else {
+                result += split[i];
+            }
+        }
+        return result;
     }
 
     /**
@@ -48,17 +79,6 @@ public record ClassFile(Project project, Path classFile) {
      */
     public Path getAbsolutePath() {
         return classFile;
-    }
-
-    /**
-     * Returns the relative {@link Path} of the class file relative to the project root,
-     * (e.g., src/main/java/com/example/Foo.java)
-     *
-     * @return the relative {@link Path} of the class file relative to the project root,
-     *      (e.g., src/main/java/com/example/Foo.java)
-     */
-    public Path getRelativePath() {
-        return project.getProjectDir().toPath().relativize(classFile);
     }
 
     /**

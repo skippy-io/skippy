@@ -10,17 +10,6 @@ plugins {
 
 apply plugin: io.skippy.gradle.SkippyPlugin;
 
-skippy {
-    sourceSet {
-        name = 'test'
-        testTask = 'test'
-    }
-    sourceSet {
-        name = 'intTest'
-        testTask = 'integrationTest'
-    }
-}
-
 repositories {
     mavenCentral()
     maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
@@ -36,6 +25,10 @@ sourceSets {
 dependencies {
     implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
+    implementation ('org.jacoco:jacoco:0.8.9') {
+        exclude group: 'org.jacoco', module: 'org.jacoco.examples'
+        exclude group: 'org.jacoco', module: 'org.jacoco.doc'
+    }
 
     testImplementation project(':skippy-junit5')
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'

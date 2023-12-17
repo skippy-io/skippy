@@ -16,23 +16,12 @@
 
 package io.skippy.gradle;
 
-import io.skippy.gradle.collector.ClassFileCollector;
-import io.skippy.gradle.collector.SkippifiedTestCollector;
-import io.skippy.gradle.coveragebuild.CoverageBuild;
+import io.skippy.gradle.io.ClassesMd5Writer;
+import io.skippy.gradle.io.CoverageFileCompactor;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.UncheckedIOException;
 import org.gradle.api.tasks.SourceSetContainer;
-import org.gradle.tooling.GradleConnector;
-import org.gradle.tooling.ProjectConnection;
 
 import javax.inject.Inject;
-import java.io.IOException;
-
-import static io.skippy.gradle.SkippyConstants.CLASSES_MD5_FILE;
-import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
-import static java.lang.System.lineSeparator;
-import static java.nio.file.Files.writeString;
-import static java.util.stream.Collectors.joining;
 
 /**
  * The tasks that is run via <code>./gradlew skippyAnalyze</code>.
@@ -41,52 +30,25 @@ import static java.util.stream.Collectors.joining;
  */
 class AnalyzeTask extends DefaultTask {
 
-    private final ClassFileCollector classCollector;
-    private final SkippifiedTestCollector skippifiedTestCollector;
-
     /**
      * C'tor.
      *
-     * @param classFileCollector
-     * @param skippifiedTestCollector
+     * @param classesMd5Writer
+     * @param coverageFileCompactor
      */
     @Inject
-    public AnalyzeTask(ClassFileCollector classFileCollector, SkippifiedTestCollector skippifiedTestCollector) {
-        this.classCollector = classFileCollector;
-        this.skippifiedTestCollector = skippifiedTestCollector;
+    public AnalyzeTask(ClassesMd5Writer classesMd5Writer, CoverageFileCompactor coverageFileCompactor) {
         setGroup("skippy");
         for (var sourceSet : getProject().getExtensions().getByType(SourceSetContainer.class)) {
-             dependsOn(sourceSet.getClassesTaskName());
+            dependsOn(sourceSet.getClassesTaskName());
         }
-        dependsOn("skippyClean");
+        dependsOn("clean", "skippyClean", "check");
+        getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
+
         doLast((task) -> {
-            createCoverageReportsForSkippifiedTests();
-            createAnalyzedFilesTxt();
+            classesMd5Writer.write(getLogger(), getProject().getProjectDir().toPath());
+            coverageFileCompactor.compact(getLogger(), getProject().getProjectDir().toPath());
         });
-    }
-
-    private void createCoverageReportsForSkippifiedTests() {
-        GradleConnector connector = GradleConnector.newConnector();
-        connector.forProjectDirectory(getProject().getProjectDir());
-        try (ProjectConnection connection = connector.connect()) {
-            for (var skippifiedTest : skippifiedTestCollector.collect()) {
-                CoverageBuild.run(getProject(), connection.newBuild(), skippifiedTest);
-            }
-        }
-    }
-
-    private void createAnalyzedFilesTxt() {
-        try {
-            var skippyAnalysisFile = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY).resolve(CLASSES_MD5_FILE);
-            skippyAnalysisFile.toFile().createNewFile();
-            getLogger().lifecycle("\nStoring hashes for all class files in %s.".formatted(getProject().getProjectDir().toPath().relativize(skippyAnalysisFile)));
-            var classFiles = classCollector.collect();
-            writeString(skippyAnalysisFile, classFiles.stream()
-                    .map(classFile -> "%s:%s".formatted(classFile.getRelativePath(), classFile.getHash()))
-                    .collect(joining(lineSeparator())));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
 }

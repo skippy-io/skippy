@@ -17,14 +17,13 @@
 package io.skippy.gradle.collector;
 
 import io.skippy.gradle.model.ClassFile;
+import io.skippy.gradle.model.DirectoryWithClassFiles;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Comparator.comparing;
 
@@ -50,31 +49,25 @@ public final class ClassFileCollector {
     }
 
     /**
-     * Collects all {@link ClassFile}s in the project.
+     * Collects all {@link ClassFile}s in the output directories of the project organized by classes folders.
      *
-     * @return all {@link ClassFile}s in the project
+     * @return all {@link ClassFile}s in the output directories of the project organized by classes folders.
      */
-    public List<ClassFile> collect() {
-        var result = new ArrayList<ClassFile>();
+    public List<DirectoryWithClassFiles> collect() {
+        var result = new ArrayList<DirectoryWithClassFiles>();
         for (var sourceSet : sourceSetContainer) {
             result.addAll(collect(sourceSet));
         }
-        return sort(result);
+        return result;
     }
 
-    /**
-     * Collects all {@link ClassFile}s in the output directories of the {@code sourceSet}.
-     *
-     * @param sourceSet
-     * @return all {@link ClassFile}s in the output directories of the {@code sourceSet}
-     */
-    List<ClassFile> collect(SourceSet sourceSet) {
+     private List<DirectoryWithClassFiles> collect(SourceSet sourceSet) {
         var classesDirs = sourceSet.getOutput().getClassesDirs().getFiles();
-        var result = new ArrayList<ClassFile>();
+        var result = new ArrayList<DirectoryWithClassFiles>();
         for (var classesDir : classesDirs) {
-            result.addAll(collect(classesDir));
+            result.add(new DirectoryWithClassFiles(classesDir.toPath(), sort(collect(classesDir))));
         }
-        return sort(result);
+        return result;
     }
 
     private List<ClassFile> collect(File directory) {

@@ -36,7 +36,7 @@ public class ClassNameExtractorTest {
             "SkippyConstants.class:io.skippy.gradle.SkippyConstants",
             "SkippyPlugin.class:io.skippy.gradle.SkippyPlugin",
     }, delimiter = ':')
-    void testUsesSkippyExtension(String fileName, String expectedClassName) throws URISyntaxException {
+    void testGetFullyQualifiedClassName(String fileName, String expectedClassName) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
         assertEquals(expectedClassName, ClassNameExtractor.getFullyQualifiedClassName(classFile));
     }

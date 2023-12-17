@@ -13,6 +13,7 @@ public class RightPadderTest {
     void testPadLeft() {
         var input = TestConstants.HELLO;
         assertEquals("hello ", RightPadder.padRight(input, 6));
+        assertEquals("hello ", RightPadder.padRight(input, 6));
     }
 
 }

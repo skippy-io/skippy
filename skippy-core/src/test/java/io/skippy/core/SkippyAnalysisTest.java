@@ -21,11 +21,9 @@ import org.junit.jupiter.api.Test;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static io.skippy.core.SkippyAnalysis.Reason;
+import static io.skippy.core.SkippyAnalysis.Decision;
 
 /**
  * Tests for {@link SkippyAnalysis}.
@@ -35,103 +33,69 @@ import static org.mockito.Mockito.when;
 public class SkippyAnalysisTest {
 
     @Test
-    void smokeTestParse() throws URISyntaxException {
-        var skippyFolder = Path.of(getClass().getResource("skippyanalysis").toURI());
+    void test_no_change_equals_skip() throws URISyntaxException {
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test1/skippy").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
-        assertEquals(true, skippyAnalysis.executionRequired(String.class));
+
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+
+        assertEquals(Decision.SKIP_TEST, decisonWithReason.decision());
+        assertEquals(Reason.NO_CHANGE, decisonWithReason.reason());
     }
 
     @Test
-    void noCoverageDataEqualsExecution() {
-        var classFileList = mock(ClassFileList.class);
-        var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
+    void test_no_coverage_data_for_test_equals_execute() throws URISyntaxException {
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test2/skippy").toURI());
+        var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        when(testImpactAnalysis.noDataAvailableFor(new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest"))).thenReturn(true);
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.NO_COVERAGE_DATA_FOR_TEST, decisonWithReason.reason());
     }
 
     @Test
-    void testWithBytecodeChangeEqualsExecution() {
-        var classFileList = mock(ClassFileList.class);
-        var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
-        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
+    void test_bytecode_change_in_test_equals_execute() throws URISyntaxException {
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test3/skippy").toURI());
+        var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(classFileList.getChangedClasses()).thenReturn(asList(skippyAnalysisTest));
-        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(false);
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.BYTECODE_CHANGE_IN_TEST, decisonWithReason.reason());
     }
 
     @Test
-    void testCoveredClassWithBytecodeChangeEqualsExecution() {
-        var classFileList = mock(ClassFileList.class);
-        var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
-        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
-        var foo = new FullyQualifiedClassName("com.example.Foo");
+    void test_bytecode_change_in_covered_class_equals_execute() throws URISyntaxException {
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test4/skippy").toURI());
+        var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(classFileList.getChangedClasses()).thenReturn(asList(foo));
-        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(false);
-        when(classFileList.noDataFor(foo)).thenReturn(true);
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.BYTECODE_CHANGE_IN_COVERED_CLASS, decisonWithReason.reason());
     }
 
     @Test
-    void testMissingHashForTestEqualsExecution() {
-        var classFileList = mock(ClassFileList.class);
-        var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
-        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
-        var foo = new FullyQualifiedClassName("com.example.Foo");
+    void test_missing_hash_for_test_equals_execute() throws URISyntaxException {
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test5/skippy").toURI());
+        var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(classFileList.getChangedClasses()).thenReturn(emptyList());
-        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(true);
-        when(classFileList.noDataFor(foo)).thenReturn(false);
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.NO_HASH_FOR_TEST, decisonWithReason.reason());
     }
 
     @Test
-    void testMissingHashForCoveredClassEqualsExecution() {
-        var classFileList = mock(ClassFileList.class);
-        var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
-        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
-        var foo = new FullyQualifiedClassName("com.example.Foo");
+    void test_missing_hash_for_covered_class_equals_execute() throws URISyntaxException {
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test6/skippy").toURI());
+        var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(classFileList.getChangedClasses()).thenReturn(emptyList());
-        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(false);
-        when(classFileList.noDataFor(foo)).thenReturn(true);
+        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(true, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
-    }
-
-    @Test
-    void testSkipIfNothingHasChanged() {
-        var classFileList = mock(ClassFileList.class);
-        var testImpactAnalysis = mock(TestImpactAnalysis.class);
-        var skippyAnalysis = new SkippyAnalysis(classFileList, testImpactAnalysis);
-        var skippyAnalysisTest = new FullyQualifiedClassName("io.skippy.core.SkippyAnalysisTest");
-        var foo = new FullyQualifiedClassName("com.example.Foo");
-
-        when(testImpactAnalysis.noDataAvailableFor(skippyAnalysisTest)).thenReturn(false);
-        when(testImpactAnalysis.getCoveredClasses(skippyAnalysisTest)).thenReturn(asList(foo));
-        when(classFileList.getChangedClasses()).thenReturn(emptyList());
-        when(classFileList.noDataFor(skippyAnalysisTest)).thenReturn(false);
-        when(classFileList.noDataFor(foo)).thenReturn(false);
-
-        assertEquals(false, skippyAnalysis.executionRequired(SkippyAnalysisTest.class));
+        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Reason.NO_HASH_FOR_COVERED_CLASS, decisonWithReason.reason());
     }
 
 }
