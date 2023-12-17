@@ -72,7 +72,7 @@ public final class ClassesMd5Writer {
      */
     public void write(Logger logger, Path projectDir) {
         try {
-            logger.lifecycle("Storing hashes for all class files in %s.".formatted(SKIPPY_DIRECTORY.resolve(CLASSES_MD5_FILE)));
+            logger.lifecycle("Writing %s".formatted(SKIPPY_DIRECTORY.resolve(CLASSES_MD5_FILE)));
             var skippyAnalysisFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(CLASSES_MD5_FILE);
             skippyAnalysisFile.toFile().createNewFile();
             List<String> lines = new ArrayList<>();

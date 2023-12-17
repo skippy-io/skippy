@@ -80,7 +80,7 @@ public final class CoverageFileCompactor {
                         filteredLines.add(clazz.replace("/", "."));
                     }
                 }
-                logger.lifecycle("Storing coverage data in %s.".formatted(SKIPPY_DIRECTORY.resolve(covFile.toPath())));
+                logger.lifecycle("Writing %s".formatted(projectDir.relativize(SKIPPY_DIRECTORY.resolve(covFile.toPath()))));
                 Files.write(covFile.toPath(), filteredLines.stream().sorted().toList(), StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
             }
         } catch (IOException e) {

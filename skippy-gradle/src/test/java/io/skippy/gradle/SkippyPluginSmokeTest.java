@@ -43,15 +43,16 @@ public class SkippyPluginSmokeTest {
                 .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withDebug(true)
-                .withArguments("-b", "build-with-plugin.gradle", "clean", "skippyAnalyze")
+                .withArguments("skippyAnalyze")
                 .forwardOutput()
                 .build();
 
         var output = result.getOutput();
 
         assertThat(output.split(lineSeparator())).containsSubsequence(asList(
+                "> Task :skippyClean",
                 "> Task :skippyAnalyze",
-                "Storing hashes for all class files in skippy/classes.md5.")
+                "Writing skippy/classes.md5")
         );
     }
 
