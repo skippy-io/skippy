@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import java.nio.file.Path;
 
 /**
- * Wrapper that adds a bunch of functionality on top of a class file that has been analyzed by Skippy.
+ * Wrapper that adds a couple of convenience methods on top of a class file that has been analyzed by Skippy.
  *
  * @author Florian McKee
  */
@@ -44,6 +44,11 @@ class ClassFile {
         this.hash = hash;
     }
 
+    /**
+     * Returns the fully qualified class name (e.g., com.example.Foo).
+     *
+     * @return the fully qualified class name (e.g., com.example.Foo)
+     */
     FullyQualifiedClassName getFullyQualifiedClassName() {
         return new FullyQualifiedClassName(ClassNameExtractor.getFullyQualifiedClassName(classFile));
     }

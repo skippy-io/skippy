@@ -16,10 +16,14 @@
 
 package io.skippy.gradle;
 
+import io.skippy.gradle.collector.ClassFileCollector;
+import io.skippy.gradle.io.ClassesMd5Writer;
+import io.skippy.gradle.io.CoverageFileCompactor;
 import org.gradle.StartParameter;
 import org.gradle.TaskExecutionRequest;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
@@ -37,9 +41,12 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         project.getPlugins().apply(JavaPlugin.class);
 
         project.getTasks().register("skippyClean", CleanTask.class);
-        project.getTasks().register("skippyAnalyze", AnalyzeTask.class);
 
-        project.getTasks().getByName("check").mustRunAfter("skippyClean");
+        var classFileCollector = new ClassFileCollector(project, project.getExtensions().getByType(SourceSetContainer.class));
+        var classesMd5Writer = new ClassesMd5Writer(classFileCollector);
+        var coverageFileCompactor = new CoverageFileCompactor(classFileCollector);
+
+        project.getTasks().register("skippyAnalyze", AnalyzeTask.class, classesMd5Writer, coverageFileCompactor);
 
         if (isSkippyAnalyzeBuild(project)) {
             project.getPlugins().apply(JacocoPlugin.class);
@@ -48,11 +55,8 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
     }
 
     private static boolean isSkippyAnalyzeBuild(Project project) {
-        var gradle = project.getGradle();
-        StartParameter startParameter = gradle.getStartParameter();
-        List<TaskExecutionRequest> taskRequests = startParameter.getTaskRequests();
-        boolean skippyAnalyze = taskRequests.stream().anyMatch(request -> request.getArgs().stream().anyMatch(task -> task.endsWith("skippyAnalyze")));
-        return skippyAnalyze;
+        var taskRequests = project.getGradle().getStartParameter().getTaskRequests();
+        return taskRequests.stream().anyMatch(request -> request.getArgs().stream().anyMatch(task -> task.endsWith("skippyAnalyze")));
     }
 
 }

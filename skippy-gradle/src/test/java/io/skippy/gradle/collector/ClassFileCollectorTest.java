@@ -52,30 +52,28 @@ public class ClassFileCollectorTest {
 
         var classFileCollector = new ClassFileCollector(project, sourceSetContainer);
 
-        var classFiles = classFileCollector.collect();
-        var sourceSet0Path = classFiles.keySet().stream().filter(it -> it.toString().endsWith("sourceset1")).findFirst().get();
-        var sourceSet1Path = classFiles.keySet().stream().filter(it -> it.toString().endsWith("sourceset2")).findFirst().get();
+        var directoriesWithClassFiles = classFileCollector.collect();
 
-        assertEquals(2, classFiles.keySet().size());
-        assertEquals(2, classFiles.get(sourceSet0Path).size());
-        assertEquals(2, classFiles.get(sourceSet1Path).size());
-        
+        assertEquals(2, directoriesWithClassFiles.size());
 
-        var sourceSet0Class0 = classFiles.get(sourceSet0Path).get(0);
-        assertEquals("com.example.NormalClass1", sourceSet0Class0.getFullyQualifiedClassName());
-        assertEquals(Path.of("sourceset1/NormalClass1.class"), sourceSet0Path.getParent().relativize(sourceSet0Class0.getAbsolutePath()));
+        var dir0 = directoriesWithClassFiles.get(0);
+        var dir1 = directoriesWithClassFiles.get(1);
 
-        var sourceSet0Class1 = classFiles.get(sourceSet0Path).get(1);
-        assertEquals("com.example.SkippifiedTest1", sourceSet0Class1.getFullyQualifiedClassName());
-        assertEquals(Path.of("sourceset1/SkippifiedTest1.class"), sourceSet0Path.getParent().relativize(sourceSet0Class1.getAbsolutePath()));
+        assertEquals(2, dir0.classFiles().size());
+        assertEquals(2, dir1.classFiles().size());
 
-        var sourceSet1Class0 = classFiles.get(sourceSet1Path).get(0);
-        assertEquals("com.example.NormalClass2", sourceSet1Class0.getFullyQualifiedClassName());
-        assertEquals(Path.of("sourceset2/NormalClass2.class"), sourceSet1Path.getParent().relativize(sourceSet1Class0.getAbsolutePath()));
+        assertEquals("com.example.NormalClass1", dir0.classFiles().get(0).getFullyQualifiedClassName());
+        assertEquals(Path.of("sourceset1/NormalClass1.class"), dir0.directory().getParent().relativize(dir0.classFiles().get(0).getAbsolutePath()));
 
-        var sourceSet1Class1 = classFiles.get(sourceSet1Path).get(1);
-        assertEquals("com.example.SkippifiedTest2", sourceSet1Class1.getFullyQualifiedClassName());
-        assertEquals(Path.of("sourceset2/SkippifiedTest2.class"), sourceSet1Path.getParent().relativize(sourceSet1Class1.getAbsolutePath()));
+        assertEquals("com.example.SkippifiedTest1", dir0.classFiles().get(1).getFullyQualifiedClassName());
+        assertEquals(Path.of("sourceset1/SkippifiedTest1.class"), dir0.directory().getParent().relativize(dir0.classFiles().get(1).getAbsolutePath()));
+
+
+        assertEquals("com.example.NormalClass2", dir1.classFiles().get(0).getFullyQualifiedClassName());
+        assertEquals(Path.of("sourceset2/NormalClass2.class"), dir1.directory().getParent().relativize(dir1.classFiles().get(0).getAbsolutePath()));
+
+        assertEquals("com.example.SkippifiedTest2", dir1.classFiles().get(1).getFullyQualifiedClassName());
+        assertEquals(Path.of("sourceset2/SkippifiedTest2.class"), dir1.directory().getParent().relativize(dir1.classFiles().get(1).getAbsolutePath()));
     }
 
 

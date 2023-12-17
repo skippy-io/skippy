@@ -25,7 +25,6 @@ import java.nio.file.Path;
 /**
  * Thin wrapper around a class file in a {@link Project} that adds a couple of convenience methods.
  *
- *
  * @author Florian McKee
  */
 public class ClassFile {

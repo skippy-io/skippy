@@ -89,8 +89,8 @@ public class Skippy implements ExecutionCondition, TestInstancePreDestroyCallbac
             var name = context.getTestInstance().get().getClass().getName();
             Files.write(Path.of("skippy/%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            Files.write(Path.of("skippy/%s.exec".formatted(name)), executionData, StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(Path.of("skippy/%s.exec".formatted(name)), executionData,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
         }
