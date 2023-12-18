@@ -25,11 +25,11 @@ repositories {
 ```
 
 ## Step 2: Enable Skippy in Your Test Suite
-To use Skippy, annotate your test classes with the Skippy extension:
+To use Skippy, annotate your test classes with `@Skippified`:
 ```groovy
-import io.skippy.junit5.Skippy;
+import io.skippy.junit5.Skippified;
 
-@ExtendWith(Skippy.class)
+@Skippified
 public class FooTest {
 
     @Test
