@@ -1,12 +1,11 @@
 package com.example;
 
-import io.skippy.junit5.Skippy;
+import io.skippy.junit5.Skippified;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(Skippy.class)
+@Skippified
 public class LeftPadderTest {
 
     @Test

@@ -28,7 +28,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
+import static io.skippy.gradle.Constants.SKIPPY_DIRECTORY;
 
 /**
  * Removes all entries from .cov files in the skippy folder that do not have corresponding class file in one of the
@@ -60,12 +60,20 @@ public final class CoverageFileCompactor {
 
     private final ClassFileCollector classFileCollector;
 
+    /**
+     * C'tor.
+     *
+     * @param classFileCollector a {@link ClassFileCollector}
+     */
     public CoverageFileCompactor(ClassFileCollector classFileCollector) {
         this.classFileCollector = classFileCollector;
     }
 
     /**
      * Compacts all coverage files in the skippy folder.
+     *
+     * @param logger the {@link Logger}
+     * @param projectDir the project root
      */
     public void compact(Logger logger, Path projectDir) {
         try {

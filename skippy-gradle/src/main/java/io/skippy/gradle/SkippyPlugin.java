@@ -26,7 +26,12 @@ import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
 /**
- * Adds Skippy support for Gradle.
+ * The Skippy plugin adds the
+ * <ul>
+ *     <li>{@link SkippyAnalyzeTask} and </li>
+ *     <li>{@link SkippyCleanTask}</li>
+ * </ul>
+ * tasks to the project.
  *
  * @author Florian McKee
  */
@@ -42,16 +47,21 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         var classesMd5Writer = new ClassesMd5Writer(classFileCollector);
         var coverageFileCompactor = new CoverageFileCompactor(classFileCollector);
 
-        project.getTasks().register("skippyClean", CleanTask.class);
-        project.getTasks().register("skippyAnalyze", AnalyzeTask.class, classesMd5Writer, coverageFileCompactor);
+        project.getTasks().register("skippyClean", SkippyCleanTask.class);
+        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class, classesMd5Writer, coverageFileCompactor);
 
-        if (isSkippyAnalyzeBuild(project)) {
+        if (skippyAnalyzeTaskRequested(project)) {
+
+            // Skippy's JUnit libraries (e.g., skippy-junit5) use the JaCoCo agent to generate coverage data.
             project.getPlugins().apply(JacocoPlugin.class);
-            project.getTasks().withType(Test.class, test -> test.environment("skippyAnalyzeBuild", true));
+
+            // This property informs Skippy's JUnit libraries (e.g., skippy-junit5) to emit coverage data for
+            // skippified tests.
+            project.getTasks().withType(Test.class, test -> test.environment("skippyEmitCovFiles", true));
         }
     }
 
-    private static boolean isSkippyAnalyzeBuild(Project project) {
+    private static boolean skippyAnalyzeTaskRequested(Project project) {
         var taskRequests = project.getGradle().getStartParameter().getTaskRequests();
         return taskRequests.stream().anyMatch(request -> request.getArgs().stream().anyMatch(task -> task.endsWith("skippyAnalyze")));
     }

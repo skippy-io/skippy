@@ -28,47 +28,47 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for {@link Skippy}.
+ * Tests for {@link SkippyExecutionCondition}.
  *
  * @author Florian McKee
  */
-public class SkippyTest {
+public class SkippyExecutionConditionTest {
 
     @Test
     void testEmptyTestInstanceEqualsEnabled() {
         var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippy = new Skippy(skippyAnalysis);
+        var skippyExecutionCondition = new SkippyExecutionCondition(skippyAnalysis);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.empty());
 
-        assertEquals(false, skippy.evaluateExecutionCondition(context).isDisabled());
+        assertEquals(false, skippyExecutionCondition.evaluateExecutionCondition(context).isDisabled());
     }
 
     @Test
     void testSkippyAnalysisExecutionRequiredFalse() {
         var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippy = new Skippy(skippyAnalysis);
+        var skippyExecutionCondition = new SkippyExecutionCondition(skippyAnalysis);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
         when(context.getTestClass()).thenReturn(Optional.of(Object.class));
         when(skippyAnalysis.testNeedsToBeExecuted(any())).thenReturn(false);
 
-        assertEquals(true, skippy.evaluateExecutionCondition(context).isDisabled());
+        assertEquals(true, skippyExecutionCondition.evaluateExecutionCondition(context).isDisabled());
     }
 
     @Test
     void testSkippyAnalysisExecutionRequiredTrue() {
         var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippy = new Skippy(skippyAnalysis);
+        var skippyExecutionCondition = new SkippyExecutionCondition(skippyAnalysis);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
         when(context.getTestClass()).thenReturn(Optional.of(Object.class));
         when(skippyAnalysis.testNeedsToBeExecuted(any())).thenReturn(true);
 
-        assertEquals(false, skippy.evaluateExecutionCondition(context).isDisabled());
+        assertEquals(false, skippyExecutionCondition.evaluateExecutionCondition(context).isDisabled());
     }
 
 }

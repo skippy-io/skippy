@@ -79,7 +79,7 @@ class ClassFileList {
                 .toList();
     }
 
-    public boolean noDataFor(FullyQualifiedClassName fqn) {
+    boolean noDataFor(FullyQualifiedClassName fqn) {
         return ! classFiles.stream().anyMatch(classFile -> fqn.equals(classFile.getFullyQualifiedClassName()));
     }
 }
