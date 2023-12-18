@@ -24,7 +24,11 @@ import org.gradle.api.tasks.SourceSetContainer;
 import javax.inject.Inject;
 
 /**
- * The tasks that is run via <code>./gradlew skippyAnalyze</code>.
+ * Triggers the execution of all tests via the {@code check} tasks. Each test will emit a coverage file. After the test
+ * suite has completed, the plugin will compact the coverage files (see {@link CoverageFileCompactor}) and write a file
+ * with a hash for every class file within the project's output directories (see {@link ClassesMd5Writer}).
+ * <br /><br />
+ * Invocation: <code>./gradlew skippyAnalyze</code>.
  *
  * @author Florian McKee
  */

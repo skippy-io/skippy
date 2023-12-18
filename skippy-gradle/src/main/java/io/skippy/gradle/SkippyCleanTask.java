@@ -22,7 +22,9 @@ import javax.inject.Inject;
 import static io.skippy.gradle.Constants.SKIPPY_DIRECTORY;
 
 /**
- * The tasks that is run via <code>./gradlew skippyAnalyze</code>.
+ * Empties the skippy directory.
+ * <br /><br />
+ * Invocation: <code>./gradlew skippyClean</code>.
  *
  * @author Florian McKee
  */
