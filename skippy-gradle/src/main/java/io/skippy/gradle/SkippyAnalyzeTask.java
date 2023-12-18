@@ -28,7 +28,7 @@ import javax.inject.Inject;
  *
  * @author Florian McKee
  */
-class AnalyzeTask extends DefaultTask {
+class SkippyAnalyzeTask extends DefaultTask {
 
     /**
      * C'tor.
@@ -37,7 +37,7 @@ class AnalyzeTask extends DefaultTask {
      * @param coverageFileCompactor
      */
     @Inject
-    public AnalyzeTask(ClassesMd5Writer classesMd5Writer, CoverageFileCompactor coverageFileCompactor) {
+    public SkippyAnalyzeTask(ClassesMd5Writer classesMd5Writer, CoverageFileCompactor coverageFileCompactor) {
         setGroup("skippy");
 
         // set up task dependencies

@@ -71,7 +71,7 @@ class ClassFile {
      *
      * @return {@code true} if the class file exists, {@code false} otherwise.
      */
-    public boolean exists() {
+    boolean exists() {
         return classFile.toFile().exists();
     }
 

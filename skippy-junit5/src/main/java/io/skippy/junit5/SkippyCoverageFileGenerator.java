@@ -16,16 +16,16 @@
 
 package io.skippy.junit5;
 
-import io.skippy.core.SkippyAnalysis;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataReader;
 import org.jacoco.core.data.IExecutionDataVisitor;
 import org.jacoco.core.data.SessionInfoStore;
-import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
+import org.junit.jupiter.api.extension.TestInstancePreConstructCallback;
+import org.junit.jupiter.api.extension.TestInstancePreDestroyCallback;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,44 +36,34 @@ import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 
 /**
- * Decides whether a test case needs to run based on a {@link SkippyAnalysis}.
+ * Generates a .cov file in the skippy folder with coverage data for skippified tests if the system property
+ * {@code skippyEmitCovFiles} is set.
  *
  * @author Florian McKee
  */
-public class Skippy implements ExecutionCondition, TestInstancePreDestroyCallback {
-
-    private final Logger LOGGER = LogManager.getLogger(Skippy.class);
-
-    private final SkippyAnalysis skippyAnalysis;
-
-    /**
-     * Comment to make the JavaDoc task happy.
-     */
-    public Skippy() {
-        this(SkippyAnalysis.parse());
-    }
-
-    Skippy(final SkippyAnalysis skippyAnalysis) {
-        this.skippyAnalysis = skippyAnalysis;
-    }
+final class SkippyCoverageFileGenerator implements TestInstancePreConstructCallback, TestInstancePreDestroyCallback {
 
     @Override
-    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-        if (context.getTestInstance().isEmpty()) {
-            return ConditionEvaluationResult.enabled("");
+    public void preConstructTestInstance(TestInstanceFactoryContext factoryContext, ExtensionContext context) {
+        // this property is set by Skippy's Gradle plugin whenever a build requests the skippyAnalyze task
+        if ( ! Boolean.valueOf(System.getenv().get("skippyEmitCovFiles"))) {
+            return;
         }
-        if (skippyAnalysis.testNeedsToBeExecuted(context.getTestClass().get())) {
-            return ConditionEvaluationResult.enabled("");
-        }
-        return ConditionEvaluationResult.disabled("");
+        IAgent agent = RT.getAgent();
+        agent.reset();
     }
 
     @Override
     public void preDestroyTestInstance(ExtensionContext context) {
-        if ( ! Boolean.valueOf(System.getenv().get("skippyAnalyzeBuild"))) {
+        // this property is set by Skippy's Gradle plugin whenever a build requests the skippyAnalyze task
+        if ( ! Boolean.valueOf(System.getenv().get("skippyEmitCovFiles"))) {
             return;
         }
         IAgent agent = RT.getAgent();
+        emitCovFile(context, agent);
+    }
+
+    private static void emitCovFile(ExtensionContext context, IAgent agent) {
         var coveredClasses = new LinkedList<String>();
         byte[] executionData = agent.getExecutionData(true);
         ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(executionData));

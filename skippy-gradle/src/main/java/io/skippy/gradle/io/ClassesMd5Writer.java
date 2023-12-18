@@ -25,8 +25,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.skippy.gradle.SkippyConstants.CLASSES_MD5_FILE;
-import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
+import static io.skippy.gradle.Constants.SKIPPY_DIRECTORY;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.Files.writeString;
 import static java.util.stream.Collectors.joining;
@@ -54,12 +53,14 @@ import static java.util.stream.Collectors.joining;
  */
 public final class ClassesMd5Writer {
 
+    private static final Path CLASSES_MD5_FILE = Path.of("classes.md5");
+
     private final ClassFileCollector classFileCollector;
 
     /**
      * C'tor.
      *
-     * @param classFileCollector
+     * @param classFileCollector a {@link ClassFileCollector}
      */
     public ClassesMd5Writer(ClassFileCollector classFileCollector) {
         this.classFileCollector = classFileCollector;
@@ -68,6 +69,7 @@ public final class ClassesMd5Writer {
     /**
      * Creates the classes.md5 file in the skippy folder.
      *
+     * @param logger the {@link Logger}
      * @param projectDir the project root
      */
     public void write(Logger logger, Path projectDir) {

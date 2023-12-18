@@ -19,20 +19,20 @@ package io.skippy.gradle;
 import org.gradle.api.DefaultTask;
 import javax.inject.Inject;
 
-import static io.skippy.gradle.SkippyConstants.SKIPPY_DIRECTORY;
+import static io.skippy.gradle.Constants.SKIPPY_DIRECTORY;
 
 /**
  * The tasks that is run via <code>./gradlew skippyAnalyze</code>.
  *
  * @author Florian McKee
  */
-class CleanTask extends DefaultTask {
+class SkippyCleanTask extends DefaultTask {
 
     /**
      * C'tor.
      */
     @Inject
-    public CleanTask() {
+    public SkippyCleanTask() {
         setGroup("skippy");
         doLast((task) -> {
             var skippyDir = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY);

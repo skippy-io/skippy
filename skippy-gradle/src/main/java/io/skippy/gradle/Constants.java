@@ -16,26 +16,21 @@
 
 package io.skippy.gradle;
 
-import io.skippy.gradle.model.ClassFile;
-
 import java.nio.file.Path;
 
 /**
- * Comment to make the JavaDoc task happy.
+ * Constants that are used across this project.
  *
  * @author Florian McKee
  */
-public final class SkippyConstants {
+public final class Constants {
 
     /**
-     * The directory that contains the Skippy analysis.
+     * Skippy's output directory.
      */
     public static final Path SKIPPY_DIRECTORY = Path.of("skippy");
 
-    /**
-     * The file that contains data for all {@link ClassFile}s.
-     */
-    public static final Path CLASSES_MD5_FILE = Path.of("classes.md5");
+
 
     
 }
