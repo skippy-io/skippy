@@ -37,7 +37,7 @@ import java.util.LinkedList;
 
 /**
  * Generates a .cov file in the skippy folder with coverage data for skippified tests if the system property
- * {@code skippyEmitCovFiles} is set.
+ * {@code skippyEmitCovFiles} is set. Requires a JaCoCo agent to be running in this JVM.
  *
  * @author Florian McKee
  */

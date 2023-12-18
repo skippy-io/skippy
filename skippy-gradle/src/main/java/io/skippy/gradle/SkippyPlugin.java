@@ -33,6 +33,15 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin;
  * </ul>
  * tasks to the project.
  *
+ * <br /><br />
+ *
+ * If the {@link SkippyAnalyzeTask} task has been requested, it additionally performs the following steps:
+ * <ul>
+ *     <li>Applies the {@link JacocoPlugin}</li>
+ *     <li>Sets the system property {@code skippyEmitCovFiles} to {@code true}</li>
+ * </ul>
+ * This allows Skippy's JUnit libraries to emit coverages files during the execution of the test suite.
+ *
  * @author Florian McKee
  */
 public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
