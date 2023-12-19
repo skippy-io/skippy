@@ -39,7 +39,8 @@ public class SkippyAnalysis {
         NO_COVERAGE_DATA_FOR_TEST,
         BYTECODE_CHANGE_IN_TEST,
         NO_HASH_FOR_TEST,
-        NO_HASH_FOR_COVERED_CLASS, BYTECODE_CHANGE_IN_COVERED_CLASS
+        NO_HASH_FOR_COVERED_CLASS,
+        BYTECODE_CHANGE_IN_COVERED_CLASS
     }
 
     enum Decision {
