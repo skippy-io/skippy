@@ -61,4 +61,11 @@ public class ClassFileListTest {
         assertEquals(true, classFileList.noDataFor(new FullyQualifiedClassName("com.example.UnknownClass")));
     }
 
+    @Test
+    void testIssue51() throws URISyntaxException {
+        var classesMd5 = Path.of(getClass().getResource("classfilelist/issue51.classes.md5").toURI());
+        var classFileList = ClassFileList.parse(classesMd5);
+        assertEquals(true, classFileList.noDataFor(new FullyQualifiedClassName("com.example.UnknownClass")));
+    }
+
 }
