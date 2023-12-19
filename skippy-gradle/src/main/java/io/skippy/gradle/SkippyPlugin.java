@@ -19,11 +19,13 @@ package io.skippy.gradle;
 import io.skippy.gradle.collector.ClassFileCollector;
 import io.skippy.gradle.io.ClassesMd5Writer;
 import io.skippy.gradle.io.CoverageFileCompactor;
+import io.skippy.gradle.model.SkippyProperties;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
+import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
 
 /**
  * The Skippy plugin adds the
@@ -49,7 +51,6 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getPlugins().apply(JavaPlugin.class);
-        project.getPlugins().apply(JacocoPlugin.class);
 
         // some DIY dependency injection
         var classFileCollector = new ClassFileCollector(project, project.getExtensions().getByType(SourceSetContainer.class));
@@ -61,8 +62,9 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
         if (skippyAnalyzeTaskRequested(project)) {
 
-            // Skippy's JUnit libraries (e.g., skippy-junit5) use the JaCoCo agent to generate coverage data.
+            // Skippy's JUnit libraries (e.g., skippy-junit5) rely on the JaCoCo agent to generate coverage data.
             project.getPlugins().apply(JacocoPlugin.class);
+            project.getExtensions().getByType(JacocoPluginExtension.class).setToolVersion(SkippyProperties.getJacocoVersion());
 
             // This property informs Skippy's JUnit libraries (e.g., skippy-junit5) to emit coverage data for
             // skippified tests.
