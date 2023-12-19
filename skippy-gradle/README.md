@@ -2,17 +2,35 @@
 
 The Skippy plugin provides Skippy support in Gradle.
 
-## Apply the Skippy Plugin
+## Add The Plugin To Your Project
 
-First, you have to apply the Skippy plugin:
+Release versions are available in Gradle's Plugin Portal:
+
+```groovy
+plugins {
+    id("io.skippy") version "0.0.6"
+}
+```
+
+Release versions are also available in Maven Central:
 ```groovy
 buildscript {
     repositories {
-        
-        // for releases
         mavenCentral()
-        
-        // for snapshots
+    }
+    dependencies {
+        classpath 'io.skippy:skippy-gradle:0.0.6'
+    }
+}
+
+apply plugin: io.skippy.gradle.SkippyPlugin
+```
+
+Snapshots are available in `s01.oss.sonatype.org`:
+
+```groovy
+buildscript {
+    repositories {
         maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     }
     dependencies {
@@ -22,16 +40,15 @@ buildscript {
 
 apply plugin: io.skippy.gradle.SkippyPlugin
 ```
-Note: The Skippy plugin automatically applies the `Java` plugin.
 
 ## Tasks
 
-The plugin adds a couple of new tasks to your project:
+The plugin adds the `skippyClean` and `skippyAnalyze` tasks to your project:
 ```
 ./gradlew tasks
-```
-You will see the following output:
-```
+
+...
+
 Skippy tasks
 ------------
 skippyClean
@@ -41,64 +58,27 @@ skippyAnalyze
 ### skippyAnalyze Task
 
 `skippyAnalyze` captures 
-- execution data for each test that uses Skippy and 
+- coverage data for each skippified test and
 - a hash for each class file in the project.
 
-Example:
+The captured data is stored in the skippy directory:
 ```
 ./gradlew skippyAnalyze
+
+> Task :skippyAnalyze
+Writing skippy/classes.md5
+Writing skippy/com.example.FooTest.cov
+Writing skippy/com.example.BarTest.cov
+...
 ```
 
-You should see something like this:
-
-```
-./gradlew clean skippyAnalyze                                  
-
-> Task skippyCoverage_com.example.Class0Test
-Skippy: Capturing coverage data for com.example.Class0Test in skippy/com.example.Class0Test.csv
-
-> Task skippyCoverage_com.example.Class1Test
-Skippy: Capturing coverage data for com.example.Class1Test in skippy/com.example.Class1Test.csv
-
-> Task skippyCoverage_com.example.Class2Test
-Skippy: Capturing coverage data for com.example.Class2Test in skippy/com.example.Class2Test.csv
-
-> Task skippyAnalyze
-Skippy: Capturing a snapshot of all source files in skippy/sourceSnapshot.md5
-```
-
-The generated data is consumed by Skippy's testing libraries (e.g., [skippy-junit5](../skippy-junit5/README.md)).
+The generated files are consumed by Skippy's testing libraries (e.g., [skippy-junit5](../skippy-junit5/README.md))
+to determine whether a test can be skipped.
 
 ### skippyClean Task
 
-`skippyClean` removes previously captured execution data and the file that contains a hash for every source file:
+`skippyClean` empties the skippy directory:
 
 ```
 ./gradlew skippyClean
 ```
-
-## Customization
-
-By default, `skippyAnalyze` will 
-- look for skippified tests in the `test` SourceSet and
-- execute skippifed tests using the `test` task.
-
-Builds can customize this behavior using the `skippy` DSL block: 
-
-```groovy
-skippy {
-    sourceSet {
-        name = 'test'
-        testTask = 'test'
-    }
-    sourceSet {
-        name = 'intTest'
-        testTask = 'integrationTest'
-    }
-}
-```
-
-The above example reads as follows:
-- Skippy will look for skippified tests in the SourceSets `test` and `intTest`
-- Skippified tests in the `test` SourceSet will be executed using the `test` task
-- Skippified tests in the `intTest` SourceSet will be executed using the `integrationTest` task
