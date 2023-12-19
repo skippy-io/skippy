@@ -74,12 +74,15 @@ class ClassFileList {
 
     List<FullyQualifiedClassName> getChangedClasses() {
         return classFiles.stream()
-                .filter(s -> s.exists() && s.hasChanged())
-                .map(s -> s.getFullyQualifiedClassName())
+                .filter(classFile -> classFile.exists())
+                .filter(classFile -> classFile.hasChanged())
+                .map(classFile -> classFile.getFullyQualifiedClassName())
                 .toList();
     }
 
     boolean noDataFor(FullyQualifiedClassName fqn) {
-        return ! classFiles.stream().anyMatch(classFile -> fqn.equals(classFile.getFullyQualifiedClassName()));
+        return ! classFiles.stream()
+                .filter(classFile -> classFile.exists())
+                .anyMatch(classFile -> fqn.equals(classFile.getFullyQualifiedClassName()));
     }
 }
