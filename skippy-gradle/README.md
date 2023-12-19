@@ -31,6 +31,7 @@ Snapshots are available in `s01.oss.sonatype.org`:
 ```groovy
 buildscript {
     repositories {
+        mavenCentral()
         maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     }
     dependencies {

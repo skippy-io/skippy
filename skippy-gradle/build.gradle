@@ -80,3 +80,14 @@ gradlePlugin {
     }
     automatedPublishing = publishToGradlePluginPortal
 }
+
+processResources {
+    def tokens = [
+            'jacoco.version': file('../version-jacoco.txt').text.trim(),
+    ]
+
+    // Use the filter method with ReplaceTokens for token replacement
+    filesMatching('**/*.properties') {
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: tokens)
+    }
+}
