@@ -34,7 +34,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void test_no_change_equals_skip() throws URISyntaxException {
-        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test1/skippy").toURI());
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test1").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
@@ -45,7 +45,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void test_no_coverage_data_for_test_equals_execute() throws URISyntaxException {
-        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test2/skippy").toURI());
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test2").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
@@ -56,7 +56,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void test_bytecode_change_in_test_equals_execute() throws URISyntaxException {
-        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test3/skippy").toURI());
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test3").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
@@ -67,7 +67,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void test_bytecode_change_in_covered_class_equals_execute() throws URISyntaxException {
-        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test4/skippy").toURI());
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test4").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
@@ -78,7 +78,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void test_missing_hash_for_test_equals_execute() throws URISyntaxException {
-        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test5/skippy").toURI());
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test5").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
@@ -89,7 +89,7 @@ public class SkippyAnalysisTest {
 
     @Test
     void test_missing_hash_for_covered_class_equals_execute() throws URISyntaxException {
-        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test6/skippy").toURI());
+        var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test6").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));

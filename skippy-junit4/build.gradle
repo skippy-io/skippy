@@ -4,8 +4,8 @@ plugins {
 }
 
 ossrhPublish {
-    title = 'skippy-junit5'
-    description = 'Skippy\'s Conditional Test Execution for JUnit 5'
+    title = 'skippy-junit4'
+    description = 'Skippy\'s Conditional Test Execution for JUnit 4'
 }
 
 dependencies {
@@ -14,12 +14,10 @@ dependencies {
         exclude group: 'org.jacoco', module: 'org.jacoco.examples'
         exclude group: 'org.jacoco', module: 'org.jacoco.doc'
     }
-
-    api 'org.junit.jupiter:junit-jupiter-api:' + versions.junit5
-    implementation 'org.junit.jupiter:junit-jupiter-engine:' + versions.junit5
-
     implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
     runtimeOnly 'org.apache.logging.log4j:log4j-core:2.20.0'
+
+    implementation 'junit:junit:' + versions.junit4
 
     testImplementation 'org.mockito:mockito-core:5.4.0'
 }
@@ -28,5 +26,4 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
     }
-    useJUnitPlatform()
 }
