@@ -24,22 +24,22 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests for {@link ClassFile}.
+ * Tests for {@link HashedClass}.
  *
  * @author Florian McKee
  */
-public class ClassFileTest {
+public class HashedClassTest {
 
     @Test
     void testClassFileHasNotChanged() throws URISyntaxException {
-        var foo = new ClassFile(
-                Path.of(getClass().getResource("classfile/Foo.class").toURI()), "nI8N7FMXjy8oPJ6w17Eajg==");
+        var foo = new HashedClass(
+                Path.of(getClass().getResource("hashedclass/Foo.class").toURI()), "nI8N7FMXjy8oPJ6w17Eajg==");
         assertEquals(false, foo.hasChanged());
     }
 
     @Test
     void testClassFileHasChanged() throws URISyntaxException {
-        var fooNew = new ClassFile(Path.of(getClass().getResource("classfile/Foo.class").toURI()), "NEW-CLASS-FILE-HASH");
+        var fooNew = new HashedClass(Path.of(getClass().getResource("hashedclass/Foo.class").toURI()), "NEW-CLASS-FILE-HASH");
         assertEquals(true, fooNew.hasChanged());
     }
 

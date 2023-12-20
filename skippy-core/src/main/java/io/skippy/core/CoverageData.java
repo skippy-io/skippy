@@ -28,54 +28,54 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
 /**
- * A mapping between tests and the classes they cover.
+ * A mapping between tests and the classes they cover derived from the {@code .cov} files in the skippy folder.
  *
  * @author Florian McKee
  */
-class TestImpactAnalysis {
+class CoverageData {
 
-    private static final Logger LOGGER = LogManager.getLogger(TestImpactAnalysis.class);
+    private static final Logger LOGGER = LogManager.getLogger(CoverageData.class);
 
-    static final TestImpactAnalysis UNAVAILABLE = new TestImpactAnalysis(emptyMap());
+    static final CoverageData UNAVAILABLE = new CoverageData(emptyMap());
 
-    private final Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> testCoverage;
+    private final Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> coverageData;
 
     /**
      * C'tor.
      *
-     * @param testCoverage a mapping between tests and the classes that they cover
+     * @param coverageData a mapping between tests and the classes that they cover
      */
-    private TestImpactAnalysis(Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> testCoverage) {
-        this.testCoverage = testCoverage;
+    private CoverageData(Map<FullyQualifiedClassName, List<FullyQualifiedClassName>> coverageData) {
+        this.coverageData = coverageData;
     }
 
-    static TestImpactAnalysis parse(Path directory) {
+    static CoverageData parse(Path directory) {
         var result = new HashMap<FullyQualifiedClassName, List<FullyQualifiedClassName>>();
         for (var covFile : directory.toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov"))) {
             var test = new FullyQualifiedClassName(toClassName(covFile.toPath()));
             result.put(test, parseCovFile(covFile.toPath()));
         }
-        return new TestImpactAnalysis(result);
+        return new CoverageData(result);
     }
 
     /**
-     * Returns the classes that are covered by {@code test}.
+     * Returns the classes that are covered by the {@code test}.
      *
-     * @param test a {@link FullyQualifiedClassName} representing a test
-     * @return a list of {@link FullyQualifiedClassName}s representing the classes that are covered by {@code test}
+     * @param test a test
+     * @return the classes that are covered by the {@code test}.
      */
     List<FullyQualifiedClassName> getCoveredClasses(FullyQualifiedClassName test) {
-        return testCoverage.getOrDefault(test, emptyList());
+        return coverageData.getOrDefault(test, emptyList());
     }
 
     /**
-     * Returns {@code true} if no coverage data is available for {@code test}, {@code false} otherwise.
+     * Returns {@code true} if no coverage data is available for the {@code test}, {@code false} otherwise.
      *
-     * @param test a {@link FullyQualifiedClassName} representing a test
-     * @return {@code true} if no coverage data is available for {@code test}, {@code false} otherwise
+     * @param test a test
+     * @return {@code true} if no coverage data is available for the {@code test}, {@code false} otherwise
      */
     boolean noDataAvailableFor(FullyQualifiedClassName test) {
-        return ! testCoverage.containsKey(test);
+        return ! coverageData.containsKey(test);
     }
 
     private static List<FullyQualifiedClassName> parseCovFile(Path csvFile) {

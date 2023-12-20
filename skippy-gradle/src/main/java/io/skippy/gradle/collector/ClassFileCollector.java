@@ -34,17 +34,14 @@ import static java.util.Comparator.comparing;
  */
 public final class ClassFileCollector {
 
-    private final Project project;
     private final SourceSetContainer sourceSetContainer;
 
     /**
      * C'tor
      *
-     * @param project a {@link Project}
      * @param sourceSetContainer a {@link SourceSetContainer}
      */
-    public ClassFileCollector(Project project, SourceSetContainer sourceSetContainer) {
-        this.project = project;
+    public ClassFileCollector(SourceSetContainer sourceSetContainer) {
         this.sourceSetContainer = sourceSetContainer;
     }
 
@@ -78,7 +75,7 @@ public final class ClassFileCollector {
                 if (file.isDirectory()) {
                     result.addAll(collect(file));
                 } else if (file.getName().endsWith(".class")) {
-                    result.add(new ClassFile(project, file.toPath()));
+                    result.add(new ClassFile(file.toPath()));
                 }
             }
         }

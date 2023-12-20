@@ -42,15 +42,11 @@ import static org.mockito.Mockito.when;
 public class ClassFileCollectorTest {
 
     @Test
-    void testCollect() throws URISyntaxException {
-
-        var currentDir = Paths.get(getClass().getResource("sourceset1").toURI()).toFile();
-        var project = mock(Project.class);
-        when(project.getProjectDir()).thenReturn(currentDir.getParentFile().getParentFile());
+    void testCollect() {
 
         var sourceSetContainer = mockSourceSetContainer("sourceset1", "sourceset2");
 
-        var classFileCollector = new ClassFileCollector(project, sourceSetContainer);
+        var classFileCollector = new ClassFileCollector(sourceSetContainer);
 
         var directoriesWithClassFiles = classFileCollector.collect();
 

@@ -28,38 +28,38 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 /**
- * A list of {@link ClassFile}s with a couple of utility methods that operates on this list.
+ * In-memory representation of the {@code classes.md5} file.
  *
  * @author Florian McKee
  */
-class ClassFileList {
+class HashedClasses {
 
-    private static final Logger LOGGER = LogManager.getLogger(ClassFileList.class);
+    private static final Logger LOGGER = LogManager.getLogger(HashedClasses.class);
 
-    static final ClassFileList UNAVAILABLE = new ClassFileList(emptyList());
+    static final HashedClasses UNAVAILABLE = new HashedClasses(emptyList());
 
-    private final List<ClassFile> classFiles;
+    private final List<HashedClass> hashedClasses;
 
     /**
      * C'tor.
      *
-     * @param classFiles a list of {@link ClassFile}s
+     * @param hashedClasses a list of {@link HashedClass}s
      */
-    private ClassFileList(List<ClassFile> classFiles) {
-        this.classFiles = classFiles;
+    private HashedClasses(List<HashedClass> hashedClasses) {
+        this.hashedClasses = hashedClasses;
     }
 
-    static ClassFileList parse(Path classesMd5File) {
+    static HashedClasses parse(Path classesMd5File) {
         if (!classesMd5File.toFile().exists()) {
             return UNAVAILABLE;
         }
         try {
-            var result = new ArrayList<ClassFile>();
+            var result = new ArrayList<HashedClass>();
             for (var line : Files.readAllLines(classesMd5File, StandardCharsets.UTF_8)) {
                 String[] split = line.split(":");
-                result.add(new ClassFile(Path.of("%s/%s".formatted(split[0], split[1])), split[2]));
+                result.add(new HashedClass(Path.of("%s/%s".formatted(split[0], split[1])), split[2]));
             }
-            return new ClassFileList(result);
+            return new HashedClasses(result);
         } catch (Exception e) {
             LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(classesMd5File, e.getMessage()), e);
             throw new RuntimeException(e);
@@ -67,22 +67,22 @@ class ClassFileList {
     }
 
     List<FullyQualifiedClassName> getClasses() {
-        return classFiles.stream()
+        return hashedClasses.stream()
                 .map(s -> s.getFullyQualifiedClassName())
                 .toList();
     }
 
     List<FullyQualifiedClassName> getChangedClasses() {
-        return classFiles.stream()
-                .filter(classFile -> classFile.exists())
-                .filter(classFile -> classFile.hasChanged())
-                .map(classFile -> classFile.getFullyQualifiedClassName())
+        return hashedClasses.stream()
+                .filter(hashedClass -> hashedClass.exists())
+                .filter(hashedClass -> hashedClass.hasChanged())
+                .map(hashedClass -> hashedClass.getFullyQualifiedClassName())
                 .toList();
     }
 
     boolean noDataFor(FullyQualifiedClassName fqn) {
-        return ! classFiles.stream()
-                .filter(classFile -> classFile.exists())
-                .anyMatch(classFile -> fqn.equals(classFile.getFullyQualifiedClassName()));
+        return ! hashedClasses.stream()
+                .filter(hashedClass -> hashedClass.exists())
+                .anyMatch(hashedClass -> fqn.equals(hashedClass.getFullyQualifiedClassName()));
     }
 }

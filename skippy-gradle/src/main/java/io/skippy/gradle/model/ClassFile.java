@@ -29,18 +29,15 @@ import java.nio.file.Path;
  */
 public class ClassFile {
 
-    private final Project project;
     private final Path classFile;
     private final String fullyQualifiedClassName;
 
     /**
      * C'tor.
      *
-     * @param project the Gradle {@link Project}
      * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
      */
-    public ClassFile(Project project, Path classFile) {
-        this.project = project;
+    public ClassFile(Path classFile) {
         this.classFile = classFile;
         this.fullyQualifiedClassName = ClassNameExtractor.getFullyQualifiedClassName(classFile);
     }
