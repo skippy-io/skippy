@@ -74,8 +74,8 @@ class SkippyAnalyzeTask extends DefaultTask {
         getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
 
         doLast((task) -> {
-            classesMd5Writer.write(getLogger(), getProject().getProjectDir().toPath());
             coverageFileCompactor.compact(getLogger(), getProject().getProjectDir().toPath());
+            classesMd5Writer.write(getLogger(), getProject().getProjectDir().toPath());
         });
 
         // Skippy's JUnit libraries (e.g., skippy-junit5) rely on the JaCoCo agent to generate coverage data.
