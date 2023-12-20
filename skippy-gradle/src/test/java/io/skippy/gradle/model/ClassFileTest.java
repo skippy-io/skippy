@@ -16,7 +16,6 @@
 
 package io.skippy.gradle.model;
 
-import org.gradle.api.Project;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -25,8 +24,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link ClassFile}.
@@ -42,7 +39,7 @@ public class ClassFileTest {
     }, delimiter = ':')
     void testGetFullyQualifiedClassName(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new ClassFile(mock(Project.class), classFile).getFullyQualifiedClassName());
+        assertEquals(expectedValue, new ClassFile(classFile).getFullyQualifiedClassName());
     }
 
     @ParameterizedTest
@@ -52,7 +49,7 @@ public class ClassFileTest {
     }, delimiter = ':')
     void testGetShortClassName(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new ClassFile(mock(Project.class), classFile).getShortClassName());
+        assertEquals(expectedValue, new ClassFile(classFile).getShortClassName());
     }
 
     @ParameterizedTest
@@ -62,9 +59,7 @@ public class ClassFileTest {
     }, delimiter = ':')
     void testGetRelativePath(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        var project = mock(Project.class);
-        when(project.getProjectDir()).thenReturn(classFile.toFile().getParentFile().getParentFile());
-        assertEquals(Path.of(expectedValue), classFile.getParent().getParent().relativize(new ClassFile(project, classFile).getAbsolutePath()));
+        assertEquals(Path.of(expectedValue), classFile.getParent().getParent().relativize(new ClassFile(classFile).getAbsolutePath()));
     }
 
     @ParameterizedTest
@@ -74,7 +69,7 @@ public class ClassFileTest {
     }, delimiter = ':')
     void getHash(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new ClassFile(mock(Project.class), classFile).getHash());
+        assertEquals(expectedValue, new ClassFile(classFile).getHash());
     }
 
 }

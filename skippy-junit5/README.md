@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'io.skippy:skippy-junit5:0.0.6'
+    testImplementation 'io.skippy:skippy-junit5:0.0.7'
 }
 ```
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'io.skippy:skippy-junit5:0.0.7-SNAPSHOT'
+    testImplementation 'io.skippy:skippy-junit5:0.0.8-SNAPSHOT'
 }
 ```
 

@@ -8,7 +8,7 @@ Release versions are available in Gradle's Plugin Portal:
 
 ```groovy
 plugins {
-    id("io.skippy") version "0.0.6"
+    id("io.skippy") version "0.0.7"
 }
 ```
 
@@ -19,7 +19,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'io.skippy:skippy-gradle:0.0.6'
+        classpath 'io.skippy:skippy-gradle:0.0.7'
     }
 }
 
@@ -35,7 +35,7 @@ buildscript {
         maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     }
     dependencies {
-        classpath 'io.skippy:skippy-gradle:0.0.7-SNAPSHOT'
+        classpath 'io.skippy:skippy-gradle:0.0.8-SNAPSHOT'
     }
 }
 
