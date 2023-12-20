@@ -26,8 +26,8 @@ import static io.skippy.core.SkippyAnalysis.Reason.*;
 /**
  * The result of a Skippy analysis:
  * <ul>
- *     <li>a {@link ClassFile} list</li>
- *     <li>a {@link TestImpactAnalysis} for all tests that use the Skippy extension</li>
+ *     <li>a {@link HashedClass} list</li>
+ *     <li>a {@link CoverageData} for all tests that use the Skippy extension</li>
  * </ul>
  *
  * @author Florian McKee
@@ -59,20 +59,20 @@ public class SkippyAnalysis {
 
     private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysis.class);
 
-    private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(ClassFileList.UNAVAILABLE, TestImpactAnalysis.UNAVAILABLE);
+    private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(HashedClasses.UNAVAILABLE, CoverageData.UNAVAILABLE);
 
-    private final ClassFileList classFiles;
-    private final TestImpactAnalysis testImpactAnalysis;
+    private final HashedClasses hashedClasses;
+    private final CoverageData coverageData;
 
     /**
      * C'tor.
      *
-     * @param classFiles all classes that have been analyzed by Skippy's analysis
-     * @param testImpactAnalysis the {@link TestImpactAnalysis} created by Skippy's analysis
+     * @param hashedClasses in-memory representation of the {@code classes.md5} file
+     * @param coverageData in-memory representation of the {@code .cov} files in the skippy folder
      */
-    SkippyAnalysis(ClassFileList classFiles, TestImpactAnalysis testImpactAnalysis) {
-        this.classFiles = classFiles;
-        this.testImpactAnalysis = testImpactAnalysis;
+    SkippyAnalysis(HashedClasses hashedClasses, CoverageData coverageData) {
+        this.hashedClasses = hashedClasses;
+        this.coverageData = coverageData;
     }
 
     /**
@@ -88,8 +88,8 @@ public class SkippyAnalysis {
         if ( ! skippyDirectory.toFile().exists() || ! skippyDirectory.toFile().isDirectory()) {
             return SkippyAnalysis.UNAVAILABLE;
         }
-        var classFiles = ClassFileList.parse(skippyDirectory.resolve(SkippyConstants.CLASSES_MD5_FILE));
-        var testCoverage = TestImpactAnalysis.parse(skippyDirectory);
+        var classFiles = HashedClasses.parse(skippyDirectory.resolve(SkippyConstants.CLASSES_MD5_FILE));
+        var testCoverage = CoverageData.parse(skippyDirectory);
         return new SkippyAnalysis(classFiles, testCoverage);
     }
 
@@ -104,15 +104,15 @@ public class SkippyAnalysis {
     }
 
     DecisionWithReason decide(FullyQualifiedClassName testFqn) {
-        if (testImpactAnalysis.noDataAvailableFor(testFqn)) {
+        if (coverageData.noDataAvailableFor(testFqn)) {
             LOGGER.debug("%s: No coverage data found: Execution required".formatted(testFqn));
             return DecisionWithReason.executeTest(NO_COVERAGE_DATA_FOR_TEST);
         }
-        if (classFiles.noDataFor(testFqn)) {
+        if (hashedClasses.noDataFor(testFqn)) {
             LOGGER.debug("%s: No hash found: Execution required".formatted(testFqn));
             return DecisionWithReason.executeTest(NO_HASH_FOR_TEST);
         }
-        if (classFiles.getChangedClasses().contains(testFqn)) {
+        if (hashedClasses.getChangedClasses().contains(testFqn)) {
             LOGGER.debug("%s: Bytecode change detected: Execution required".formatted(testFqn));
             return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_TEST);
         }
@@ -120,8 +120,8 @@ public class SkippyAnalysis {
     }
 
     private DecisionWithReason decideBasedOnCoveredClasses(FullyQualifiedClassName testFqn) {
-        var changeClasses = classFiles.getChangedClasses();
-        for (var coveredClassFqn : testImpactAnalysis.getCoveredClasses(testFqn)) {
+        var changeClasses = hashedClasses.getChangedClasses();
+        for (var coveredClassFqn : coverageData.getCoveredClasses(testFqn)) {
             if (changeClasses.contains(coveredClassFqn)) {
                 LOGGER.debug("%s: Bytecode change in covered class '%s' detected: Execution required".formatted(
                         testFqn.fqn(),
@@ -129,7 +129,7 @@ public class SkippyAnalysis {
                 ));
                 return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_COVERED_CLASS);
             }
-            if (classFiles.noDataFor(coveredClassFqn)) {
+            if (hashedClasses.noDataFor(coveredClassFqn)) {
                 LOGGER.debug("%s: No hash for covered class '%s' found: Execution required".formatted(
                         testFqn.fqn(),
                         coveredClassFqn.fqn()

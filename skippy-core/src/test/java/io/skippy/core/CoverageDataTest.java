@@ -25,16 +25,16 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests for {@link TestImpactAnalysis}.
+ * Tests for {@link CoverageData}.
  *
  * @author Florian McKee
  */
-public class TestImpactAnalysisTest {
+public class CoverageDataTest {
 
     @Test
     void testParse() throws URISyntaxException {
-        var directory = Path.of(getClass().getResource("testimpactanalysis").toURI());
-        var tia = TestImpactAnalysis.parse(directory);
+        var directory = Path.of(getClass().getResource("testcoverage").toURI());
+        var tia = CoverageData.parse(directory);
 
         asList(false, tia.noDataAvailableFor(new FullyQualifiedClassName("com.example.LeftPadderTest")));
 

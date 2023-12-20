@@ -18,17 +18,15 @@ package io.skippy.core;
 
 import io.skippy.core.asm.ClassNameExtractor;
 import io.skippy.core.asm.DebugAgnosticHash;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
 
 /**
- * Wrapper that adds a couple of convenience methods on top of a class file that has been analyzed by Skippy.
+ * Represents a line in the {@code classes.md5} file.
  *
  * @author Florian McKee
  */
-class ClassFile {
+class HashedClass {
 
     private final Path classFile;
     private final String hash;
@@ -39,7 +37,7 @@ class ClassFile {
      * @param classFile the class file in the file system (e.g., /user/johndoe/repos/demo/build/classes/java/main/com/example/Foo.class)
      * @param hash the MD5 hash of the content of the class file (e.g., YA9ExftvTDku3TUNsbkWIw==)
      */
-    ClassFile(Path classFile, String hash) {
+    HashedClass(Path classFile, String hash) {
         this.classFile = classFile;
         this.hash = hash;
     }

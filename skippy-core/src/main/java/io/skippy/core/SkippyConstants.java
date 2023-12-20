@@ -31,7 +31,7 @@ class SkippyConstants {
     static final Path SKIPPY_DIRECTORY = Path.of("skippy");
 
     /**
-     * The file that contains data for all {@link ClassFile}s.
+     * The file that contains data for all {@link HashedClass}s.
      */
     static final Path CLASSES_MD5_FILE = Path.of("classes.md5");
 

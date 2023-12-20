@@ -25,28 +25,28 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests for {@link ClassFileList}.
+ * Tests for {@link HashedClasses}.
  *
  * @author Florian McKee
  */
-public class ClassFileListTest {
+public class HashedClassesTest {
 
     @Test
     void testGetClasses() throws URISyntaxException {
-        var classesMd5 = Path.of(getClass().getResource("classfilelist/classes.md5").toURI());
-        var classFileList = ClassFileList.parse(classesMd5);
+        var classesMd5 = Path.of(getClass().getResource("hashedclasses/classes.md5").toURI());
+        var hashedClasses = HashedClasses.parse(classesMd5);
 
         assertEquals(asList(
             new FullyQualifiedClassName("com.example.LeftPadder"),
             new FullyQualifiedClassName("com.example.StringUtils"),
             new FullyQualifiedClassName("com.example.UnrelatedClass")
-        ), classFileList.getClasses());
+        ), hashedClasses.getClasses());
     }
 
     @Test
     void testChangedClasses() throws URISyntaxException {
-        var classesMd5 = Path.of(getClass().getResource("classfilelist/classes.md5").toURI());
-        var classFileList = ClassFileList.parse(classesMd5);
+        var classesMd5 = Path.of(getClass().getResource("hashedclasses/classes.md5").toURI());
+        var classFileList = HashedClasses.parse(classesMd5);
 
         assertEquals(asList(
             new FullyQualifiedClassName("com.example.UnrelatedClass")
@@ -55,16 +55,16 @@ public class ClassFileListTest {
 
     @Test
     void testNoDataFor() throws URISyntaxException {
-        var classesMd5 = Path.of(getClass().getResource("classfilelist/classes.md5").toURI());
-        var classFileList = ClassFileList.parse(classesMd5);
+        var classesMd5 = Path.of(getClass().getResource("hashedclasses/classes.md5").toURI());
+        var classFileList = HashedClasses.parse(classesMd5);
         assertEquals(false, classFileList.noDataFor(new FullyQualifiedClassName("com.example.LeftPadder")));
         assertEquals(true, classFileList.noDataFor(new FullyQualifiedClassName("com.example.UnknownClass")));
     }
 
     @Test
     void testIssue51() throws URISyntaxException {
-        var classesMd5 = Path.of(getClass().getResource("classfilelist/issue51.classes.md5").toURI());
-        var classFileList = ClassFileList.parse(classesMd5);
+        var classesMd5 = Path.of(getClass().getResource("hashedclasses/issue51.classes.md5").toURI());
+        var classFileList = HashedClasses.parse(classesMd5);
         assertEquals(true, classFileList.noDataFor(new FullyQualifiedClassName("com.example.UnknownClass")));
     }
 
