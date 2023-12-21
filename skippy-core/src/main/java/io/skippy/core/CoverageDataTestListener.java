@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package io.skippy.junit5;
+package io.skippy.core;
 
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
-import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataReader;
-import org.jacoco.core.data.IExecutionDataVisitor;
 import org.jacoco.core.data.SessionInfoStore;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
-import org.junit.jupiter.api.extension.TestInstancePreConstructCallback;
-import org.junit.jupiter.api.extension.TestInstancePreDestroyCallback;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,15 +30,18 @@ import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 
 /**
- * Generates a .cov file in the skippy folder with coverage data for skippified tests if the system property
- * {@code skippyEmitCovFiles} is set. Requires a JaCoCo agent to be running in this JVM.
+ * Listens for the execution of test classes to generate coverage files.
  *
  * @author Florian McKee
  */
-final class SkippyCoverageFileGenerator implements TestInstancePreConstructCallback, TestInstancePreDestroyCallback {
+public class CoverageDataTestListener {
 
-    @Override
-    public void preConstructTestInstance(TestInstanceFactoryContext factoryContext, ExtensionContext context) {
+    /**
+     * Notifies the listener that the {@code testClass} is about to be executed.
+     *
+     * @param testClass a test class
+     */
+    public static void beforeTestClass(Class<?> testClass) {
         // this property is set by Skippy's Gradle plugin whenever a build requests the skippyAnalyze task
         if ( ! Boolean.valueOf(System.getenv().get("skippyEmitCovFiles"))) {
             return;
@@ -53,30 +50,25 @@ final class SkippyCoverageFileGenerator implements TestInstancePreConstructCallb
         agent.reset();
     }
 
-    @Override
-    public void preDestroyTestInstance(ExtensionContext context) {
+    /**
+     * Notifies the listener that the {@code testClass} has been executed.
+     *
+     * @param testClass a test class
+     */
+    public static void afterTestClass(Class<?> testClass) {
         // this property is set by Skippy's Gradle plugin whenever a build requests the skippyAnalyze task
         if ( ! Boolean.valueOf(System.getenv().get("skippyEmitCovFiles"))) {
             return;
         }
         IAgent agent = RT.getAgent();
-        emitCovFile(context, agent);
-    }
-
-    private static void emitCovFile(ExtensionContext context, IAgent agent) {
         var coveredClasses = new LinkedList<String>();
         byte[] executionData = agent.getExecutionData(true);
         ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(executionData));
         executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
-        executionDataReader.setExecutionDataVisitor(new IExecutionDataVisitor() {
-            @Override
-            public void visitClassExecution(ExecutionData executionData) {
-                coveredClasses.add(executionData.getName());
-            }
-        });
+        executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName()));
         try {
             executionDataReader.read();
-            var name = context.getTestInstance().get().getClass().getName();
+            var name = testClass.getName();
             Files.write(Path.of("skippy/%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             Files.write(Path.of("skippy/%s.exec".formatted(name)), executionData,

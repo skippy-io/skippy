@@ -1,21 +1,25 @@
 package com.example;
 
-import io.skippy.junit5.Skippified;
-import org.junit.jupiter.api.Test;
+import io.skippy.junit4.Skippy;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.TestRule;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-@Skippified
 public class SkippifiedStringUtilsTest {
 
+    @ClassRule
+    public static TestRule skippyRule = Skippy.skippify();
+
     @Test
-    void testPadLeft() {
+    public void testPadLeft() {
         var input = TestConstants.HELLO;
         assertEquals(" hello", StringUtils.padLeft(input, 6));
     }
 
     @Test
-    void testPadRight() {
+    public void testPadRight() {
         var input = TestConstants.HELLO;
         assertEquals("hello ", StringUtils.padRight(input, 6));
     }

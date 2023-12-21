@@ -12,6 +12,11 @@ dependencies {
     implementation "org.ow2.asm:asm:" + versions.asm
     implementation "org.ow2.asm:asm-tree:" + versions.asm
 
+    implementation ("org.jacoco:jacoco:" + versions.jacoco) {
+        exclude group: 'org.jacoco', module: 'org.jacoco.examples'
+        exclude group: 'org.jacoco', module: 'org.jacoco.doc'
+    }
+
     implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
     runtimeOnly 'org.apache.logging.log4j:log4j-core:2.20.0'
 
@@ -25,6 +30,8 @@ dependencies {
 test {
     testLogging {
         events "passed", "skipped", "failed"
+        showStandardStreams true
+        exceptionFormat 'FULL'
     }
     useJUnitPlatform()
 }
