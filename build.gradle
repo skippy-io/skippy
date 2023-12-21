@@ -1,3 +1,13 @@
+def versions = new Properties()
+file(rootProject.projectDir.getAbsolutePath() + '/versions.properties').withInputStream { versions.load(it) }
+
 allprojects {
     group = 'io.skippy'
+    version=versions.skippy
+    ext.versions = versions
+
+    repositories {
+        mavenCentral()
+    }
+
 }

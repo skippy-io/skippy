@@ -1,28 +1,25 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'io.skippy.ossrh-publish'
 }
-
-version = file('../version.txt').text.trim()
 
 ossrhPublish {
     title = 'skippy-core'
     description = 'Skippy functionality that is agnostic to build tools and testing frameworks.'
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    implementation 'org.ow2.asm:asm:9.5'
-    implementation 'org.ow2.asm:asm-tree:9.5'
+    implementation "org.ow2.asm:asm:" + versions.asm
+    implementation "org.ow2.asm:asm-tree:" + versions.asm
+
     implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
     runtimeOnly 'org.apache.logging.log4j:log4j-core:2.20.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.1'
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:" + versions.junit5
+    testImplementation "org.junit.jupiter:junit-jupiter-params:" + versions.junit5
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:" + versions.junit5
+
     testImplementation 'org.mockito:mockito-core:5.4.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
 test {

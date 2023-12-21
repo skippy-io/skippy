@@ -33,7 +33,7 @@ public class CoverageDataTest {
 
     @Test
     void testParse() throws URISyntaxException {
-        var directory = Path.of(getClass().getResource("testcoverage").toURI());
+        var directory = Path.of(getClass().getResource("coveragedata").toURI());
         var tia = CoverageData.parse(directory);
 
         asList(false, tia.noDataAvailableFor(new FullyQualifiedClassName("com.example.LeftPadderTest")));

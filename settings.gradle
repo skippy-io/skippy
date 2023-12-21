@@ -6,4 +6,5 @@ if ( ! file('sandbox').text.toBoolean()) {
     includeBuild 'skippy-gradle'
     include 'skippy-gradle-sandbox'
 }
+include 'skippy-junit4'
 include 'skippy-junit5'
