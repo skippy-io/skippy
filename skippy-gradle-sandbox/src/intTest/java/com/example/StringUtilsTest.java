@@ -1,19 +1,19 @@
 package com.example;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 public class StringUtilsTest {
 
     @Test
-    void testPadLeft() {
+    public void testPadLeft() {
         var input = TestConstants.HELLO;
         assertEquals(" hello", StringUtils.padLeft(input, 6));
     }
 
     @Test
-    void testPadRight() {
+    public void testPadRight() {
         var input = TestConstants.HELLO;
         assertEquals("hello ", StringUtils.padRight(input, 6));
     }

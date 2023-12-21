@@ -24,20 +24,15 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
 
     testImplementation project(':skippy-junit5')
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:' + versions.junit5
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + versions.junit5
 
-    intTestImplementation project(':skippy-junit5')
-    intTestImplementation 'org.junit.jupiter:junit-jupiter-api:' + versions.junit5
-    intTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + versions.junit5
-
+    intTestImplementation project(':skippy-junit4')
 }
 
 test {
     testLogging {
         events "passed", "skipped", "failed"
-        exceptionFormat 'FULL'
         showStandardStreams true
+        exceptionFormat 'FULL'
     }
     useJUnitPlatform()
 }
@@ -56,10 +51,10 @@ tasks.register('integrationTest', Test) {
     classpath = sourceSets.intTest.runtimeClasspath
     shouldRunAfter test
 
-    useJUnitPlatform()
-
     testLogging {
-        events "passed"
+        events "passed", "skipped", "failed"
+        showStandardStreams true
+        exceptionFormat 'FULL'
     }
 }
 

@@ -28,16 +28,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for {@link SkippyExecutionCondition}.
+ * Tests for {@link SkipOrExecuteCondition}.
  *
  * @author Florian McKee
  */
-public class SkippyExecutionConditionTest {
+public class SkipOrExecuteConditionTest {
 
     @Test
     void testEmptyTestInstanceEqualsEnabled() {
         var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippyExecutionCondition = new SkippyExecutionCondition(skippyAnalysis);
+        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyAnalysis);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.empty());
@@ -48,7 +48,7 @@ public class SkippyExecutionConditionTest {
     @Test
     void testSkippyAnalysisExecutionRequiredFalse() {
         var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippyExecutionCondition = new SkippyExecutionCondition(skippyAnalysis);
+        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyAnalysis);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
@@ -61,7 +61,7 @@ public class SkippyExecutionConditionTest {
     @Test
     void testSkippyAnalysisExecutionRequiredTrue() {
         var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippyExecutionCondition = new SkippyExecutionCondition(skippyAnalysis);
+        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyAnalysis);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));

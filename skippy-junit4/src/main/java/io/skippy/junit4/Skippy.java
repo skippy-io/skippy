@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package io.skippy.junit5;
+package io.skippy.junit4;
 
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.junit.rules.ExternalResource;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 /**
- * Skippifies a JUnit test:
- * <br />
+ * {@link TestRule} that skippifies a JUnit 4 test:
+ *
  * <pre>
- * {@literal @}Skippified
- *  public class FooTest {
+ * public class FooTest {
+ *
+ *    {@literal @}ClassRule
+ *     public static TestRule skippyRule = Skippy.skippify();
  *
  *    {@literal @}Test
- *     void testFoo() {
+ *     public void testFoo() {
  *         ...
  *     }
  *
@@ -43,12 +42,18 @@ import java.lang.annotation.Target;
  *     <li>It will be skipped if Skippy decides that it is safe to do so.</li>
  *     <li>It will emit a .cov file in the skippy directory when the system property {@code skippyEmitCovFiles} is set.</li>
  * </ul>
- *
- * @author Florian McKee
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@ExtendWith(SkipOrExecuteCondition.class)
-@ExtendWith(CoverageFileCallbacks.class)
-public @interface Skippified {
+public class Skippy extends ExternalResource {
+
+    /**
+     * Creates the {@link TestRule} that skippifies a JUnit 4 test.
+     *
+     * @return the {@link TestRule} that skippifies a JUnit 4 test
+     */
+    public static TestRule skippify() {
+        return RuleChain
+                .outerRule(new SkipOrExecuteRule())
+                .around(new CoverageFileRule());
+    }
+
 }

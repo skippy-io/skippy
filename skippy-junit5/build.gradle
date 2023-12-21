@@ -10,10 +10,6 @@ ossrhPublish {
 
 dependencies {
     implementation project(':skippy-core')
-    implementation ("org.jacoco:jacoco:" + versions.jacoco) {
-        exclude group: 'org.jacoco', module: 'org.jacoco.examples'
-        exclude group: 'org.jacoco', module: 'org.jacoco.doc'
-    }
 
     api 'org.junit.jupiter:junit-jupiter-api:' + versions.junit5
     implementation 'org.junit.jupiter:junit-jupiter-engine:' + versions.junit5
@@ -27,6 +23,8 @@ dependencies {
 test {
     testLogging {
         events "passed", "skipped", "failed"
+        showStandardStreams true
+        exceptionFormat 'FULL'
     }
     useJUnitPlatform()
 }
