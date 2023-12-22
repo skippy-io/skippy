@@ -63,7 +63,7 @@ class HashedClasses {
 
     static HashedClasses parse(Path classesMd5File) {
         return Profiler.profile("HashedClasses#parse", () -> {
-            if (!classesMd5File.toFile().exists()) {
+            if ( ! classesMd5File.toFile().exists()) {
                 return UNAVAILABLE;
             }
             try {

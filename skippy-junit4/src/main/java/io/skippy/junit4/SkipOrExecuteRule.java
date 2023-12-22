@@ -31,7 +31,7 @@ class SkipOrExecuteRule implements TestRule {
     private final SkippyAnalysis skippyAnalysis;
 
     public SkipOrExecuteRule() {
-        this(SkippyAnalysis.parse());
+        this(SkippyAnalysis.getInstance());
     }
 
     SkipOrExecuteRule(final SkippyAnalysis skippyAnalysis) {

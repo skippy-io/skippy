@@ -34,7 +34,7 @@ final class SkipOrExecuteCondition implements ExecutionCondition {
      * Comment to make the JavaDoc task happy.
      */
     public SkipOrExecuteCondition() {
-        this(SkippyAnalysis.parse());
+        this(SkippyAnalysis.getInstance());
     }
 
     SkipOrExecuteCondition(final SkippyAnalysis skippyAnalysis) {
