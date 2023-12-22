@@ -24,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 
@@ -38,7 +40,8 @@ class HashedClasses {
 
     static final HashedClasses UNAVAILABLE = new HashedClasses(emptyList());
 
-    private final List<HashedClass> hashedClasses;
+    private final Set<FullyQualifiedClassName> existingClasses;
+    private final Set<FullyQualifiedClassName> changedClasses;
 
     /**
      * C'tor.
@@ -46,7 +49,16 @@ class HashedClasses {
      * @param hashedClasses a list of {@link HashedClass}s
      */
     private HashedClasses(List<HashedClass> hashedClasses) {
-        this.hashedClasses = hashedClasses;
+        var existingHashedClasses = hashedClasses.stream()
+                .filter(hashedClass -> hashedClass.exists())
+                .toList();
+        this.existingClasses = existingHashedClasses.stream()
+                .map(HashedClass::getFullyQualifiedClassName)
+                .collect(Collectors.toSet());
+        this.changedClasses = existingHashedClasses.stream()
+                .filter(HashedClass::hasChanged)
+                .map(HashedClass::getFullyQualifiedClassName)
+                .collect(Collectors.toSet());
     }
 
     static HashedClasses parse(Path classesMd5File) {
@@ -68,29 +80,11 @@ class HashedClasses {
         });
     }
 
-    List<FullyQualifiedClassName> getClasses() {
-        return Profiler.profile("HashedClasses#getClasses", () -> {
-            return hashedClasses.stream()
-                    .map(s -> s.getFullyQualifiedClassName())
-                    .toList();
-        });
+    boolean noDataFor(FullyQualifiedClassName clazz) {
+        return ! existingClasses.contains(clazz);
     }
 
-    List<FullyQualifiedClassName> getChangedClasses() {
-        return Profiler.profile("HashedClasses#getChangedClasses", () -> {
-            return hashedClasses.stream()
-                    .filter(hashedClass -> hashedClass.exists())
-                    .filter(hashedClass -> hashedClass.hasChanged())
-                    .map(hashedClass -> hashedClass.getFullyQualifiedClassName())
-                    .toList();
-        });
-    }
-
-    boolean noDataFor(FullyQualifiedClassName fqn) {
-        return Profiler.profile("HashedClasses#noDataFor", () -> {
-            return !hashedClasses.stream()
-                    .filter(hashedClass -> hashedClass.exists())
-                    .anyMatch(hashedClass -> fqn.equals(hashedClass.getFullyQualifiedClassName()));
-        });
+    boolean hasChanged(FullyQualifiedClassName clazz) {
+        return changedClasses.contains(clazz);
     }
 }
