@@ -119,7 +119,7 @@ public class SkippyAnalysis {
                 LOGGER.debug("%s: No hash found: Execution required".formatted(testFqn));
                 return DecisionWithReason.executeTest(NO_HASH_FOR_TEST);
             }
-            if (hashedClasses.getChangedClasses().contains(testFqn)) {
+            if (hashedClasses.hasChanged(testFqn)) {
                 LOGGER.debug("%s: Bytecode change detected: Execution required".formatted(testFqn));
                 return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_TEST);
             }
@@ -128,9 +128,8 @@ public class SkippyAnalysis {
     }
 
     private DecisionWithReason decideBasedOnCoveredClasses(FullyQualifiedClassName testFqn) {
-        var changeClasses = hashedClasses.getChangedClasses();
         for (var coveredClassFqn : coverageData.getCoveredClasses(testFqn)) {
-            if (changeClasses.contains(coveredClassFqn)) {
+            if (hashedClasses.hasChanged(coveredClassFqn)) {
                 LOGGER.debug("%s: Bytecode change in covered class '%s' detected: Execution required".formatted(
                         testFqn.fqn(),
                         coveredClassFqn.fqn()
