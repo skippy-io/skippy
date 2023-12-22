@@ -25,8 +25,10 @@ class Profiler {
     }
 
     static void dump() {
-        for (var entry  : data.entrySet()) {
-            LOGGER.info("%s: %sms".formatted(entry.getKey(), entry.getValue()));
+        if (LOGGER.isDebugEnabled()) {
+            for (var entry  : data.entrySet()) {
+                LOGGER.debug("%s: %sms".formatted(entry.getKey(), entry.getValue()));
+            }
         }
     }
 
