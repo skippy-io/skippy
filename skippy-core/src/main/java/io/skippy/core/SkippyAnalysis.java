@@ -85,7 +85,7 @@ public class SkippyAnalysis {
     }
 
     static SkippyAnalysis parse(Path skippyDirectory) {
-        return Profiler.profile("SkippyAnalysis#parse", ()-> {
+        return Profiler.profile("SkippyAnalysis#parse", () -> {
             if (!skippyDirectory.toFile().exists() || !skippyDirectory.toFile().isDirectory()) {
                 return SkippyAnalysis.UNAVAILABLE;
             }
@@ -110,7 +110,7 @@ public class SkippyAnalysis {
     }
 
     DecisionWithReason decide(FullyQualifiedClassName testFqn) {
-        return Profiler.profile("SkippyAnalysis#decide", ()-> {
+        return Profiler.profile("SkippyAnalysis#decide", () -> {
             if (coverageData.noDataAvailableFor(testFqn)) {
                 LOGGER.debug("%s: No coverage data found: Execution required".formatted(testFqn));
                 return DecisionWithReason.executeTest(NO_COVERAGE_DATA_FOR_TEST);

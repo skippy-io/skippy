@@ -50,7 +50,7 @@ class HashedClasses {
     }
 
     static HashedClasses parse(Path classesMd5File) {
-        return Profiler.profile("HashedClasses#parse", ()-> {
+        return Profiler.profile("HashedClasses#parse", () -> {
             if (!classesMd5File.toFile().exists()) {
                 return UNAVAILABLE;
             }
@@ -69,7 +69,7 @@ class HashedClasses {
     }
 
     List<FullyQualifiedClassName> getClasses() {
-        return Profiler.profile("HashedClasses#getClasses", ()-> {
+        return Profiler.profile("HashedClasses#getClasses", () -> {
             return hashedClasses.stream()
                     .map(s -> s.getFullyQualifiedClassName())
                     .toList();
@@ -77,7 +77,7 @@ class HashedClasses {
     }
 
     List<FullyQualifiedClassName> getChangedClasses() {
-        return Profiler.profile("HashedClasses#getChangedClasses", ()-> {
+        return Profiler.profile("HashedClasses#getChangedClasses", () -> {
             return hashedClasses.stream()
                     .filter(hashedClass -> hashedClass.exists())
                     .filter(hashedClass -> hashedClass.hasChanged())
@@ -87,7 +87,7 @@ class HashedClasses {
     }
 
     boolean noDataFor(FullyQualifiedClassName fqn) {
-        return Profiler.profile("HashedClasses#noDataFor", ()-> {
+        return Profiler.profile("HashedClasses#noDataFor", () -> {
             return !hashedClasses.stream()
                     .filter(hashedClass -> hashedClass.exists())
                     .anyMatch(hashedClass -> fqn.equals(hashedClass.getFullyQualifiedClassName()));
