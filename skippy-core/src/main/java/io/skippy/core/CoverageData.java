@@ -50,12 +50,14 @@ class CoverageData {
     }
 
     static CoverageData parse(Path directory) {
-        var result = new HashMap<FullyQualifiedClassName, List<FullyQualifiedClassName>>();
-        for (var covFile : directory.toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov"))) {
-            var test = new FullyQualifiedClassName(toClassName(covFile.toPath()));
-            result.put(test, parseCovFile(covFile.toPath()));
-        }
-        return new CoverageData(result);
+        return Profiler.profile("CoverageData#parse", () -> {
+            var result = new HashMap<FullyQualifiedClassName, List<FullyQualifiedClassName>>();
+            for (var covFile : directory.toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov"))) {
+                var test = new FullyQualifiedClassName(toClassName(covFile.toPath()));
+                result.put(test, parseCovFile(covFile.toPath()));
+            }
+            return new CoverageData(result);
+        });
     }
 
     /**
@@ -65,7 +67,9 @@ class CoverageData {
      * @return the classes that are covered by the {@code test}.
      */
     List<FullyQualifiedClassName> getCoveredClasses(FullyQualifiedClassName test) {
-        return coverageData.getOrDefault(test, emptyList());
+        return Profiler.profile("CoverageData#getCoveredClasses", () -> {
+            return coverageData.getOrDefault(test, emptyList());
+        });
     }
 
     /**
@@ -75,7 +79,9 @@ class CoverageData {
      * @return {@code true} if no coverage data is available for the {@code test}, {@code false} otherwise
      */
     boolean noDataAvailableFor(FullyQualifiedClassName test) {
-        return ! coverageData.containsKey(test);
+        return Profiler.profile("CoverageData#noDataAvailableFor", () -> {
+            return !coverageData.containsKey(test);
+        });
     }
 
     private static List<FullyQualifiedClassName> parseCovFile(Path csvFile) {

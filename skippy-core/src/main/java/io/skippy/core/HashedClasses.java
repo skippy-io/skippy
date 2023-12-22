@@ -50,39 +50,47 @@ class HashedClasses {
     }
 
     static HashedClasses parse(Path classesMd5File) {
-        if (!classesMd5File.toFile().exists()) {
-            return UNAVAILABLE;
-        }
-        try {
-            var result = new ArrayList<HashedClass>();
-            for (var line : Files.readAllLines(classesMd5File, StandardCharsets.UTF_8)) {
-                String[] split = line.split(":");
-                result.add(new HashedClass(Path.of("%s/%s".formatted(split[0], split[1])), split[2]));
+        return Profiler.profile("HashedClasses#parse", () -> {
+            if (!classesMd5File.toFile().exists()) {
+                return UNAVAILABLE;
             }
-            return new HashedClasses(result);
-        } catch (Exception e) {
-            LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(classesMd5File, e.getMessage()), e);
-            throw new RuntimeException(e);
-        }
+            try {
+                var result = new ArrayList<HashedClass>();
+                for (var line : Files.readAllLines(classesMd5File, StandardCharsets.UTF_8)) {
+                    String[] split = line.split(":");
+                    result.add(new HashedClass(Path.of("%s/%s".formatted(split[0], split[1])), split[2]));
+                }
+                return new HashedClasses(result);
+            } catch (Exception e) {
+                LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(classesMd5File, e.getMessage()), e);
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     List<FullyQualifiedClassName> getClasses() {
-        return hashedClasses.stream()
-                .map(s -> s.getFullyQualifiedClassName())
-                .toList();
+        return Profiler.profile("HashedClasses#getClasses", () -> {
+            return hashedClasses.stream()
+                    .map(s -> s.getFullyQualifiedClassName())
+                    .toList();
+        });
     }
 
     List<FullyQualifiedClassName> getChangedClasses() {
-        return hashedClasses.stream()
-                .filter(hashedClass -> hashedClass.exists())
-                .filter(hashedClass -> hashedClass.hasChanged())
-                .map(hashedClass -> hashedClass.getFullyQualifiedClassName())
-                .toList();
+        return Profiler.profile("HashedClasses#getChangedClasses", () -> {
+            return hashedClasses.stream()
+                    .filter(hashedClass -> hashedClass.exists())
+                    .filter(hashedClass -> hashedClass.hasChanged())
+                    .map(hashedClass -> hashedClass.getFullyQualifiedClassName())
+                    .toList();
+        });
     }
 
     boolean noDataFor(FullyQualifiedClassName fqn) {
-        return ! hashedClasses.stream()
-                .filter(hashedClass -> hashedClass.exists())
-                .anyMatch(hashedClass -> fqn.equals(hashedClass.getFullyQualifiedClassName()));
+        return Profiler.profile("HashedClasses#noDataFor", () -> {
+            return !hashedClasses.stream()
+                    .filter(hashedClass -> hashedClass.exists())
+                    .anyMatch(hashedClass -> fqn.equals(hashedClass.getFullyQualifiedClassName()));
+        });
     }
 }

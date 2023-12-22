@@ -85,12 +85,14 @@ public class SkippyAnalysis {
     }
 
     static SkippyAnalysis parse(Path skippyDirectory) {
-        if ( ! skippyDirectory.toFile().exists() || ! skippyDirectory.toFile().isDirectory()) {
-            return SkippyAnalysis.UNAVAILABLE;
-        }
-        var classFiles = HashedClasses.parse(skippyDirectory.resolve(SkippyConstants.CLASSES_MD5_FILE));
-        var testCoverage = CoverageData.parse(skippyDirectory);
-        return new SkippyAnalysis(classFiles, testCoverage);
+        return Profiler.profile("SkippyAnalysis#parse", () -> {
+            if (!skippyDirectory.toFile().exists() || !skippyDirectory.toFile().isDirectory()) {
+                return SkippyAnalysis.UNAVAILABLE;
+            }
+            var classFiles = HashedClasses.parse(skippyDirectory.resolve(SkippyConstants.CLASSES_MD5_FILE));
+            var testCoverage = CoverageData.parse(skippyDirectory);
+            return new SkippyAnalysis(classFiles, testCoverage);
+        });
     }
 
     /**
@@ -100,23 +102,29 @@ public class SkippyAnalysis {
      * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
     public boolean testNeedsToBeExecuted(Class<?> test) {
-        return decide(new FullyQualifiedClassName(test.getName())).decision == Decision.EXECUTE_TEST;
+        try {
+            return decide(new FullyQualifiedClassName(test.getName())).decision == Decision.EXECUTE_TEST;
+        } finally {
+            Profiler.dump();
+        }
     }
 
     DecisionWithReason decide(FullyQualifiedClassName testFqn) {
-        if (coverageData.noDataAvailableFor(testFqn)) {
-            LOGGER.debug("%s: No coverage data found: Execution required".formatted(testFqn));
-            return DecisionWithReason.executeTest(NO_COVERAGE_DATA_FOR_TEST);
-        }
-        if (hashedClasses.noDataFor(testFqn)) {
-            LOGGER.debug("%s: No hash found: Execution required".formatted(testFqn));
-            return DecisionWithReason.executeTest(NO_HASH_FOR_TEST);
-        }
-        if (hashedClasses.getChangedClasses().contains(testFqn)) {
-            LOGGER.debug("%s: Bytecode change detected: Execution required".formatted(testFqn));
-            return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_TEST);
-        }
-        return decideBasedOnCoveredClasses(testFqn);
+        return Profiler.profile("SkippyAnalysis#decide", () -> {
+            if (coverageData.noDataAvailableFor(testFqn)) {
+                LOGGER.debug("%s: No coverage data found: Execution required".formatted(testFqn));
+                return DecisionWithReason.executeTest(NO_COVERAGE_DATA_FOR_TEST);
+            }
+            if (hashedClasses.noDataFor(testFqn)) {
+                LOGGER.debug("%s: No hash found: Execution required".formatted(testFqn));
+                return DecisionWithReason.executeTest(NO_HASH_FOR_TEST);
+            }
+            if (hashedClasses.getChangedClasses().contains(testFqn)) {
+                LOGGER.debug("%s: Bytecode change detected: Execution required".formatted(testFqn));
+                return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_TEST);
+            }
+            return decideBasedOnCoveredClasses(testFqn);
+        });
     }
 
     private DecisionWithReason decideBasedOnCoveredClasses(FullyQualifiedClassName testFqn) {
