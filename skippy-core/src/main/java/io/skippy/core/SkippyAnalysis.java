@@ -60,6 +60,7 @@ public class SkippyAnalysis {
     private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysis.class);
 
     private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(HashedClasses.UNAVAILABLE, CoverageData.UNAVAILABLE);
+    private static SkippyAnalysis INSTANCE = parse(SkippyConstants.SKIPPY_DIRECTORY);
 
     private final HashedClasses hashedClasses;
     private final CoverageData coverageData;
@@ -70,18 +71,18 @@ public class SkippyAnalysis {
      * @param hashedClasses in-memory representation of the {@code classes.md5} file
      * @param coverageData in-memory representation of the {@code .cov} files in the skippy folder
      */
-    SkippyAnalysis(HashedClasses hashedClasses, CoverageData coverageData) {
+    private SkippyAnalysis(HashedClasses hashedClasses, CoverageData coverageData) {
         this.hashedClasses = hashedClasses;
         this.coverageData = coverageData;
     }
 
     /**
-     * Parses the content of the skippy folder to generate a {@link SkippyAnalysis}.
+     * Returns the parsed content of the skippy folder.
      *
-     * @return a {@link SkippyAnalysis}
+     * @return the parsed content of the skippy folder
      */
-    public static SkippyAnalysis parse() {
-        return parse(SkippyConstants.SKIPPY_DIRECTORY);
+    public static SkippyAnalysis getInstance() {
+        return INSTANCE;
     }
 
     static SkippyAnalysis parse(Path skippyDirectory) {

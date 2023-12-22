@@ -48,9 +48,7 @@ class HashedClass {
      * @return the fully qualified class name (e.g., com.example.Foo)
      */
     FullyQualifiedClassName getFullyQualifiedClassName() {
-        return Profiler.profile("HashedClass#getFullyQualifiedClassName", () -> {
-            return new FullyQualifiedClassName(ClassNameExtractor.getFullyQualifiedClassName(classFile));
-        });
+        return new FullyQualifiedClassName(ClassNameExtractor.getFullyQualifiedClassName(classFile));
     }
 
     /**
@@ -59,9 +57,9 @@ class HashedClass {
      * @return {@code true} if the class file has changed since it was analyzed, {@code false} otherwise.
      */
     boolean hasChanged() {
-        return Profiler.profile("HashedClass#noDataFor", () -> {
+        return Profiler.profile("HashedClass#hasChanged", () -> {
             String newHash = DebugAgnosticHash.hash(classFile);
-            if (!hash.equals(newHash)) {
+            if ( ! hash.equals(newHash)) {
                 return true;
             }
             return false;
