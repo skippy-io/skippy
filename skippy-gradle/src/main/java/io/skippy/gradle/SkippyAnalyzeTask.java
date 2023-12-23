@@ -19,13 +19,18 @@ package io.skippy.gradle;
 import io.skippy.gradle.io.ClassesMd5Writer;
 import io.skippy.gradle.io.CoverageFileCompactor;
 import io.skippy.gradle.model.SkippyProperties;
+import org.gradle.BuildAdapter;
+import org.gradle.BuildResult;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
 
 import javax.inject.Inject;
+
+import static io.skippy.gradle.Constants.SKIPPY_DIRECTORY;
 
 /**
  * Triggers the execution of all tests by declaring a dependency on the {@code check} lifecycle tasks.
@@ -78,6 +83,12 @@ class SkippyAnalyzeTask extends DefaultTask {
             classesMd5Writer.write(getLogger(), getProject().getProjectDir().toPath());
         });
 
+        if (isSkippyAnalyzeBuild(getProject())) {
+            configureSkippyAnalyzeBuild();
+        }
+    }
+
+    private void configureSkippyAnalyzeBuild() {
         // Skippy's JUnit libraries (e.g., skippy-junit5) rely on the JaCoCo agent to generate coverage data.
         getProject().getPlugins().apply(JacocoPlugin.class);
         getProject().getExtensions().getByType(JacocoPluginExtension.class).setToolVersion(SkippyProperties.getJacocoVersion());
@@ -85,6 +96,27 @@ class SkippyAnalyzeTask extends DefaultTask {
         // This property informs Skippy's JUnit libraries (e.g., skippy-junit5) to emit coverage data for
         // skippified tests.
         getProject().getTasks().withType(Test.class, test -> test.environment("skippyEmitCovFiles", true));
+
+        clearSkippyFolderUponFailure();
+    }
+
+    private void clearSkippyFolderUponFailure() {
+        getProject().getGradle().addBuildListener(new BuildAdapter() {
+            @Override
+            public void buildFinished(BuildResult result) {
+                if (result.getFailure() != null) {
+                    getLogger().lifecycle("Clearing skippy folder due to build failure");
+                    var skippyDir = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY);
+                    getProject().delete(skippyDir);
+                    getProject().mkdir(skippyDir);
+                }
+            }
+        });
+    }
+
+    private static boolean isSkippyAnalyzeBuild(Project project) {
+        var taskRequests = project.getGradle().getStartParameter().getTaskRequests();
+        return taskRequests.stream().anyMatch(request -> request.getArgs().stream().anyMatch(task -> task.endsWith("skippyAnalyze")));
     }
 
 }
