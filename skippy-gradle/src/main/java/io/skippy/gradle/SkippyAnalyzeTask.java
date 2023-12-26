@@ -16,9 +16,9 @@
 
 package io.skippy.gradle;
 
-import io.skippy.gradle.io.ClassesMd5Writer;
-import io.skippy.gradle.io.CoverageFileCompactor;
-import io.skippy.gradle.model.SkippyProperties;
+import io.skippy.build.BuildLogger;
+import io.skippy.build.ClassesMd5Writer;
+import io.skippy.build.CoverageFileCompactor;
 import org.gradle.BuildAdapter;
 import org.gradle.BuildResult;
 import org.gradle.api.DefaultTask;
@@ -30,7 +30,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
 
 import javax.inject.Inject;
 
-import static io.skippy.gradle.Constants.SKIPPY_DIRECTORY;
+import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 
 /**
  * Triggers the execution of all tests by declaring a dependency on the {@code check} lifecycle tasks.
@@ -78,9 +78,11 @@ class SkippyAnalyzeTask extends DefaultTask {
         dependsOn("clean", "skippyClean", "check");
         getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
 
+        BuildLogger buildLogger = (m) -> getLogger().lifecycle(m);
+
         doLast((task) -> {
-            coverageFileCompactor.compact(getLogger(), getProject().getProjectDir().toPath());
-            classesMd5Writer.write(getLogger(), getProject().getProjectDir().toPath());
+            coverageFileCompactor.compact(buildLogger, getProject().getProjectDir().toPath());
+            classesMd5Writer.write(buildLogger, getProject().getProjectDir().toPath());
         });
 
         if (isSkippyAnalyzeBuild(getProject())) {

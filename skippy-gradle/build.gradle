@@ -13,33 +13,24 @@ plugins {
     id 'java-gradle-plugin'
 }
 
-def versions = new Properties()
-file('../versions.properties').withInputStream { versions.load(it) }
-
-group = 'io.skippy'
-version = versions.skippy
-
 def publishToGradlePluginPortal = project.hasProperty("publishToGradlePluginPortal")
         && Boolean.valueOf(project.property("publishToGradlePluginPortal"))
 
-if ( ! file('../sandbox').text.toBoolean()) {
+if ( publishToGradlePluginPortal) {
 
-    if ( publishToGradlePluginPortal) {
+    // Gradle Plugin Portal
 
-        // Gradle Plugin Portal
+    apply plugin: 'com.gradle.plugin-publish'
 
-        apply plugin: 'com.gradle.plugin-publish'
+} else {
 
-    } else {
+    // SonaType OSSRH
 
-        // SonaType OSSRH
+    apply plugin: 'io.skippy.ossrh-publish'
 
-        apply plugin: 'io.skippy.ossrh-publish'
-
-        ossrhPublish {
-            title = 'skippy-gradle'
-            description = 'Skippy\'s Test Impact Analysis for Gradle'
-        }
+    ossrhPublish {
+        title = 'skippy-gradle'
+        description = 'Skippy\'s Test Impact Analysis for Gradle'
     }
 }
 
@@ -48,14 +39,10 @@ repositories {
 }
 
 dependencies {
-
-    implementation "org.ow2.asm:asm:" + versions.asm
-    implementation "org.ow2.asm:asm-tree:" + versions.asm
-
+    implementation project(':skippy-build-common')
     testImplementation "org.junit.jupiter:junit-jupiter-api:" + versions.junit5
     testImplementation "org.junit.jupiter:junit-jupiter-params:" + versions.junit5
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:" + versions.junit5
-
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'org.mockito:mockito-core:5.4.0'
     testImplementation gradleTestKit()

@@ -19,7 +19,7 @@ package io.skippy.gradle;
 import org.gradle.api.DefaultTask;
 import javax.inject.Inject;
 
-import static io.skippy.gradle.Constants.SKIPPY_DIRECTORY;
+import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 
 /**
  * Empties the skippy directory.
