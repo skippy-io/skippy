@@ -9,16 +9,8 @@ ossrhPublish {
 }
 
 dependencies {
-    implementation project(':skippy-core')
-    implementation ("org.jacoco:jacoco:" + versions.jacoco) {
-        exclude group: 'org.jacoco', module: 'org.jacoco.examples'
-        exclude group: 'org.jacoco', module: 'org.jacoco.doc'
-    }
-    implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
-    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.20.0'
-
     api 'junit:junit:' + versions.junit4
-
+    implementation project(':skippy-core')
     testImplementation 'org.mockito:mockito-core:5.4.0'
 }
 

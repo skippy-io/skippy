@@ -1,8 +1,8 @@
-# skippy-gradle-plugin
+# skippy-gradle
 
-The Skippy plugin provides Skippy support in Gradle.
+The Skippy plugin provides Skippy support for Gradle.
 
-## Add The Plugin To Your Project
+## Install
 
 Release versions are available in Gradle's Plugin Portal:
 
@@ -56,7 +56,7 @@ skippyClean
 skippyAnalyze
 ```
 
-### skippyAnalyze Task
+### skippyAnalyze
 
 `skippyAnalyze` captures 
 - coverage data for each skippified test and
@@ -76,7 +76,7 @@ Writing skippy/com.example.BarTest.cov
 The generated files are consumed by Skippy's testing libraries (e.g., [skippy-junit5](../skippy-junit5/README.md))
 to determine whether a test can be skipped.
 
-### skippyClean Task
+### skippyClean
 
 `skippyClean` empties the skippy directory:
 

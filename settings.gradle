@@ -1,4 +1,5 @@
 include 'skippy-core'
+include 'skippy-maven'
 
 if ( ! file('sandbox').text.toBoolean()) {
     include 'skippy-gradle'

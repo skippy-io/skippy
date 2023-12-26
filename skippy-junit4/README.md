@@ -2,7 +2,7 @@
 
 Skippy support for JUnit 4.
 
-## Step 1: Add The skippy-junit4 Dependency
+## Install
 
 Releases are available in Maven Central:
 ```groovy
@@ -26,7 +26,7 @@ dependencies {
 }
 ```
 
-## Step 2: Skippify Your Tests
+## Skippify Your Tests
 Add the Skippy class rule to your test:
 ```groovy
 import io.skippy.junit4.Skippy;
@@ -44,7 +44,7 @@ public class FooTest {
 }
 ```
 
-## Step 3: Run Your Tests
+## Run Your Tests
 
 Skippy intelligently decides whether to execute or skip tests based on data in the skippy folder:
 
