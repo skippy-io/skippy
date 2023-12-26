@@ -1,11 +1,7 @@
-include 'skippy-core'
-include 'skippy-maven'
-
-if ( ! file('sandbox').text.toBoolean()) {
-    include 'skippy-gradle'
-} else {
-    includeBuild 'skippy-gradle'
-    include 'skippy-gradle-sandbox'
-}
+include 'skippy-build-common'
+include 'skippy-common'
+include 'skippy-gradle'
 include 'skippy-junit4'
 include 'skippy-junit5'
+include 'skippy-junit-common'
+include 'skippy-maven'

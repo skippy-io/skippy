@@ -16,7 +16,7 @@
 
 package io.skippy.junit5;
 
-import io.skippy.core.SkippyAnalysis;
+import io.skippy.junit.SkippyAnalysis;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;

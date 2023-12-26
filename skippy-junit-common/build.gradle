@@ -1,0 +1,33 @@
+plugins {
+    id 'java-library'
+    id 'io.skippy.ossrh-publish'
+}
+
+ossrhPublish {
+    title = 'skippy-junit-common'
+    description = 'Common functionality for Skippy\'s JUnit libraries'
+}
+
+dependencies {
+    implementation project(':skippy-common')
+
+    implementation ("org.jacoco:jacoco:" + versions.jacoco) {
+        exclude group: 'org.jacoco', module: 'org.jacoco.examples'
+        exclude group: 'org.jacoco', module: 'org.jacoco.doc'
+    }
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:" + versions.junit5
+    testImplementation "org.junit.jupiter:junit-jupiter-params:" + versions.junit5
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:" + versions.junit5
+
+    testImplementation 'org.mockito:mockito-core:5.4.0'
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams true
+        exceptionFormat 'FULL'
+    }
+    useJUnitPlatform()
+}

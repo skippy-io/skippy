@@ -16,9 +16,8 @@
 
 package io.skippy.gradle;
 
-import io.skippy.gradle.collector.ClassFileCollector;
-import io.skippy.gradle.io.ClassesMd5Writer;
-import io.skippy.gradle.io.CoverageFileCompactor;
+import io.skippy.build.ClassesMd5Writer;
+import io.skippy.build.CoverageFileCompactor;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -42,7 +41,7 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         project.getPlugins().apply(JavaPlugin.class);
 
         // some DIY dependency injection
-        var classFileCollector = new ClassFileCollector(project.getExtensions().getByType(SourceSetContainer.class));
+        var classFileCollector = new GradleClassFileCollector(project.getExtensions().getByType(SourceSetContainer.class));
         var classesMd5Writer = new ClassesMd5Writer(classFileCollector);
         var coverageFileCompactor = new CoverageFileCompactor(classFileCollector);
 

@@ -16,7 +16,7 @@
 
 package io.skippy.junit5;
 
-import io.skippy.core.CoverageDataTestListener;
+import io.skippy.junit.CoverageDataTestListener;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
 import org.junit.jupiter.api.extension.TestInstancePreConstructCallback;

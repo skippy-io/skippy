@@ -9,6 +9,7 @@ ossrhPublish {
 }
 
 dependencies {
+    implementation project(':skippy-build-common')
     implementation 'org.apache.maven:maven-plugin-api:' + versions.maven
     implementation 'org.apache.maven.plugin-tools:maven-plugin-annotations:' + versions.'maven-plugin-annotations'
     implementation 'org.apache.maven:maven-project:' + versions.'maven-project'
@@ -24,4 +25,15 @@ test {
         exceptionFormat 'FULL'
     }
     useJUnitPlatform()
+}
+
+processResources {
+    def tokens = [
+            'skippy.version': versions.getProperty('skippy')
+    ]
+
+    // Use the filter method with ReplaceTokens for token replacement
+    filesMatching('**/*.xml') {
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: tokens)
+    }
 }

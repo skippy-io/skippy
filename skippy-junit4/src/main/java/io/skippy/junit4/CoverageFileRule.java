@@ -16,7 +16,7 @@
 
 package io.skippy.junit4;
 
-import io.skippy.core.CoverageDataTestListener;
+import io.skippy.junit.CoverageDataTestListener;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.MultipleFailureException;
