@@ -2,7 +2,7 @@
 
 Skippy support for JUnit 5.
 
-## Step 1: Add The skippy-junit5 Dependency
+## Install
 
 Releases are available in Maven Central:
 ```groovy
@@ -26,7 +26,7 @@ dependencies {
 }
 ```
 
-## Step 2: Skippify Your Tests
+## Skippify Your Tests
 Annotate the tests you want to skippify with `@Skippified`:
 ```groovy
 import io.skippy.junit5.Skippified;
@@ -41,7 +41,7 @@ public class FooTest {
 }
 ```
 
-## Step 3: Run Your Tests
+## Run Your Tests
 
 Skippy intelligently decides whether to execute or skip tests based on data in the skippy folder:
 

@@ -9,14 +9,9 @@ ossrhPublish {
 }
 
 dependencies {
-    implementation project(':skippy-core')
-
     api 'org.junit.jupiter:junit-jupiter-api:' + versions.junit5
+    implementation project(':skippy-core')
     implementation 'org.junit.jupiter:junit-jupiter-engine:' + versions.junit5
-
-    implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
-    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.20.0'
-
     testImplementation 'org.mockito:mockito-core:5.4.0'
 }
 
