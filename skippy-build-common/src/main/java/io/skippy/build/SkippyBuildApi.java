@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 
 /**
- * API with functionality that is used across build-tool specific libraries (e.g., skippy-gradle & skippy-maven).
+ * API with functionality that is used across build-tool specific libraries (e.g., skippy-gradle and skippy-maven).
  *
  * @author Florian McKee
  */
@@ -31,6 +31,13 @@ public final class SkippyBuildApi {
     private final ClassesMd5Writer classesMd5Writer;
     private final CoverageFileCompactor coverageFileCompactor;
 
+    /**
+     * C'tor.
+     *
+     * @param projectDir the project folder
+     * @param buildLogger the {@link BuildLogger}
+     * @param classFileCollector the {@link ClassFileCollector}
+     */
     public SkippyBuildApi(Path projectDir, BuildLogger buildLogger, ClassFileCollector classFileCollector) {
         this.projectDir = projectDir;
         this.classesMd5Writer = new ClassesMd5Writer(projectDir, buildLogger, classFileCollector);
