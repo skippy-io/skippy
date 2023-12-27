@@ -25,23 +25,24 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 
+import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
+
 /**
- * Notification-style API that generate .cov files with coverage information for individual tests.
+ * API for generation of .cov files.
  *
  * @author Florian McKee
  */
 public class SkippyTestApi {
 
     /**
-     * Notifies the api that the {@code testClass} is about to be executed.
+     * Prepares for the capturing of a .cov file for {@code testClass} before any tests in the class are executed.
      *
      * @param testClass a test class
      */
-    public static void beforeTestClass(Class<?> testClass) {
+    public static void prepareCoverageDataCaptureFor(Class<?> testClass) {
         // this property is set by Skippy's Gradle plugin whenever a build requests the skippyAnalyze task
         if ( ! Boolean.valueOf(System.getenv().get("skippyEmitCovFiles"))) {
             return;
@@ -51,11 +52,11 @@ public class SkippyTestApi {
     }
 
     /**
-     * Notifies the api that the {@code testClass} has been executed.
+     * Captures a .cov file for {@code testClass} after all tests in the class have been executed.
      *
      * @param testClass a test class
      */
-    public static void afterTestClass(Class<?> testClass) {
+    public static void captureCoverageDataFor(Class<?> testClass) {
         // this property is set by Skippy's Gradle plugin whenever a build requests the skippyAnalyze task
         if ( ! Boolean.valueOf(System.getenv().get("skippyEmitCovFiles"))) {
             return;
@@ -69,9 +70,9 @@ public class SkippyTestApi {
         try {
             executionDataReader.read();
             var name = testClass.getName();
-            Files.write(Path.of("skippy/%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
+            Files.write(SKIPPY_DIRECTORY.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            Files.write(Path.of("skippy/%s.exec".formatted(name)), executionData,
+            Files.write(SKIPPY_DIRECTORY.resolve("%s.exec".formatted(name)), executionData,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);

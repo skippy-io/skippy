@@ -32,12 +32,12 @@ final class CoverageFileCallbacks implements TestInstancePreConstructCallback, T
 
     @Override
     public void preConstructTestInstance(TestInstanceFactoryContext factoryContext, ExtensionContext context) {
-        context.getTestClass().ifPresent(SkippyTestApi::beforeTestClass);
+        context.getTestClass().ifPresent(SkippyTestApi::prepareCoverageDataCaptureFor);
     }
 
     @Override
     public void preDestroyTestInstance(ExtensionContext context) {
-        context.getTestClass().ifPresent(SkippyTestApi::afterTestClass);
+        context.getTestClass().ifPresent(SkippyTestApi::captureCoverageDataFor);
     }
 
 }
