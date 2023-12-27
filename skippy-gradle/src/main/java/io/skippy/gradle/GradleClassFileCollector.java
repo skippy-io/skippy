@@ -32,7 +32,7 @@ import static java.util.Comparator.comparing;
  *
  * @author Florian McKee
  */
-public final class GradleClassFileCollector implements ClassFileCollector {
+final class GradleClassFileCollector implements ClassFileCollector {
 
     private final SourceSetContainer sourceSetContainer;
 
@@ -41,7 +41,7 @@ public final class GradleClassFileCollector implements ClassFileCollector {
      *
      * @param sourceSetContainer a {@link SourceSetContainer}
      */
-    public GradleClassFileCollector(SourceSetContainer sourceSetContainer) {
+    GradleClassFileCollector(SourceSetContainer sourceSetContainer) {
         this.sourceSetContainer = sourceSetContainer;
     }
 
@@ -50,6 +50,7 @@ public final class GradleClassFileCollector implements ClassFileCollector {
      *
      * @return all {@link ClassFile}s in the output directories of the project organized by classes folders.
      */
+    @Override
     public List<DirectoryWithClassFiles> collect() {
         var result = new ArrayList<DirectoryWithClassFiles>();
         for (var sourceSet : sourceSetContainer) {

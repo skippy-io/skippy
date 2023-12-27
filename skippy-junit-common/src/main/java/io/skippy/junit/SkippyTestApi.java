@@ -30,14 +30,14 @@ import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 
 /**
- * Listens for the execution of test classes to generate coverage files.
+ * Notification-style API that generate .cov files with coverage information for individual tests.
  *
  * @author Florian McKee
  */
-public class CoverageDataTestListener {
+public class SkippyTestApi {
 
     /**
-     * Notifies the listener that the {@code testClass} is about to be executed.
+     * Notifies the api that the {@code testClass} is about to be executed.
      *
      * @param testClass a test class
      */
@@ -51,7 +51,7 @@ public class CoverageDataTestListener {
     }
 
     /**
-     * Notifies the listener that the {@code testClass} has been executed.
+     * Notifies the api that the {@code testClass} has been executed.
      *
      * @param testClass a test class
      */

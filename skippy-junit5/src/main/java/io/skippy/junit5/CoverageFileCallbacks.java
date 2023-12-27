@@ -16,15 +16,15 @@
 
 package io.skippy.junit5;
 
-import io.skippy.junit.CoverageDataTestListener;
+import io.skippy.junit.SkippyTestApi;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
 import org.junit.jupiter.api.extension.TestInstancePreConstructCallback;
 import org.junit.jupiter.api.extension.TestInstancePreDestroyCallback;
 
 /**
- * Callbacks that notify the {@link CoverageDataTestListener} before and after the execution of a test.
- * The {@link CoverageDataTestListener} uses those notifications to generate a coverage file for the test.
+ * Callbacks that notify the {@link SkippyTestApi} before and after the execution of a test.
+ * The {@link SkippyTestApi} uses those notifications to generate a coverage file for the test.
  *
  * @author Florian McKee
  */
@@ -32,12 +32,12 @@ final class CoverageFileCallbacks implements TestInstancePreConstructCallback, T
 
     @Override
     public void preConstructTestInstance(TestInstanceFactoryContext factoryContext, ExtensionContext context) {
-        context.getTestClass().ifPresent(CoverageDataTestListener::beforeTestClass);
+        context.getTestClass().ifPresent(SkippyTestApi::beforeTestClass);
     }
 
     @Override
     public void preDestroyTestInstance(ExtensionContext context) {
-        context.getTestClass().ifPresent(CoverageDataTestListener::afterTestClass);
+        context.getTestClass().ifPresent(SkippyTestApi::afterTestClass);
     }
 
 }

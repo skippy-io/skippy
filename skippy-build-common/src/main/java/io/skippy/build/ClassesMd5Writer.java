@@ -50,26 +50,19 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Florian McKee
  */
-public final class ClassesMd5Writer {
+final class ClassesMd5Writer {
 
+    private final Path projectDir;
+    private final BuildLogger logger;
     private final ClassFileCollector classFileCollector;
 
-    /**
-     * C'tor.
-     *
-     * @param classFileCollector a {@link ClassFileCollector}
-     */
-    public ClassesMd5Writer(ClassFileCollector classFileCollector) {
+    ClassesMd5Writer(Path projectDir, BuildLogger logger, ClassFileCollector classFileCollector) {
+        this.projectDir = projectDir;
+        this.logger = logger;
         this.classFileCollector = classFileCollector;
     }
 
-    /**
-     * Creates the classes.md5 file in the skippy folder.
-     *
-     * @param logger the {@link BuildLogger}
-     * @param projectDir the project root
-     */
-    public void write(BuildLogger logger, Path projectDir) {
+    void write() {
         try {
             logger.log("Writing %s".formatted(SKIPPY_DIRECTORY.resolve(CLASSES_MD5_FILE)));
             var skippyAnalysisFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(CLASSES_MD5_FILE);

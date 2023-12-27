@@ -6,6 +6,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+/**
+ * WIP
+ */
 @Mojo(name = "analyze", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES)
 public class SkippyAnalyzeMojo extends AbstractMojo {
 
