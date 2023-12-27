@@ -17,13 +17,18 @@
 package io.skippy.maven;
 
 import io.skippy.build.SkippyBuildApi;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.util.Collections;
+
+import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE;
 
 /**
  * Clears the skippy folder (by calling {@link SkippyBuildApi#clearSkippyFolder()}).
@@ -38,11 +43,25 @@ public class SkippyCleanMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
 
+    @Component
+    private MavenSession session;
+
     @Override
     public void execute() {
-        var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), (message) -> getLog().info(message),
-                new MavenClassFileCollector(project));
-        skippyBuildApi.clearSkippyFolder();
+        if (executeGoal()) {
+            var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), (message) -> getLog().info(message),
+                    new MavenClassFileCollector(project));
+            skippyBuildApi.clearSkippyFolder();
+            getLog().info("skippy:clean executed");
+        } else {
+            getLog().info("skippy:clean skipped");
+        }
+    }
+
+    private boolean executeGoal() {
+        var isSkippyAnalyzeBuild = Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE));
+        var goalExecutedDirectly = session.getRequest().getGoals().contains("skippy:clean");
+        return isSkippyAnalyzeBuild || goalExecutedDirectly;
     }
 
 }
