@@ -63,8 +63,6 @@ public final class SkippyBuildApi {
         for (var file : projectDir.resolve(SKIPPY_DIRECTORY).toFile().listFiles()) {
             file.delete();
         }
-        projectDir.resolve(SKIPPY_DIRECTORY).toFile().delete();
-        projectDir.resolve(SKIPPY_DIRECTORY).toFile().mkdir();
     }
 
 }
