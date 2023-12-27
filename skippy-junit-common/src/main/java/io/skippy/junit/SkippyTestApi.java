@@ -25,7 +25,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
+
+import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE;
+import static java.nio.file.StandardOpenOption.*;
 import java.util.LinkedList;
 
 import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
@@ -44,7 +46,7 @@ public class SkippyTestApi {
      */
     public static void prepareCoverageDataCaptureFor(Class<?> testClass) {
         // this property is set by Skippy's Gradle plugin whenever a build requests the skippyAnalyze task
-        if ( ! Boolean.valueOf(System.getenv().get("skippyEmitCovFiles"))) {
+        if ( ! Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE))) {
             return;
         }
         IAgent agent = RT.getAgent();
@@ -58,7 +60,7 @@ public class SkippyTestApi {
      */
     public static void captureCoverageDataFor(Class<?> testClass) {
         // this property is set by Skippy's Gradle plugin whenever a build requests the skippyAnalyze task
-        if ( ! Boolean.valueOf(System.getenv().get("skippyEmitCovFiles"))) {
+        if ( ! Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE))) {
             return;
         }
         IAgent agent = RT.getAgent();
@@ -68,12 +70,12 @@ public class SkippyTestApi {
         executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
         executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName()));
         try {
-            executionDataReader.read();
+            // executionDataReader.read();
             var name = testClass.getName();
             Files.write(SKIPPY_DIRECTORY.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    CREATE, TRUNCATE_EXISTING);
             Files.write(SKIPPY_DIRECTORY.resolve("%s.exec".formatted(name)), executionData,
-                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
         }

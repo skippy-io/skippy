@@ -49,7 +49,11 @@ final class MavenClassFileCollector implements ClassFileCollector {
     @Override
     public List<DirectoryWithClassFiles> collect() {
         var classesDir = new File(project.getBuild().getOutputDirectory());
-        return asList(new DirectoryWithClassFiles(classesDir.toPath(), sort(collect(classesDir))));
+        var testClassesDir = new File(project.getBuild().getTestOutputDirectory());
+        return asList(
+                new DirectoryWithClassFiles(classesDir.toPath(), sort(collect(classesDir))),
+                new DirectoryWithClassFiles(testClassesDir.toPath(), sort(collect(testClassesDir)))
+        );
     }
 
     private List<ClassFile> collect(File directory) {

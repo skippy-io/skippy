@@ -35,4 +35,9 @@ public class SkippyConstants {
      */
     public static final Path CLASSES_MD5_FILE = Path.of("classes.md5");
 
+    /**
+     * Environment variable that is set when the Skippy analysis is executed.
+     */
+    public static final String SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE = "skippyAnalyze";
+
 }
