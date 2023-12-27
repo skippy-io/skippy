@@ -31,9 +31,6 @@ import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
  */
 class SkippyCleanTask extends DefaultTask {
 
-    /**
-     * C'tor.
-     */
     @Inject
     public SkippyCleanTask(SkippyBuildApi skippyBuildApi) {
         setGroup("skippy");

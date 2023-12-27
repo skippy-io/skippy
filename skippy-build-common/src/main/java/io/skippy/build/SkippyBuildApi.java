@@ -51,7 +51,7 @@ public final class SkippyBuildApi {
      *     <li>Writes the {@code classes.md5} file (see {@link ClassesMd5Writer})</li>
      * </ul>
      */
-    public void performPostBuildActions() {
+    public void writeClassesMd5FileAndCompactCoverageFiles() {
         classesMd5Writer.write();
         coverageFileCompactor.compact();
     }
@@ -60,6 +60,9 @@ public final class SkippyBuildApi {
      * Clears the skippy directory.
      */
     public void clearSkippyFolder() {
+        if (! SKIPPY_DIRECTORY.toFile().exists()) {
+            SKIPPY_DIRECTORY.toFile().mkdir();
+        }
         for (var file : projectDir.resolve(SKIPPY_DIRECTORY).toFile().listFiles()) {
             file.delete();
         }

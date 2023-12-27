@@ -62,10 +62,10 @@ class CoverageFileRule implements TestRule {
     }
 
     private  void before(Class<?> testClass) {
-        SkippyTestApi.beforeTestClass(testClass);
+        SkippyTestApi.prepareCoverageDataCaptureFor(testClass);
     }
 
     private void after(Class<?> testClass) {
-        SkippyTestApi.afterTestClass(testClass);
+        SkippyTestApi.captureCoverageDataFor(testClass);
     }
 }

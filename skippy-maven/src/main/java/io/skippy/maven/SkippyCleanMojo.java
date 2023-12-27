@@ -23,15 +23,17 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.util.Collections;
+
 /**
- * Performs the post-test actions (by calling {@link SkippyBuildApi#writeClassesMd5FileAndCompactCoverageFiles()}).
+ * Clears the skippy folder (by calling {@link SkippyBuildApi#clearSkippyFolder()}).
  * <br /><br />
- * Direct invocation: {@code mvn skippy:analyze}
+ * Direct invocation: {@code mvn skippy:clean}
  *
  * @author Florian McKee
  */
-@Mojo(name = "analyze", defaultPhase = LifecyclePhase.TEST)
-public class SkippyAnalyzeMojo extends AbstractMojo {
+@Mojo(name = "clean", defaultPhase = LifecyclePhase.VALIDATE)
+public class SkippyCleanMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
@@ -40,8 +42,7 @@ public class SkippyAnalyzeMojo extends AbstractMojo {
     public void execute() {
         var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), (message) -> getLog().info(message),
                 new MavenClassFileCollector(project));
-        project.getProperties().setProperty("skippyEmitCovFiles", "true");
-        skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
+        skippyBuildApi.clearSkippyFolder();
     }
 
 }

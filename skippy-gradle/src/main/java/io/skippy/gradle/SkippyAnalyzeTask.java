@@ -47,7 +47,7 @@ import javax.inject.Inject;
  * The task calls
  * <ul>
  *     <li>{@link SkippyBuildApi#clearSkippyFolder()} upon failure and</l>
- *     <li>{@link SkippyBuildApi#performPostBuildActions()} upon success.</l>
+ *     <li>{@link SkippyBuildApi#writeClassesMd5FileAndCompactCoverageFiles()} upon success.</l>
  * </ul>
  *
  * <br /><br />
@@ -58,11 +58,6 @@ import javax.inject.Inject;
  */
 class SkippyAnalyzeTask extends DefaultTask {
 
-    /**
-     * C'tor.
-     *
-     * @param skippyBuildApi a {@link SkippyBuildApi}
-     */
     @Inject
     public SkippyAnalyzeTask(SkippyBuildApi skippyBuildApi) {
         setGroup("skippy");
@@ -75,7 +70,7 @@ class SkippyAnalyzeTask extends DefaultTask {
         getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
 
         doLast((task) -> {
-            skippyBuildApi.performPostBuildActions();
+            skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
         });
 
         if (isSkippyAnalyzeBuild(getProject())) {
