@@ -58,10 +58,10 @@ public class SkippyAnalysis {
         }
     }
 
-    private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysis.class);
 
+    private static final Logger LOGGER = LogManager.getLogger(SkippyAnalysis.class);
     private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(HashedClasses.UNAVAILABLE, CoverageData.UNAVAILABLE);
-    private static SkippyAnalysis INSTANCE = parse(SkippyConstants.SKIPPY_DIRECTORY);
+    private static final SkippyAnalysis INSTANCE = parse(SkippyConstants.SKIPPY_DIRECTORY);
 
     private final HashedClasses hashedClasses;
     private final CoverageData coverageData;

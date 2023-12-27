@@ -28,7 +28,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
 
 import javax.inject.Inject;
 
-import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE;
+import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_MARKER;
 
 /**
  *
@@ -87,7 +87,7 @@ class SkippyAnalyzeTask extends DefaultTask {
 
         // This property informs Skippy's JUnit libraries (e.g., skippy-junit5) to emit coverage data for
         // skippified tests.
-        getProject().getTasks().withType(Test.class, test -> test.environment(SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE, true));
+        getProject().getTasks().withType(Test.class, test -> test.environment(SKIPPY_ANALYZE_MARKER, true));
 
         clearSkippyFolderUponFailure(skippyBuildApi);
     }

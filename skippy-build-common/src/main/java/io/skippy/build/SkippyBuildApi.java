@@ -60,8 +60,8 @@ public final class SkippyBuildApi {
      * Clears the skippy directory.
      */
     public void clearSkippyFolder() {
-        if (! SKIPPY_DIRECTORY.toFile().exists()) {
-            SKIPPY_DIRECTORY.toFile().mkdir();
+        if (! projectDir.resolve(SKIPPY_DIRECTORY).toFile().exists()) {
+            projectDir.resolve(SKIPPY_DIRECTORY).toFile().mkdir();
         }
         for (var file : projectDir.resolve(SKIPPY_DIRECTORY).toFile().listFiles()) {
             file.delete();

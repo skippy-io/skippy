@@ -40,7 +40,7 @@ import org.junit.rules.TestRule;
  * A skippified test differs from a regular JUnit test in two ways:
  * <ul>
  *     <li>It will be skipped if Skippy decides that it is safe to do so.</li>
- *     <li>It will emit a .cov file in the skippy directory when the system property {@code skippyEmitCovFiles} is set.</li>
+ *     <li>It will emit a .cov file in the skippy directory when the system property {@code SKIPPY_CONSTANTS#SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE} is set.</li>
  * </ul>
  */
 public class Skippy extends ExternalResource {

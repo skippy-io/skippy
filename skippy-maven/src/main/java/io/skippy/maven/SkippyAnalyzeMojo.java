@@ -17,7 +17,6 @@
 package io.skippy.maven;
 
 import io.skippy.build.SkippyBuildApi;
-import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
@@ -26,10 +25,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import java.util.List;
-import java.util.Objects;
-
-import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE;
+import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_MARKER;
 
 /**
  * Performs the post-test actions (by calling {@link SkippyBuildApi#writeClassesMd5FileAndCompactCoverageFiles()}).
@@ -52,7 +48,7 @@ public class SkippyAnalyzeMojo extends AbstractMojo {
         if (executeGoal()) {
             var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), (message) -> getLog().info(message),
                     new MavenClassFileCollector(project));
-            project.getProperties().setProperty(SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE, "true");
+            project.getProperties().setProperty(SKIPPY_ANALYZE_MARKER, "true");
             skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
             getLog().info("skippy:analyze executed");
         } else {
@@ -61,7 +57,7 @@ public class SkippyAnalyzeMojo extends AbstractMojo {
     }
 
     private boolean executeGoal() {
-        var isSkippyAnalyzeBuild = Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE));
+        var isSkippyAnalyzeBuild = Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_MARKER));
         var goalExecutedDirectly = session.getRequest().getGoals().contains("skippy:analyze");
         return isSkippyAnalyzeBuild || goalExecutedDirectly;
     }
