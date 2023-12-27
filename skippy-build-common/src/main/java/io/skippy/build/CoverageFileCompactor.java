@@ -53,26 +53,19 @@ import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
  *
  * @author Florian McKee
  */
-public final class CoverageFileCompactor {
+final class CoverageFileCompactor {
 
+    private final Path projectDir;
+    private final BuildLogger logger;
     private final ClassFileCollector classFileCollector;
 
-    /**
-     * C'tor.
-     *
-     * @param classFileCollector a {@link ClassFileCollector}
-     */
-    public CoverageFileCompactor(ClassFileCollector classFileCollector) {
+    CoverageFileCompactor(Path projectDir, BuildLogger logger, ClassFileCollector classFileCollector) {
+        this.projectDir = projectDir;
+        this.logger = logger;
         this.classFileCollector = classFileCollector;
     }
 
-    /**
-     * Compacts all coverage files in the skippy folder.
-     *
-     * @param logger the {@link BuildLogger}
-     * @param projectDir the project root
-     */
-    public void compact(BuildLogger logger, Path projectDir) {
+    void compact() {
         try {
             List<String> fullyQualifiedClassNames = classFileCollector.collect().stream()
                     .flatMap(dir -> dir.classFiles().stream())

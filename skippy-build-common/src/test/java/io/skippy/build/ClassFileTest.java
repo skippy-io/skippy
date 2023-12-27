@@ -44,16 +44,6 @@ public class ClassFileTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "SourceFileTest1.class:c.e.SourceFileTest1",
-            "SourceFileTest2.class:c.e.SourceFileTest2"
-    }, delimiter = ':')
-    void testGetShortClassName(String fileName, String expectedValue) throws URISyntaxException {
-        var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        assertEquals(expectedValue, new ClassFile(classFile).getShortClassName());
-    }
-
-    @ParameterizedTest
-    @CsvSource(value = {
             "SourceFileTest1.class:build/SourceFileTest1.class",
             "SourceFileTest2.class:build/SourceFileTest2.class"
     }, delimiter = ':')

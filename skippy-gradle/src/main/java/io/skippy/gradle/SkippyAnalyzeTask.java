@@ -16,9 +16,7 @@
 
 package io.skippy.gradle;
 
-import io.skippy.build.BuildLogger;
-import io.skippy.build.ClassesMd5Writer;
-import io.skippy.build.CoverageFileCompactor;
+import io.skippy.build.SkippyBuildApi;
 import org.gradle.BuildAdapter;
 import org.gradle.BuildResult;
 import org.gradle.api.DefaultTask;
@@ -30,9 +28,8 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
 
 import javax.inject.Inject;
 
-import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
-
 /**
+ *
  * Triggers the execution of all tests by declaring a dependency on the {@code check} lifecycle tasks.
  *
  * <br /><br />
@@ -47,12 +44,12 @@ import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
  *
  * <br /><br />
  *
- * After the execution of the tests, the plugin will
+ * The task calls
  * <ul>
- *     <li>compact the coverage files (see {@link CoverageFileCompactor}) and</li>
- *     <li>write the {@code classes.md5} file containing hashes for all class file (see {@link ClassesMd5Writer}).</li>
+ *     <li>{@link SkippyBuildApi#clearSkippyFolder()} upon failure and</l>
+ *     <li>{@link SkippyBuildApi#performPostBuildActions()} upon success.</l>
  * </ul>
-
+ *
  * <br /><br />
  *
  * Invocation: <code>./gradlew skippyAnalyze</code>.
@@ -64,11 +61,10 @@ class SkippyAnalyzeTask extends DefaultTask {
     /**
      * C'tor.
      *
-     * @param classesMd5Writer
-     * @param coverageFileCompactor
+     * @param skippyBuildApi a {@link SkippyBuildApi}
      */
     @Inject
-    public SkippyAnalyzeTask(ClassesMd5Writer classesMd5Writer, CoverageFileCompactor coverageFileCompactor) {
+    public SkippyAnalyzeTask(SkippyBuildApi skippyBuildApi) {
         setGroup("skippy");
 
         // set up task dependencies
@@ -78,19 +74,16 @@ class SkippyAnalyzeTask extends DefaultTask {
         dependsOn("clean", "skippyClean", "check");
         getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
 
-        BuildLogger buildLogger = (m) -> getLogger().lifecycle(m);
-
         doLast((task) -> {
-            coverageFileCompactor.compact(buildLogger, getProject().getProjectDir().toPath());
-            classesMd5Writer.write(buildLogger, getProject().getProjectDir().toPath());
+            skippyBuildApi.performPostBuildActions();
         });
 
         if (isSkippyAnalyzeBuild(getProject())) {
-            configureSkippyAnalyzeBuild();
+            configureSkippyAnalyzeBuild(skippyBuildApi);
         }
     }
 
-    private void configureSkippyAnalyzeBuild() {
+    private void configureSkippyAnalyzeBuild(SkippyBuildApi skippyBuildApi) {
         // Skippy's JUnit libraries (e.g., skippy-junit5) rely on the JaCoCo agent to generate coverage data.
         getProject().getPlugins().apply(JacocoPlugin.class);
         getProject().getExtensions().getByType(JacocoPluginExtension.class).setToolVersion(SkippyProperties.getJacocoVersion());
@@ -99,18 +92,16 @@ class SkippyAnalyzeTask extends DefaultTask {
         // skippified tests.
         getProject().getTasks().withType(Test.class, test -> test.environment("skippyEmitCovFiles", true));
 
-        clearSkippyFolderUponFailure();
+        clearSkippyFolderUponFailure(skippyBuildApi);
     }
 
-    private void clearSkippyFolderUponFailure() {
+    private void clearSkippyFolderUponFailure(SkippyBuildApi skippyBuildApi) {
         getProject().getGradle().addBuildListener(new BuildAdapter() {
             @Override
             public void buildFinished(BuildResult result) {
                 if (result.getFailure() != null) {
                     getLogger().lifecycle("Clearing skippy folder due to build failure");
-                    var skippyDir = getProject().getProjectDir().toPath().resolve(SKIPPY_DIRECTORY);
-                    getProject().delete(skippyDir);
-                    getProject().mkdir(skippyDir);
+                    skippyBuildApi.clearSkippyFolder();
                 }
             }
         });

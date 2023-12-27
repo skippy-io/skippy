@@ -51,24 +51,6 @@ public class ClassFile {
     }
 
     /**
-     * Returns the fully qualified class name (e.g., c.e.Foo).
-     *
-     * @return the fully qualified class name (e.g., c.e.Foo)
-     */
-    public String getShortClassName() {
-        var result = "";
-        String[] split = fullyQualifiedClassName.split("\\.");
-        for (int i = 0; i < split.length; i++) {
-            if (i < split.length - 1) {
-                result += split[i].charAt(0) + ".";
-            } else {
-                result += split[i];
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the absolute {@link Path} of the class file.
      *
      * @return the absolute {@link Path} of the class file.
@@ -77,12 +59,7 @@ public class ClassFile {
         return classFile;
     }
 
-    /**
-     * Returns a hash of the contents of the class file.
-     *
-     * @return a hash of the contents of the class file
-     */
-    public String getHash() {
+    String getHash() {
         return DebugAgnosticHash.hash(classFile);
     }
 

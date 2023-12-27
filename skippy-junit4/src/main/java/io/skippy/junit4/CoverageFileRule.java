@@ -16,7 +16,7 @@
 
 package io.skippy.junit4;
 
-import io.skippy.junit.CoverageDataTestListener;
+import io.skippy.junit.SkippyTestApi;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.MultipleFailureException;
@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Modified version of {@link org.junit.rules.ExternalResource} that notifies the {@link CoverageDataTestListener}
- * before and after the execution of a test. The {@link CoverageDataTestListener} uses those notifications
+ * Modified version of {@link org.junit.rules.ExternalResource} that notifies the {@link SkippyTestApi}
+ * before and after the execution of a test. The {@link SkippyTestApi} uses those notifications
  * to generate a coverage file for the test.
  *
  * @author Florian McKee
@@ -62,10 +62,10 @@ class CoverageFileRule implements TestRule {
     }
 
     private  void before(Class<?> testClass) {
-        CoverageDataTestListener.beforeTestClass(testClass);
+        SkippyTestApi.beforeTestClass(testClass);
     }
 
     private void after(Class<?> testClass) {
-        CoverageDataTestListener.afterTestClass(testClass);
+        SkippyTestApi.afterTestClass(testClass);
     }
 }

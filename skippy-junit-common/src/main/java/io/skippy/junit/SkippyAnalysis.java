@@ -28,7 +28,7 @@ import static io.skippy.junit.SkippyAnalysis.Reason.*;
  * The result of a Skippy analysis:
  * <ul>
  *     <li>a {@link HashedClass} list</li>
- *     <li>a {@link CoverageData} for all tests that use the Skippy extension</li>
+ *     <li>a {@link CoverageData} for all tests that use Skippy</li>
  * </ul>
  *
  * @author Florian McKee
