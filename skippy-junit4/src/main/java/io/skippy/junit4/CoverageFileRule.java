@@ -25,6 +25,8 @@ import org.junit.runners.model.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.skippy.junit.SkippyExceptionHandler.executeAndHandleKnownExceptions;
+
 /**
  * Modified version of {@link org.junit.rules.ExternalResource} that notifies the {@link SkippyTestApi}
  * before and after the execution of a test. The {@link SkippyTestApi} uses those notifications
@@ -62,10 +64,14 @@ class CoverageFileRule implements TestRule {
     }
 
     private  void before(Class<?> testClass) {
-        SkippyTestApi.prepareCoverageDataCaptureFor(testClass);
+        executeAndHandleKnownExceptions(() -> {
+            SkippyTestApi.prepareCoverageDataCaptureFor(testClass);
+        });
     }
 
     private void after(Class<?> testClass) {
-        SkippyTestApi.captureCoverageDataFor(testClass);
+        executeAndHandleKnownExceptions(() -> {
+            SkippyTestApi.captureCoverageDataFor(testClass);
+        });
     }
 }

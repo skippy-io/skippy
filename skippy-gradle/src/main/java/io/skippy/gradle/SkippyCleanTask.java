@@ -25,7 +25,7 @@ import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 /**
  * Clears the skippy directory.
  * <br /><br />
- * Invocation: <code>./gradlew skippyClean</code>.
+ * Invocation: {@code ./gradlew skippyClean}
  *
  * @author Florian McKee
  */
