@@ -28,9 +28,9 @@ import org.apache.maven.project.MavenProject;
 import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_MARKER;
 
 /**
- * Performs the post-test actions (by calling {@link SkippyBuildApi#writeClassesMd5FileAndCompactCoverageFiles()}).
+ * Compacts the {@code .cov} file in the skippy folder and writes the {@code classes.md5} file.
  * <br /><br />
- * Direct invocation: {@code mvn skippy:analyze}
+ * Invocation: {@code ./gradlew skippyAnalyze}.
  *
  * @author Florian McKee
  */

@@ -20,6 +20,7 @@ import io.skippy.build.SkippyBuildApi;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
 /**
  * The Skippy plugin adds the
@@ -38,6 +39,7 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getPlugins().apply(JavaPlugin.class);
+        project.getPlugins().apply(JacocoPlugin.class);
 
         var skippyBuildApi = new SkippyBuildApi(
                 project.getProjectDir().toPath(),

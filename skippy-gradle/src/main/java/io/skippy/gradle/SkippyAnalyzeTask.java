@@ -23,38 +23,19 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.testing.Test;
-import org.gradle.testing.jacoco.plugins.JacocoPlugin;
-import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
 
 import javax.inject.Inject;
 
-import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_MARKER;
+import io.skippy.core.SkippyConstants;
 
 /**
- *
- * Triggers the execution of all tests by declaring a dependency on the {@code check} lifecycle tasks.
- *
- * <br /><br />
- *
- * It applies the following configuration changes to the project:
+ * Triggers a Skippy analysis that will populate the skippy folder with
  * <ul>
- *     <li>Applies the {@link JacocoPlugin}</li>
- *     <li>Sets the system property {@code skippyEmitCovFiles} to {@code true}</li>
+ *     <li>a {@code .cov} file containing coverage data for each skippified test and </l>
+ *     <li>a {@code classes.md5} file containing hashes for all class files in the project's output folders.</l>
  * </ul>
  *
- * This allows Skippy's JUnit libraries to emit coverages files during the execution of the test suite.
- *
- * <br /><br />
- *
- * The task calls
- * <ul>
- *     <li>{@link SkippyBuildApi#clearSkippyFolder()} upon failure and</l>
- *     <li>{@link SkippyBuildApi#writeClassesMd5FileAndCompactCoverageFiles()} upon success.</l>
- * </ul>
- *
- * <br /><br />
- *
- * Invocation: <code>./gradlew skippyAnalyze</code>.
+ * Invocation: {@code ./gradlew skippyAnalyze}
  *
  * @author Florian McKee
  */
@@ -81,14 +62,7 @@ class SkippyAnalyzeTask extends DefaultTask {
     }
 
     private void configureSkippyAnalyzeBuild(SkippyBuildApi skippyBuildApi) {
-        // Skippy's JUnit libraries (e.g., skippy-junit5) rely on the JaCoCo agent to generate coverage data.
-        getProject().getPlugins().apply(JacocoPlugin.class);
-        getProject().getExtensions().getByType(JacocoPluginExtension.class).setToolVersion(SkippyProperties.getJacocoVersion());
-
-        // This property informs Skippy's JUnit libraries (e.g., skippy-junit5) to emit coverage data for
-        // skippified tests.
-        getProject().getTasks().withType(Test.class, test -> test.environment(SKIPPY_ANALYZE_MARKER, true));
-
+        getProject().getTasks().withType(Test.class, test -> test.environment(SkippyConstants.SKIPPY_ANALYZE_MARKER, true));
         clearSkippyFolderUponFailure(skippyBuildApi);
     }
 

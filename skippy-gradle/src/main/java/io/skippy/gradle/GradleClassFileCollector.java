@@ -28,7 +28,7 @@ import java.util.*;
 import static java.util.Comparator.comparing;
 
 /**
- * Collects {@link ClassFile}s in a project.
+ * Collects {@link ClassFile}s across all {@link SourceSet}s in a project.
  *
  * @author Florian McKee
  */

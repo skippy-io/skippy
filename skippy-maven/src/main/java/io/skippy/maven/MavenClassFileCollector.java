@@ -29,7 +29,7 @@ import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 
 /**
- * Collects {@link ClassFile}s in a project.
+ * Collects {@link ClassFile}s in the output directories of the  project.
  *
  * @author Florian McKee
  */
@@ -42,9 +42,9 @@ final class MavenClassFileCollector implements ClassFileCollector {
     }
 
     /**
-     * Collects all {@link ClassFile}s in the output directories of the project organized by classes folders.
+     * Collects all {@link ClassFile}s in the output directories of the project (organized by output directory).
      *
-     * @return all {@link ClassFile}s in the output directories of the project organized by classes folders.
+     * @return all {@link ClassFile}s in the output directories of the project (organized by output directory)
      */
     @Override
     public List<DirectoryWithClassFiles> collect() {
