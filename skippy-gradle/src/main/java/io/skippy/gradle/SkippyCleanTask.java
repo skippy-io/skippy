@@ -16,11 +16,8 @@
 
 package io.skippy.gradle;
 
-import io.skippy.build.SkippyBuildApi;
 import org.gradle.api.DefaultTask;
 import javax.inject.Inject;
-
-import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 
 /**
  * Clears the skippy directory.
@@ -32,10 +29,12 @@ import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 class SkippyCleanTask extends DefaultTask {
 
     @Inject
-    public SkippyCleanTask(SkippyBuildApi skippyBuildApi) {
+    public SkippyCleanTask() {
         setGroup("skippy");
-        doLast((task) -> {
-            skippyBuildApi.clearSkippyFolder();
+        SkippyBuildApiFactory.getInstanceFor(this).ifPresent(skippyBuildApi -> {
+            doLast((task) -> {
+                skippyBuildApi.clearSkippyFolder();
+            });
         });
     }
 }

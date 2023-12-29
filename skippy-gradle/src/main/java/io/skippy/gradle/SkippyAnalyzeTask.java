@@ -42,23 +42,25 @@ import io.skippy.core.SkippyConstants;
 class SkippyAnalyzeTask extends DefaultTask {
 
     @Inject
-    public SkippyAnalyzeTask(SkippyBuildApi skippyBuildApi) {
+    public SkippyAnalyzeTask() {
         setGroup("skippy");
+        SkippyBuildApiFactory.getInstanceFor(this).ifPresent(skippyBuildApi -> {
+            // set up task dependencies
+            for (var sourceSet : getProject().getExtensions().getByType(SourceSetContainer.class)) {
+                dependsOn(sourceSet.getClassesTaskName());
+            }
+            dependsOn("clean", "skippyClean", "check");
+            getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
 
-        // set up task dependencies
-        for (var sourceSet : getProject().getExtensions().getByType(SourceSetContainer.class)) {
-            dependsOn(sourceSet.getClassesTaskName());
-        }
-        dependsOn("clean", "skippyClean", "check");
-        getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
+            doLast((task) -> {
+                skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
+            });
 
-        doLast((task) -> {
-            skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
+            if (isSkippyAnalyzeBuild(getProject())) {
+                configureSkippyAnalyzeBuild(skippyBuildApi);
+            }
         });
 
-        if (isSkippyAnalyzeBuild(getProject())) {
-            configureSkippyAnalyzeBuild(skippyBuildApi);
-        }
     }
 
     private void configureSkippyAnalyzeBuild(SkippyBuildApi skippyBuildApi) {
