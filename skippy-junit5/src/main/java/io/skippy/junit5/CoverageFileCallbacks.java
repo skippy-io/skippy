@@ -30,7 +30,7 @@ import static io.skippy.junit.SkippyExceptionHandler.executeAndHandleKnownExcept
  *
  * @author Florian McKee
  */
-final class CoverageFileCallbacks implements TestInstancePreConstructCallback, TestInstancePreDestroyCallback {
+public final class CoverageFileCallbacks implements TestInstancePreConstructCallback, TestInstancePreDestroyCallback {
 
 
     @Override
