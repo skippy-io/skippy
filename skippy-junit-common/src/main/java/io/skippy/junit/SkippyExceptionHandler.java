@@ -16,8 +16,7 @@
 
 package io.skippy.junit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Logger;
 
 /**
  * Performs helpful logging for exceptions with known root causes.
@@ -26,7 +25,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class SkippyExceptionHandler {
 
-    private static final Logger LOGGER = LogManager.getLogger(SkippyExceptionHandler.class);
+    private static final Logger LOGGER = Logger.getLogger(SkippyExceptionHandler.class.getName());
 
     /**
      * Executes the {@code runnable} and performs helpful logging for exceptions with known root cause
@@ -38,9 +37,9 @@ public class SkippyExceptionHandler {
             runnable.run();
         } catch (NoClassDefFoundError e) {
             if (e.getMessage().startsWith("org/jacoco")) {
-                LOGGER.error("Unable to load JaCoCo class %s".formatted(e.getMessage()));
-                LOGGER.error("");
-                LOGGER.error("Did you forget to add the JaCoCo plugin to your pom.xml?");
+                LOGGER.severe("Unable to load JaCoCo class %s".formatted(e.getMessage()));
+                LOGGER.severe("");
+                LOGGER.severe("Did you forget to add the JaCoCo plugin to your pom.xml?");
             }
             throw e;
         }

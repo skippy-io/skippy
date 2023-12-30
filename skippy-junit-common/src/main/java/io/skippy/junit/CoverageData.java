@@ -16,13 +16,11 @@
 
 package io.skippy.junit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Logger;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -34,7 +32,7 @@ import static java.util.Collections.emptyMap;
  */
 class CoverageData {
 
-    private static final Logger LOGGER = LogManager.getLogger(CoverageData.class);
+    private static final Logger LOGGER = Logger.getLogger(CoverageData.class.getName());
 
     static final CoverageData UNAVAILABLE = new CoverageData(emptyMap());
 
@@ -90,7 +88,7 @@ class CoverageData {
                      .map(line -> new FullyQualifiedClassName(line))
                      .toList();
         } catch (Exception e) {
-            LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(csvFile, e), e);
+            LOGGER.severe("Parsing of file '%s' failed: '%s'".formatted(csvFile, e));
             throw new RuntimeException(e);
         }
     }

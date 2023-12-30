@@ -16,15 +16,13 @@
 
 package io.skippy.junit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
@@ -36,7 +34,7 @@ import static java.util.Collections.emptyList;
  */
 class HashedClasses {
 
-    private static final Logger LOGGER = LogManager.getLogger(HashedClasses.class);
+    private static final Logger LOGGER = Logger.getLogger(HashedClasses.class.getName());
 
     static final HashedClasses UNAVAILABLE = new HashedClasses(emptyList());
 
@@ -74,7 +72,7 @@ class HashedClasses {
                 }
                 return new HashedClasses(result);
             } catch (Exception e) {
-                LOGGER.error("Parsing of file '%s' failed: '%s'".formatted(classesMd5File, e.getMessage()), e);
+                LOGGER.severe("Parsing of file '%s' failed: '%s'".formatted(classesMd5File, e.getMessage()));
                 throw new RuntimeException(e);
             }
         });
