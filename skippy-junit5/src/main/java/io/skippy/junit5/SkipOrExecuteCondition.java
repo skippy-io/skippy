@@ -26,7 +26,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  * @author Florian McKee
  */
-final class SkipOrExecuteCondition implements ExecutionCondition {
+public final class SkipOrExecuteCondition implements ExecutionCondition {
 
     private final SkippyAnalysis skippyAnalysis;
 
