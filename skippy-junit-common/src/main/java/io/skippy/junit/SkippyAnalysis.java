@@ -16,11 +16,13 @@
 
 package io.skippy.junit;
 
+import io.skippy.core.Profiler;
 import io.skippy.core.SkippyConstants;
 
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
+import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 import static io.skippy.junit.SkippyAnalysis.Reason.*;
 
 /**
@@ -32,7 +34,7 @@ import static io.skippy.junit.SkippyAnalysis.Reason.*;
  *
  * @author Florian McKee
  */
-public class SkippyAnalysis {
+class SkippyAnalysis {
 
     enum Reason {
         NO_CHANGE,
@@ -61,7 +63,7 @@ public class SkippyAnalysis {
     private static final Logger LOGGER = Logger.getLogger(SkippyAnalysis.class.getName());
 
     private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(HashedClasses.UNAVAILABLE, CoverageData.UNAVAILABLE);
-    private static final SkippyAnalysis INSTANCE = parse(SkippyConstants.SKIPPY_DIRECTORY);
+    static final SkippyAnalysis INSTANCE = parse(SKIPPY_DIRECTORY);
 
     private final HashedClasses hashedClasses;
     private final CoverageData coverageData;
@@ -77,15 +79,6 @@ public class SkippyAnalysis {
         this.coverageData = coverageData;
     }
 
-    /**
-     * Returns the parsed content of the skippy folder.
-     *
-     * @return the parsed content of the skippy folder
-     */
-    public static SkippyAnalysis getInstance() {
-        return INSTANCE;
-    }
-
     static SkippyAnalysis parse(Path skippyDirectory) {
         return Profiler.profile("SkippyAnalysis#parse", () -> {
             if (!skippyDirectory.toFile().exists() || !skippyDirectory.toFile().isDirectory()) {
@@ -95,20 +88,6 @@ public class SkippyAnalysis {
             var testCoverage = CoverageData.parse(skippyDirectory);
             return new SkippyAnalysis(classFiles, testCoverage);
         });
-    }
-
-    /**
-     * Returns {@code true} if {@code test} needs to be executed, {@code false} otherwise.
-     *
-     * @param test a class object representing a test
-     * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
-     */
-    public boolean testNeedsToBeExecuted(Class<?> test) {
-        try {
-            return decide(new FullyQualifiedClassName(test.getName())).decision == Decision.EXECUTE_TEST;
-        } finally {
-            Profiler.dump();
-        }
     }
 
     DecisionWithReason decide(FullyQualifiedClassName testFqn) {

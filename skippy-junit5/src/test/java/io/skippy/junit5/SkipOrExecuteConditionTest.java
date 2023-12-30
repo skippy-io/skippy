@@ -16,7 +16,7 @@
 
 package io.skippy.junit5;
 
-import io.skippy.junit.SkippyAnalysis;
+import io.skippy.junit.SkippyTestApi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -36,8 +36,8 @@ public class SkipOrExecuteConditionTest {
 
     @Test
     void testEmptyTestInstanceEqualsEnabled() {
-        var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyAnalysis);
+        var skippyTestApi = mock(SkippyTestApi.class);
+        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyTestApi);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.empty());
@@ -47,26 +47,26 @@ public class SkipOrExecuteConditionTest {
 
     @Test
     void testSkippyAnalysisExecutionRequiredFalse() {
-        var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyAnalysis);
+        var skippyTestApi = mock(SkippyTestApi.class);
+        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyTestApi);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
         when(context.getTestClass()).thenReturn(Optional.of(Object.class));
-        when(skippyAnalysis.testNeedsToBeExecuted(any())).thenReturn(false);
+        when(skippyTestApi.testNeedsToBeExecuted(any())).thenReturn(false);
 
         assertEquals(true, skippyExecutionCondition.evaluateExecutionCondition(context).isDisabled());
     }
 
     @Test
     void testSkippyAnalysisExecutionRequiredTrue() {
-        var skippyAnalysis = mock(SkippyAnalysis.class);
-        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyAnalysis);
+        var skippyTestApi = mock(SkippyTestApi.class);
+        var skippyExecutionCondition = new SkipOrExecuteCondition(skippyTestApi);
         ExtensionContext context = mock(ExtensionContext.class);
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
         when(context.getTestClass()).thenReturn(Optional.of(Object.class));
-        when(skippyAnalysis.testNeedsToBeExecuted(any())).thenReturn(true);
+        when(skippyTestApi.testNeedsToBeExecuted(any())).thenReturn(true);
 
         assertEquals(false, skippyExecutionCondition.evaluateExecutionCondition(context).isDisabled());
     }

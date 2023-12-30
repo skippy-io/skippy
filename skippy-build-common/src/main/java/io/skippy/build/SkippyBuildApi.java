@@ -18,7 +18,7 @@ package io.skippy.build;
 
 import java.nio.file.Path;
 
-import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
+import static io.skippy.core.SkippyConstants.*;
 
 /**
  * API with functionality that is used across build-tool specific libraries (e.g., skippy-gradle and skippy-maven).
@@ -65,6 +65,20 @@ public final class SkippyBuildApi {
         }
         for (var file : projectDir.resolve(SKIPPY_DIRECTORY).toFile().listFiles()) {
             file.delete();
+        }
+    }
+
+    /**
+     * Remove .debug files from the skippy folder.
+     */
+    public void removeDebugFilesFromSkippyFolder() {
+        var skipOrExecuteDecisionsFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(SKIP_OR_EXECUTE_DECISION_FILE).toFile();
+        if (skipOrExecuteDecisionsFile.exists()) {
+            skipOrExecuteDecisionsFile.delete();
+        }
+        var profilingDataFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(PROFILING_DATA_FILE).toFile();
+        if (profilingDataFile.exists()) {
+            profilingDataFile.delete();
         }
     }
 
