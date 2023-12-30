@@ -16,12 +16,11 @@
 
 package io.skippy.junit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Simple DIY profiler.
@@ -30,7 +29,7 @@ import java.util.function.Supplier;
  */
 class Profiler {
 
-    private static final Logger LOGGER = LogManager.getLogger(Profiler.class);
+    private static final Logger LOGGER = Logger.getLogger(Profiler.class.getName());
 
     private static Map<String, Long> data = new HashMap<>();
 
@@ -46,9 +45,9 @@ class Profiler {
     }
 
     static void dump() {
-        if (LOGGER.isDebugEnabled()) {
+        if (LOGGER.isLoggable(Level.FINE)) {
             for (var entry  : data.entrySet()) {
-                LOGGER.debug("%s: %sms".formatted(entry.getKey(), entry.getValue()));
+                LOGGER.fine("%s: %sms".formatted(entry.getKey(), entry.getValue()));
             }
         }
     }

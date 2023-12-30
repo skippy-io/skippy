@@ -16,8 +16,6 @@
 
 package io.skippy.core;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -29,6 +27,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Base64;
+import java.util.logging.Logger;
 
 /**
  * Generates hashes for class files that are agnostic of debug information. If the only difference between two class
@@ -46,7 +45,7 @@ import java.util.Base64;
  */
 public class DebugAgnosticHash {
 
-    private static final Logger LOGGER = LogManager.getLogger(DebugAgnosticHash.class);
+    private static final Logger LOGGER = Logger.getLogger(DebugAgnosticHash.class.getName());
 
     /**
      * Generates a hash for the {@code classfile} that is agnostic of debug information.
@@ -60,7 +59,7 @@ public class DebugAgnosticHash {
             md.update(getBytecodeWithoutDebugInformation(classFile));
             return Base64.getEncoder().encodeToString(md.digest());
         } catch (Exception e) {
-            LOGGER.error("Unable to generate hash for file '%s': '%s'".formatted(classFile, e.getMessage()), e);
+            LOGGER.severe("Unable to generate hash for file '%s': '%s'".formatted(classFile, e.getMessage()));
             throw new RuntimeException(e);
         }
     }
