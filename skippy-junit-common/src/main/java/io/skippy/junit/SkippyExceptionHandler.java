@@ -40,8 +40,23 @@ public class SkippyExceptionHandler {
                 LOGGER.severe("Unable to load JaCoCo class %s".formatted(e.getMessage()));
                 LOGGER.severe("");
                 LOGGER.severe("Did you forget to add the JaCoCo plugin to your pom.xml?");
+
+                // suppress exception to continue the build
+
+            } else {
+                throw e;
             }
-            throw e;
+        } catch (IllegalStateException e) {
+            if (e.getMessage().equals("JaCoCo agent not started.")) {
+                LOGGER.severe("JaCoCo agent unavailable: %s".formatted(e.getMessage()));
+                LOGGER.severe("");
+                LOGGER.severe("Did you forget to add the JaCoCo plugin to your pom.xml?");
+
+                // suppress exception to continue the build
+
+            } else {
+                throw e;
+            }
         }
     }
 
