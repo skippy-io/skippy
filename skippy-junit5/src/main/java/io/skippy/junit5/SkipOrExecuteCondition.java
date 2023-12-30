@@ -16,29 +16,29 @@
 
 package io.skippy.junit5;
 
-import io.skippy.junit.SkippyAnalysis;
+import io.skippy.junit.SkippyTestApi;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
- * {@link ExecutionCondition} that decides whether to run or skip a test based a {@link SkippyAnalysis}.
+ * {@link ExecutionCondition} that makes skip-or-execute decisions for tests.
  *
  * @author Florian McKee
  */
 public final class SkipOrExecuteCondition implements ExecutionCondition {
 
-    private final SkippyAnalysis skippyAnalysis;
+    private final SkippyTestApi skippyTestApi;
 
     /**
      * Comment to make the JavaDoc task happy.
      */
     public SkipOrExecuteCondition() {
-        this(SkippyAnalysis.getInstance());
+        this(SkippyTestApi.INSTANCE);
     }
 
-    SkipOrExecuteCondition(final SkippyAnalysis skippyAnalysis) {
-        this.skippyAnalysis = skippyAnalysis;
+    SkipOrExecuteCondition(final SkippyTestApi skippyTestApi) {
+        this.skippyTestApi = skippyTestApi;
     }
 
     @Override
@@ -46,7 +46,7 @@ public final class SkipOrExecuteCondition implements ExecutionCondition {
         if (context.getTestInstance().isEmpty()) {
             return ConditionEvaluationResult.enabled("");
         }
-        if (skippyAnalysis.testNeedsToBeExecuted(context.getTestClass().get())) {
+        if (skippyTestApi.testNeedsToBeExecuted(context.getTestClass().get())) {
             return ConditionEvaluationResult.enabled("");
         }
         return ConditionEvaluationResult.disabled("");

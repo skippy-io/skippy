@@ -16,26 +16,26 @@
 
 package io.skippy.junit4;
 
-import io.skippy.junit.SkippyAnalysis;
+import io.skippy.junit.SkippyTestApi;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * {@link TestRule} that decides whether to run or skip a test based a {@link SkippyAnalysis}.
+ * {@link TestRule} that makes skip-or-execute decisions for test.
  *
  * @author Florian McKee
  */
 class SkipOrExecuteRule implements TestRule {
 
-    private final SkippyAnalysis skippyAnalysis;
+    private final SkippyTestApi skippyTestApi;
 
     public SkipOrExecuteRule() {
-        this(SkippyAnalysis.getInstance());
+        this(SkippyTestApi.INSTANCE);
     }
 
-    SkipOrExecuteRule(final SkippyAnalysis skippyAnalysis) {
-        this.skippyAnalysis = skippyAnalysis;
+    SkipOrExecuteRule(SkippyTestApi skippyTestApi) {
+        this.skippyTestApi = skippyTestApi;
     }
 
     public Statement apply(Statement base, Description description) {
@@ -48,7 +48,7 @@ class SkipOrExecuteRule implements TestRule {
             }
 
             private boolean executeTest(Class<?> testClass) {
-                return skippyAnalysis.testNeedsToBeExecuted(testClass);
+                return skippyTestApi.testNeedsToBeExecuted(testClass);
             }
         };
     }

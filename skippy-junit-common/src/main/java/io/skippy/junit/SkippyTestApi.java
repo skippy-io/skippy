@@ -23,21 +23,52 @@ import org.jacoco.core.data.SessionInfoStore;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_MARKER;
+import static io.skippy.core.SkippyConstants.*;
 import static java.nio.file.StandardOpenOption.*;
+
 import java.util.LinkedList;
 
-import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
-
 /**
- * API for generation of .cov files.
+ * API to query for skip-or-execute decisions and to trigger the generation of .cov files.
  *
  * @author Florian McKee
  */
-public class SkippyTestApi {
+public final class SkippyTestApi {
+
+    /**
+     * The SkippyTestApi singleton.
+     */
+    public static final SkippyTestApi INSTANCE = new SkippyTestApi(SkippyAnalysis.INSTANCE);
+
+    private final SkippyAnalysis skippyAnalysis;
+
+    private SkippyTestApi(SkippyAnalysis skippyAnalysis) {
+        this.skippyAnalysis = skippyAnalysis;
+    }
+
+    /**
+     * Returns {@code true} if {@code test} needs to be executed, {@code false} otherwise.
+     *
+     * @param test a class object representing a test
+     * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
+     */
+    public boolean testNeedsToBeExecuted(Class<?> test) {
+        try {
+            var decision = skippyAnalysis.decide(new FullyQualifiedClassName(test.getName()));
+            Files.writeString(
+                    SKIPPY_DIRECTORY.resolve(SKIP_OR_EXECUTE_DECISION_FILE),
+                    "%s:%s:%s%s".formatted(test.getName(), decision.decision(), decision.reason(), System.lineSeparator()),
+                    StandardCharsets.UTF_8, CREATE, APPEND
+            );
+            return decision.decision() == SkippyAnalysis.Decision.EXECUTE_TEST;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
     /**
      * Prepares for the capturing of a .cov file for {@code testClass} before any tests in the class are executed.
@@ -81,6 +112,7 @@ public class SkippyTestApi {
             throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
         }
     }
+
     private static boolean isSkippyCoverageBuild() {
         return Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_MARKER)) || Boolean.valueOf(System.getenv().get(SKIPPY_ANALYZE_MARKER));
     }

@@ -38,6 +38,8 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         project.getPlugins().apply(JacocoPlugin.class);
         project.getTasks().register("skippyClean", SkippyCleanTask.class);
         project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
+        project.afterEvaluate((action) ->
+                SkippyBuildApiFactory.getInstanceFor(project).ifPresent(api -> api.removeDebugFilesFromSkippyFolder()));
     }
 
 }

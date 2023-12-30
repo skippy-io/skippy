@@ -36,6 +36,16 @@ public class SkippyConstants {
     public static final Path CLASSES_MD5_FILE = Path.of("classes.md5");
 
     /**
+     * The file that contains skip-or-execute decisions for all tests files.
+     */
+    public static final Path SKIP_OR_EXECUTE_DECISION_FILE = Path.of("decisions.debug");
+
+    /**
+     * The file that contains profiling data.
+     */
+    public static final Path PROFILING_DATA_FILE = Path.of("profiling.debug");
+
+    /**
      * Environment variable that is set when a Skippy analysis is executed. It instructs Skippy's JUnit libraries
      * (e.g., skippy-junit5) to emit coverage data for skippified tests.
      */

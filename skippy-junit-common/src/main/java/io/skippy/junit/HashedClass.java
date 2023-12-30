@@ -18,6 +18,7 @@ package io.skippy.junit;
 
 import io.skippy.core.ClassNameExtractor;
 import io.skippy.core.DebugAgnosticHash;
+import io.skippy.core.Profiler;
 
 import java.nio.file.Path;
 

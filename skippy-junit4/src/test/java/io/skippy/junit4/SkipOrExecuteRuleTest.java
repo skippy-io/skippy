@@ -15,8 +15,7 @@
  */
 
 package io.skippy.junit4;
-
-import io.skippy.junit.SkippyAnalysis;
+import io.skippy.junit.SkippyTestApi;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -28,15 +27,15 @@ import static org.mockito.Mockito.*;
  */
 public class SkipOrExecuteRuleTest {
 
-    SkippyAnalysis skippyAnalysis = mock(SkippyAnalysis.class);
+    SkippyTestApi skippyTestApi = mock(SkippyTestApi.class);
     Statement base = mock(Statement.class);
     Description description = mock(Description.class);
 
     @Test
     public void testExecutionofTest() throws Throwable {
         doReturn(SkipOrExecuteRuleTest.class).when(description).getTestClass();
-        var rule = new SkipOrExecuteRule(skippyAnalysis);
-        when(skippyAnalysis.testNeedsToBeExecuted(SkipOrExecuteRuleTest.class)).thenReturn(true);
+        var rule = new SkipOrExecuteRule(skippyTestApi);
+        when(skippyTestApi.testNeedsToBeExecuted(SkipOrExecuteRuleTest.class)).thenReturn(true);
         rule.apply(base, description).evaluate();
         verify(base).evaluate();
     }
@@ -44,8 +43,8 @@ public class SkipOrExecuteRuleTest {
     @Test
     public void testSkippingOfTest() throws Throwable {
         doReturn(SkipOrExecuteRuleTest.class).when(description).getTestClass();
-        var rule = new SkipOrExecuteRule(skippyAnalysis);
-        when(skippyAnalysis.testNeedsToBeExecuted(SkipOrExecuteRuleTest.class)).thenReturn(false);
+        var rule = new SkipOrExecuteRule(skippyTestApi);
+        when(skippyTestApi.testNeedsToBeExecuted(SkipOrExecuteRuleTest.class)).thenReturn(false);
         rule.apply(base, description).evaluate();
         verify(base, times(0)).evaluate();
     }
