@@ -69,16 +69,16 @@ public final class SkippyBuildApi {
     }
 
     /**
-     * Remove .debug files from the skippy folder.
+     * Remove decision.log and profiling.log files from the skippy folder.
      */
-    public void removeDebugFilesFromSkippyFolder() {
-        var skipOrExecuteDecisionsFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(SKIP_OR_EXECUTE_DECISION_FILE).toFile();
-        if (skipOrExecuteDecisionsFile.exists()) {
-            skipOrExecuteDecisionsFile.delete();
+    public void deleteLogFiles() {
+        var decisionLog = projectDir.resolve(SKIPPY_DIRECTORY).resolve(DECISION_LOG_FILE).toFile();
+        if (decisionLog.exists()) {
+            decisionLog.delete();
         }
-        var profilingDataFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(PROFILING_DATA_FILE).toFile();
-        if (profilingDataFile.exists()) {
-            profilingDataFile.delete();
+        var profilingLog = projectDir.resolve(SKIPPY_DIRECTORY).resolve(PROFILING_LOG_FILE).toFile();
+        if (profilingLog.exists()) {
+            profilingLog.delete();
         }
     }
 

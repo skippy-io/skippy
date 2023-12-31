@@ -16,9 +16,6 @@
 
 package io.skippy.gradle;
 
-import io.skippy.build.SkippyBuildApi;
-import org.gradle.BuildAdapter;
-import org.gradle.BuildResult;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -57,32 +54,18 @@ class SkippyAnalyzeTask extends DefaultTask {
             });
 
             if (isSkippyAnalyzeBuild(getProject())) {
-                configureSkippyAnalyzeBuild(skippyBuildApi);
-            }
-        });
-
-    }
-
-    private void configureSkippyAnalyzeBuild(SkippyBuildApi skippyBuildApi) {
-        getProject().getTasks().withType(Test.class, test -> test.environment(SkippyConstants.SKIPPY_ANALYZE_MARKER, true));
-        clearSkippyFolderUponFailure(skippyBuildApi);
-    }
-
-    private void clearSkippyFolderUponFailure(SkippyBuildApi skippyBuildApi) {
-        getProject().getGradle().addBuildListener(new BuildAdapter() {
-            @Override
-            public void buildFinished(BuildResult result) {
-                if (result.getFailure() != null) {
-                    getLogger().lifecycle("Clearing skippy folder due to build failure");
-                    skippyBuildApi.clearSkippyFolder();
-                }
+                getProject().getTasks().withType(Test.class,
+                        test -> test.environment(SkippyConstants.SKIPPY_ANALYZE_MARKER, true)
+                );
             }
         });
     }
 
     private static boolean isSkippyAnalyzeBuild(Project project) {
         var taskRequests = project.getGradle().getStartParameter().getTaskRequests();
-        return taskRequests.stream().anyMatch(request -> request.getArgs().stream().anyMatch(task -> task.endsWith("skippyAnalyze")));
+        return taskRequests.stream().anyMatch(
+                request -> request.getArgs().stream().anyMatch(task -> task.endsWith("skippyAnalyze"))
+        );
     }
 
 }
