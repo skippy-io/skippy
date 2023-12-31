@@ -46,16 +46,16 @@ class SkippyAnalysis {
     }
 
     enum Decision {
-        EXECUTE_TEST,
-        SKIP_TEST
+        EXECUTE,
+        SKIP
     }
 
     record DecisionWithReason(Decision decision, Reason reason) {
         static DecisionWithReason executeTest(Reason reason) {
-            return new DecisionWithReason(Decision.EXECUTE_TEST, reason);
+            return new DecisionWithReason(Decision.EXECUTE, reason);
         }
         static DecisionWithReason skipTest(Reason reason) {
-            return new DecisionWithReason(Decision.SKIP_TEST, reason);
+            return new DecisionWithReason(Decision.SKIP, reason);
         }
     }
 

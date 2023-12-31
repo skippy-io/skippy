@@ -39,7 +39,7 @@ public class SkippyAnalysisTest {
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.SKIP_TEST, decisonWithReason.decision());
+        assertEquals(Decision.SKIP, decisonWithReason.decision());
         assertEquals(Reason.NO_CHANGE, decisonWithReason.reason());
     }
 
@@ -50,7 +50,7 @@ public class SkippyAnalysisTest {
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
         assertEquals(Reason.NO_COVERAGE_DATA_FOR_TEST, decisonWithReason.reason());
     }
 
@@ -61,7 +61,7 @@ public class SkippyAnalysisTest {
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
         assertEquals(Reason.BYTECODE_CHANGE_IN_TEST, decisonWithReason.reason());
     }
 
@@ -72,7 +72,7 @@ public class SkippyAnalysisTest {
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
         assertEquals(Reason.BYTECODE_CHANGE_IN_COVERED_CLASS, decisonWithReason.reason());
     }
 
@@ -83,7 +83,7 @@ public class SkippyAnalysisTest {
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
         assertEquals(Reason.NO_HASH_FOR_TEST, decisonWithReason.reason());
     }
 
@@ -94,7 +94,7 @@ public class SkippyAnalysisTest {
 
         var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE_TEST, decisonWithReason.decision());
+        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
         assertEquals(Reason.NO_HASH_FOR_COVERED_CLASS, decisonWithReason.reason());
     }
 

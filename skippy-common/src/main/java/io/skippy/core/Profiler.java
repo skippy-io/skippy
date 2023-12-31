@@ -17,40 +17,36 @@
 package io.skippy.core;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
+import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-import static io.skippy.core.SkippyConstants.PROFILING_DATA_FILE;
-import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
+import static io.skippy.core.SkippyConstants.*;
 import static java.lang.System.lineSeparator;
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.*;
 import static java.util.stream.Collectors.joining;
 
 /**
- * Simple DIY profiler.
+ * Simple DIY profiler that writes the {@link SkippyConstants#PROFILING_LOG_FILE} in the skippy folder every second.
+ * <br /><br />
+ * Note: Due to the complexity of build tools (e.g., Gradle might execute a build across multiple JVMs), this profiler
+ * might or might not generate accurate or complete profiling data.
  *
  * @author Florian McKee
  */
 public class Profiler {
 
-    private static Map<String, Long> data = new HashMap<>();
+    record InvocationCountAndTime(AtomicInteger invocationCount, AtomicLong time) {};
 
-    static {
-        Thread printingHook = new Thread(() -> {
-            try {
+    private static Map<String, InvocationCountAndTime> data = new ConcurrentHashMap<>();
 
-                Files.writeString(SKIPPY_DIRECTORY.resolve(PROFILING_DATA_FILE), Profiler.getResults(), StandardCharsets.UTF_8, CREATE, APPEND);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        Runtime.getRuntime().addShutdownHook(printingHook);
-    }
-
+    private static Instant lastSave = Instant.now();
     /**
      * Profiles the {@code supplier} under the given {@code label}.
      *
@@ -60,29 +56,56 @@ public class Profiler {
      * @param <T> the {@code supplier}'s return type
      */
     public static <T> T profile(String label, Supplier<T> supplier) {
+        if (lastSave.isBefore(Instant.now().minusSeconds(1))) {
+            lastSave = Instant.now();
+            writeResults();
+
+        }
         if ( ! data.containsKey(label)) {
-            data.put(label, 0L);
+            data.put(label, new InvocationCountAndTime(new AtomicInteger(0), new AtomicLong(0L)));
         }
         long then = System.currentTimeMillis();
         var result = supplier.get();
         long now = System.currentTimeMillis();
-        data.put(label, data.get(label) + now - then);
+        data.get(label).invocationCount.incrementAndGet();
+        data.get(label).time.addAndGet(now - then);
         return result;
     }
 
+    /**
+     * Profiles the {@code runnable} under the given {@code label}.
+     *
+     * @param label a label
+     * @param runnable a {@link Runnable}
+     */
+    public static void profile(String label, Runnable runnable) {
+        profile(label, (Supplier<Void>) () -> {
+            runnable.run();
+            return null;
+        });
+    }
 
     /**
-     * Returns the profiling results.
-     *
-     * @return the profiling results
+     * Writes the results to the profiling.log file in the skippy folder.
      */
-    public static String getResults() {
-        return "=== %s ===%s%s%s%s".formatted(
+    static void writeResults() {
+        if ( ! SKIPPY_DIRECTORY.toFile().exists()) {
+            return;
+        }
+        var result =  "=== %s ===%s%s%s%s".formatted(
                 Runtime.getRuntime().toString(),
                 System.lineSeparator(),
-                data.entrySet().stream().map(entry -> "%s: %sms".formatted(entry.getKey(), entry.getValue())).collect(joining(lineSeparator())),
+                data.entrySet().stream()
+                        .map(entry -> "%s: %s call(s), %sms".formatted(entry.getKey(), entry.getValue().invocationCount, entry.getValue().time))
+                        .sorted()
+                        .collect(joining(lineSeparator())),
                 System.lineSeparator(),
                 System.lineSeparator());
+        try {
+            Files.writeString(SKIPPY_DIRECTORY.resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 }

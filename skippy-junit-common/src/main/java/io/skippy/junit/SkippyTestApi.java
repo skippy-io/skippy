@@ -16,6 +16,7 @@
 
 package io.skippy.junit;
 
+import io.skippy.core.Profiler;
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
 import org.jacoco.core.data.ExecutionDataReader;
@@ -31,6 +32,8 @@ import static io.skippy.core.SkippyConstants.*;
 import static java.nio.file.StandardOpenOption.*;
 
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * API to query for skip-or-execute decisions and to trigger the generation of .cov files.
@@ -39,12 +42,15 @@ import java.util.LinkedList;
  */
 public final class SkippyTestApi {
 
+    private static final boolean WRITE_EXEC_FILE = false;
+
     /**
      * The SkippyTestApi singleton.
      */
     public static final SkippyTestApi INSTANCE = new SkippyTestApi(SkippyAnalysis.INSTANCE);
 
     private final SkippyAnalysis skippyAnalysis;
+    private final Map<Class<?>, SkippyAnalysis.Decision> decisions = new ConcurrentHashMap<>();
 
     private SkippyTestApi(SkippyAnalysis skippyAnalysis) {
         this.skippyAnalysis = skippyAnalysis;
@@ -57,17 +63,23 @@ public final class SkippyTestApi {
      * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
     public boolean testNeedsToBeExecuted(Class<?> test) {
-        try {
-            var decision = skippyAnalysis.decide(new FullyQualifiedClassName(test.getName()));
-            Files.writeString(
-                    SKIPPY_DIRECTORY.resolve(SKIP_OR_EXECUTE_DECISION_FILE),
-                    "%s:%s:%s%s".formatted(test.getName(), decision.decision(), decision.reason(), System.lineSeparator()),
-                    StandardCharsets.UTF_8, CREATE, APPEND
-            );
-            return decision.decision() == SkippyAnalysis.Decision.EXECUTE_TEST;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
+            try {
+                if (decisions.containsKey(test)) {
+                    return decisions.get(test) == SkippyAnalysis.Decision.EXECUTE;
+                }
+                var decision = skippyAnalysis.decide(new FullyQualifiedClassName(test.getName()));
+                Files.writeString(
+                        SKIPPY_DIRECTORY.resolve(DECISION_LOG_FILE),
+                        "%s:%s:%s%s".formatted(test.getName(), decision.decision(), decision.reason(), System.lineSeparator()),
+                        StandardCharsets.UTF_8, CREATE, APPEND
+                );
+                decisions.put(test, decision.decision());
+                return decision.decision() == SkippyAnalysis.Decision.EXECUTE;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 
     /**
@@ -76,12 +88,14 @@ public final class SkippyTestApi {
      * @param testClass a test class
      */
     public static void prepareCoverageDataCaptureFor(Class<?> testClass) {
-        // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
-        if ( ! isSkippyCoverageBuild()) {
-            return;
-        }
-        IAgent agent = RT.getAgent();
-        agent.reset();
+        Profiler.profile("SkippyTestApi#prepareCoverageDataCaptureFor", () -> {
+            // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
+            if (!isSkippyCoverageBuild()) {
+                return;
+            }
+            IAgent agent = RT.getAgent();
+            agent.reset();
+        });
     }
 
 
@@ -91,26 +105,30 @@ public final class SkippyTestApi {
      * @param testClass a test class
      */
     public static void captureCoverageDataFor(Class<?> testClass) {
-        // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
-        if ( ! isSkippyCoverageBuild()) {
-            return;
-        }
-        IAgent agent = RT.getAgent();
-        var coveredClasses = new LinkedList<String>();
-        byte[] executionData = agent.getExecutionData(true);
-        ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(executionData));
-        executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
-        executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName()));
-        try {
-            executionDataReader.read();
-            var name = testClass.getName();
-            Files.write(SKIPPY_DIRECTORY.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
-                    CREATE, TRUNCATE_EXISTING);
-            Files.write(SKIPPY_DIRECTORY.resolve("%s.exec".formatted(name)), executionData,
-                    CREATE, TRUNCATE_EXISTING);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
-        }
+        Profiler.profile("SkippyTestApi#captureCoverageDataFor", () -> {
+            // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
+            if ( ! isSkippyCoverageBuild()) {
+                return;
+            }
+            IAgent agent = RT.getAgent();
+            var coveredClasses = new LinkedList<String>();
+            byte[] executionData = agent.getExecutionData(true);
+            ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(executionData));
+            executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
+            executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName()));
+            try {
+                executionDataReader.read();
+                var name = testClass.getName();
+                Files.write(SKIPPY_DIRECTORY.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
+                        CREATE, TRUNCATE_EXISTING);
+                if (WRITE_EXEC_FILE) {
+                    Files.write(SKIPPY_DIRECTORY.resolve("%s.exec".formatted(name)), executionData,
+                            CREATE, TRUNCATE_EXISTING);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
+            }
+        });
     }
 
     private static boolean isSkippyCoverageBuild() {
