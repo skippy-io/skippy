@@ -45,8 +45,7 @@ public class SkippyCleanMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), (message) -> getLog().info(message),
-                new MavenClassFileCollector(project));
+        var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), new MavenClassFileCollector(project));
         if (executeGoal()) {
             skippyBuildApi.clearSkippyFolder();
             getLog().info("skippy:clean executed");

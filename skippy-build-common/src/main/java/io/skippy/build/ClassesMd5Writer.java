@@ -53,18 +53,15 @@ import static java.util.stream.Collectors.joining;
 final class ClassesMd5Writer {
 
     private final Path projectDir;
-    private final BuildLogger logger;
     private final ClassFileCollector classFileCollector;
 
-    ClassesMd5Writer(Path projectDir, BuildLogger logger, ClassFileCollector classFileCollector) {
+    ClassesMd5Writer(Path projectDir, ClassFileCollector classFileCollector) {
         this.projectDir = projectDir;
-        this.logger = logger;
         this.classFileCollector = classFileCollector;
     }
 
     void write() {
         try {
-            logger.log("Writing %s".formatted(SKIPPY_DIRECTORY.resolve(CLASSES_MD5_FILE)));
             var skippyAnalysisFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(CLASSES_MD5_FILE);
             skippyAnalysisFile.toFile().createNewFile();
             List<String> lines = new ArrayList<>();
