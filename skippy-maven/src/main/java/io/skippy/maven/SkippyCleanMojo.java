@@ -51,7 +51,7 @@ public class SkippyCleanMojo extends AbstractMojo {
             skippyBuildApi.clearSkippyFolder();
             getLog().info("skippy:clean executed");
         } else {
-            skippyBuildApi.deleteLogFiles();
+            skippyBuildApi.deleteLogFilesAndCreateSkippyFolderIfItDoesntExist();
             getLog().info("skippy:clean skipped");
         }
     }
