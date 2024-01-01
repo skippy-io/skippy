@@ -56,12 +56,10 @@ import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 final class CoverageFileCompactor {
 
     private final Path projectDir;
-    private final BuildLogger logger;
     private final ClassFileCollector classFileCollector;
 
-    CoverageFileCompactor(Path projectDir, BuildLogger logger, ClassFileCollector classFileCollector) {
+    CoverageFileCompactor(Path projectDir, ClassFileCollector classFileCollector) {
         this.projectDir = projectDir;
-        this.logger = logger;
         this.classFileCollector = classFileCollector;
     }
 
@@ -78,7 +76,6 @@ final class CoverageFileCompactor {
                         filteredLines.add(clazz.replace("/", "."));
                     }
                 }
-                logger.log("Writing %s".formatted(projectDir.relativize(SKIPPY_DIRECTORY.resolve(covFile.toPath()))));
                 Files.write(covFile.toPath(), filteredLines.stream().sorted().toList(), StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
             }
         } catch (IOException e) {

@@ -35,13 +35,12 @@ public final class SkippyBuildApi {
      * C'tor.
      *
      * @param projectDir the project folder
-     * @param buildLogger the {@link BuildLogger}
      * @param classFileCollector the {@link ClassFileCollector}
      */
-    public SkippyBuildApi(Path projectDir, BuildLogger buildLogger, ClassFileCollector classFileCollector) {
+    public SkippyBuildApi(Path projectDir, ClassFileCollector classFileCollector) {
         this.projectDir = projectDir;
-        this.classesMd5Writer = new ClassesMd5Writer(projectDir, buildLogger, classFileCollector);
-        this.coverageFileCompactor = new CoverageFileCompactor(projectDir, buildLogger, classFileCollector);
+        this.classesMd5Writer = new ClassesMd5Writer(projectDir, classFileCollector);
+        this.coverageFileCompactor = new CoverageFileCompactor(projectDir, classFileCollector);
     }
 
     /**

@@ -46,8 +46,7 @@ public class SkippyAnalyzeMojo extends AbstractMojo {
     @Override
     public void execute() {
         if (executeGoal()) {
-            var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), (message) -> getLog().info(message),
-                    new MavenClassFileCollector(project));
+            var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), new MavenClassFileCollector(project));
             project.getProperties().setProperty(SKIPPY_ANALYZE_MARKER, "true");
             skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
             getLog().info("skippy:analyze executed");
