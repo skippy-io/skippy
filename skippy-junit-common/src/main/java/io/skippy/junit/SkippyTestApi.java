@@ -69,11 +69,13 @@ public final class SkippyTestApi {
                     return decisions.get(test) == SkippyAnalysis.Decision.EXECUTE;
                 }
                 var decision = skippyAnalysis.decide(new FullyQualifiedClassName(test.getName()));
-                Files.writeString(
-                        SKIPPY_DIRECTORY.resolve(DECISION_LOG_FILE),
-                        "%s:%s:%s%s".formatted(test.getName(), decision.decision(), decision.reason(), System.lineSeparator()),
-                        StandardCharsets.UTF_8, CREATE, APPEND
-                );
+                if (SKIPPY_DIRECTORY.toFile().exists()) {
+                    Files.writeString(
+                            SKIPPY_DIRECTORY.resolve(DECISION_LOG_FILE),
+                            "%s:%s:%s%s".formatted(test.getName(), decision.decision(), decision.reason(), System.lineSeparator()),
+                            StandardCharsets.UTF_8, CREATE, APPEND
+                    );
+                }
                 decisions.put(test, decision.decision());
                 return decision.decision() == SkippyAnalysis.Decision.EXECUTE;
             } catch (IOException e) {
