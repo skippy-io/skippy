@@ -59,9 +59,6 @@ class SkippyAnalysis {
         }
     }
 
-
-    private static final Logger LOGGER = Logger.getLogger(SkippyAnalysis.class.getName());
-
     private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(HashedClasses.UNAVAILABLE, CoverageData.UNAVAILABLE);
     static final SkippyAnalysis INSTANCE = parse(SKIPPY_DIRECTORY);
 
@@ -93,15 +90,12 @@ class SkippyAnalysis {
     DecisionWithReason decide(FullyQualifiedClassName testFqn) {
         return Profiler.profile("SkippyAnalysis#decide", () -> {
             if (coverageData.noDataAvailableFor(testFqn)) {
-                LOGGER.info("%s: No coverage data found: Execution required".formatted(testFqn));
                 return DecisionWithReason.executeTest(NO_COVERAGE_DATA_FOR_TEST);
             }
             if (hashedClasses.noDataFor(testFqn)) {
-                LOGGER.info("%s: No hash found: Execution required".formatted(testFqn));
                 return DecisionWithReason.executeTest(NO_HASH_FOR_TEST);
             }
             if (hashedClasses.hasChanged(testFqn)) {
-                LOGGER.info("%s: Bytecode change detected: Execution required".formatted(testFqn));
                 return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_TEST);
             }
             return decideBasedOnCoveredClasses(testFqn);
@@ -111,21 +105,12 @@ class SkippyAnalysis {
     private DecisionWithReason decideBasedOnCoveredClasses(FullyQualifiedClassName testFqn) {
         for (var coveredClassFqn : coverageData.getCoveredClasses(testFqn)) {
             if (hashedClasses.hasChanged(coveredClassFqn)) {
-                LOGGER.info("%s: Bytecode change in covered class '%s' detected: Execution required".formatted(
-                        testFqn.fqn(),
-                        coveredClassFqn.fqn()
-                ));
                 return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_COVERED_CLASS);
             }
             if (hashedClasses.noDataFor(coveredClassFqn)) {
-                LOGGER.info("%s: No hash for covered class '%s' found: Execution required".formatted(
-                        testFqn.fqn(),
-                        coveredClassFqn.fqn()
-                ));
                 return DecisionWithReason.executeTest(NO_HASH_FOR_COVERED_CLASS);
             }
         }
-        LOGGER.info("%s: No changes in test or covered classes detected: Execution skipped".formatted(testFqn));
         return DecisionWithReason.skipTest(Reason.NO_CHANGE);
     }
 
