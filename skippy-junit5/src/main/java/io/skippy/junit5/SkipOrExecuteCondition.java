@@ -43,7 +43,7 @@ public final class SkipOrExecuteCondition implements ExecutionCondition {
 
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-        if (context.getTestInstance().isEmpty()) {
+        if (context.getTestClass().isEmpty()) {
             return ConditionEvaluationResult.enabled("");
         }
         if (skippyTestApi.testNeedsToBeExecuted(context.getTestClass().get())) {
