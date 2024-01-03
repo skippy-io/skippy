@@ -23,7 +23,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static io.skippy.junit.SkippyAnalysis.Reason;
-import static io.skippy.junit.SkippyAnalysis.Decision;
+import static io.skippy.junit.SkippyAnalysis.Prediction;
 
 /**
  * Tests for {@link SkippyAnalysis}.
@@ -37,9 +37,9 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test1").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.predict(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.SKIP, decisonWithReason.decision());
+        assertEquals(Prediction.SKIP, decisonWithReason.prediction());
         assertEquals(Reason.NO_CHANGE, decisonWithReason.reason());
     }
 
@@ -48,9 +48,9 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test2").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.predict(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
+        assertEquals(Prediction.EXECUTE, decisonWithReason.prediction());
         assertEquals(Reason.NO_COVERAGE_DATA_FOR_TEST, decisonWithReason.reason());
     }
 
@@ -59,9 +59,9 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test3").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.predict(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
+        assertEquals(Prediction.EXECUTE, decisonWithReason.prediction());
         assertEquals(Reason.BYTECODE_CHANGE_IN_TEST, decisonWithReason.reason());
     }
 
@@ -70,9 +70,9 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test4").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.predict(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
+        assertEquals(Prediction.EXECUTE, decisonWithReason.prediction());
         assertEquals(Reason.BYTECODE_CHANGE_IN_COVERED_CLASS, decisonWithReason.reason());
     }
 
@@ -81,9 +81,9 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test5").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.predict(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
+        assertEquals(Prediction.EXECUTE, decisonWithReason.prediction());
         assertEquals(Reason.NO_HASH_FOR_TEST, decisonWithReason.reason());
     }
 
@@ -92,9 +92,9 @@ public class SkippyAnalysisTest {
         var skippyFolder = Path.of(getClass().getResource("skippyanalysis/test6").toURI());
         var skippyAnalysis = SkippyAnalysis.parse(skippyFolder);
 
-        var decisonWithReason = skippyAnalysis.decide(new FullyQualifiedClassName("com.example.LeftPadderTest"));
+        var decisonWithReason = skippyAnalysis.predict(new FullyQualifiedClassName("com.example.LeftPadderTest"));
 
-        assertEquals(Decision.EXECUTE, decisonWithReason.decision());
+        assertEquals(Prediction.EXECUTE, decisonWithReason.prediction());
         assertEquals(Reason.NO_HASH_FOR_COVERED_CLASS, decisonWithReason.reason());
     }
 

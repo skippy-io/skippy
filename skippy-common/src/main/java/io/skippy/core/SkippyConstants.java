@@ -26,29 +26,29 @@ import java.nio.file.Path;
 public class SkippyConstants {
 
     /**
-     * The directory that contains the Skippy analysis.
+     * Directory that contains the Skippy analysis.
      */
     public static final Path SKIPPY_DIRECTORY = Path.of("skippy");
 
     /**
-     * The classes.md5 file that contains hashes for all class files.
+     * File with hashes of all class files.
      */
     public static final Path CLASSES_MD5_FILE = Path.of("classes.md5");
 
     /**
-     * The file that contains skip-or-execute decisions for all tests files.
+     * Log file for skip-or-execute predictions.
      */
-    public static final Path DECISION_LOG_FILE = Path.of("decisions.log");
+    public static final Path PREDICTIONS_LOG_FILE = Path.of("predictions.log");
 
     /**
-     * The file that contains profiling data.
+     * Log file for profiling data.
      */
     public static final Path PROFILING_LOG_FILE = Path.of("profiling.log");
 
     /**
-     * Environment variable that is set when a Skippy analysis is executed. It instructs Skippy's JUnit libraries
+     * Environment variable that is set when a Test Impact Analysis is running. It instructs Skippy's JUnit libraries
      * (e.g., skippy-junit5) to emit coverage data for skippified tests.
      */
-    public static final String SKIPPY_ANALYZE_MARKER = "skippyAnalyze";
+    public static final String TEST_IMPACT_ANALYSIS_RUNNING_MARKER = "skippyAnalyze";
 
 }

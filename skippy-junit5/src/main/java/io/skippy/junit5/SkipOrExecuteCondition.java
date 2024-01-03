@@ -22,7 +22,7 @@ import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
- * {@link ExecutionCondition} that makes skip-or-execute decisions for tests.
+ * {@link ExecutionCondition} that makes skip-or-execute predictions for tests.
  *
  * @author Florian McKee
  */

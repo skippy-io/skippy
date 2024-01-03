@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * API to query for skip-or-execute decisions and to trigger the generation of .cov files.
+ * API to query for skip-or-execute predictions and to trigger the generation of .cov files.
  *
  * @author Florian McKee
  */
@@ -50,7 +50,7 @@ public final class SkippyTestApi {
     public static final SkippyTestApi INSTANCE = new SkippyTestApi(SkippyAnalysis.INSTANCE);
 
     private final SkippyAnalysis skippyAnalysis;
-    private final Map<Class<?>, SkippyAnalysis.Decision> decisions = new ConcurrentHashMap<>();
+    private final Map<Class<?>, SkippyAnalysis.Prediction> predictions = new ConcurrentHashMap<>();
 
     private SkippyTestApi(SkippyAnalysis skippyAnalysis) {
         this.skippyAnalysis = skippyAnalysis;
@@ -65,19 +65,19 @@ public final class SkippyTestApi {
     public boolean testNeedsToBeExecuted(Class<?> test) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
-                if (decisions.containsKey(test)) {
-                    return decisions.get(test) == SkippyAnalysis.Decision.EXECUTE;
+                if (predictions.containsKey(test)) {
+                    return predictions.get(test) == SkippyAnalysis.Prediction.EXECUTE;
                 }
-                var decision = skippyAnalysis.decide(new FullyQualifiedClassName(test.getName()));
+                var predictionWithReason = skippyAnalysis.predict(new FullyQualifiedClassName(test.getName()));
                 if (SKIPPY_DIRECTORY.toFile().exists()) {
                     Files.writeString(
-                            SKIPPY_DIRECTORY.resolve(DECISION_LOG_FILE),
-                            "%s:%s:%s%s".formatted(test.getName(), decision.decision(), decision.reason(), System.lineSeparator()),
-                            StandardCharsets.UTF_8, CREATE, APPEND
+                        SKIPPY_DIRECTORY.resolve(PREDICTIONS_LOG_FILE),
+                        "%s:%s:%s%s".formatted(test.getName(), predictionWithReason.prediction(), predictionWithReason.reason(), System.lineSeparator()),
+                        StandardCharsets.UTF_8, CREATE, APPEND
                     );
                 }
-                decisions.put(test, decision.decision());
-                return decision.decision() == SkippyAnalysis.Decision.EXECUTE;
+                predictions.put(test, predictionWithReason.prediction());
+                return predictionWithReason.prediction() == SkippyAnalysis.Prediction.EXECUTE;
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -134,7 +134,7 @@ public final class SkippyTestApi {
     }
 
     private static boolean isTestImpactAnalysisBuild() {
-        return Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_MARKER)) || Boolean.valueOf(System.getenv().get(SKIPPY_ANALYZE_MARKER));
+        return Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING_MARKER)) || Boolean.valueOf(System.getenv().get(TEST_IMPACT_ANALYSIS_RUNNING_MARKER));
     }
 
 }

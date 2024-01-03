@@ -25,7 +25,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import static io.skippy.core.SkippyConstants.SKIPPY_ANALYZE_MARKER;
+import static io.skippy.core.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING_MARKER;
 
 /**
  * Clears the skippy folder (by calling {@link SkippyBuildApi#clearSkippyFolder()}).
@@ -56,7 +56,7 @@ public class SkippyCleanMojo extends AbstractMojo {
     }
 
     private boolean executeGoal() {
-        var isSkippyAnalyzeBuild = Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_MARKER));
+        var isSkippyAnalyzeBuild = Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING_MARKER));
         var goalExecutedDirectly = session.getRequest().getGoals().contains("skippy:clean");
         return isSkippyAnalyzeBuild || goalExecutedDirectly;
     }
