@@ -92,7 +92,7 @@ public final class SkippyTestApi {
     public static void prepareCoverageDataCaptureFor(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareCoverageDataCaptureFor", () -> {
             // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
-            if (!isSkippyCoverageBuild()) {
+            if (!isTestImpactAnalysisBuild()) {
                 return;
             }
             IAgent agent = RT.getAgent();
@@ -109,7 +109,7 @@ public final class SkippyTestApi {
     public static void captureCoverageDataFor(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#captureCoverageDataFor", () -> {
             // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
-            if ( ! isSkippyCoverageBuild()) {
+            if ( ! isTestImpactAnalysisBuild()) {
                 return;
             }
             IAgent agent = RT.getAgent();
@@ -133,7 +133,7 @@ public final class SkippyTestApi {
         });
     }
 
-    private static boolean isSkippyCoverageBuild() {
+    private static boolean isTestImpactAnalysisBuild() {
         return Boolean.valueOf(System.getProperty(SKIPPY_ANALYZE_MARKER)) || Boolean.valueOf(System.getenv().get(SKIPPY_ANALYZE_MARKER));
     }
 
