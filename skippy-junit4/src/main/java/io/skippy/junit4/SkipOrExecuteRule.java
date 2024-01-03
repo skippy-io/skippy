@@ -22,7 +22,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * {@link TestRule} that makes skip-or-execute decisions for test.
+ * {@link TestRule} that makes skip-or-execute predictions for test.
  *
  * @author Florian McKee
  */

@@ -20,7 +20,6 @@ import io.skippy.core.Profiler;
 import io.skippy.core.SkippyConstants;
 
 import java.nio.file.Path;
-import java.util.logging.Logger;
 
 import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 import static io.skippy.junit.SkippyAnalysis.Reason.*;
@@ -45,17 +44,17 @@ class SkippyAnalysis {
         BYTECODE_CHANGE_IN_COVERED_CLASS
     }
 
-    enum Decision {
+    enum Prediction {
         EXECUTE,
         SKIP
     }
 
-    record DecisionWithReason(Decision decision, Reason reason) {
-        static DecisionWithReason executeTest(Reason reason) {
-            return new DecisionWithReason(Decision.EXECUTE, reason);
+    record PredictionWithReason(Prediction prediction, Reason reason) {
+        static PredictionWithReason execute(Reason reason) {
+            return new PredictionWithReason(Prediction.EXECUTE, reason);
         }
-        static DecisionWithReason skipTest(Reason reason) {
-            return new DecisionWithReason(Decision.SKIP, reason);
+        static PredictionWithReason skip(Reason reason) {
+            return new PredictionWithReason(Prediction.SKIP, reason);
         }
     }
 
@@ -87,31 +86,31 @@ class SkippyAnalysis {
         });
     }
 
-    DecisionWithReason decide(FullyQualifiedClassName testFqn) {
-        return Profiler.profile("SkippyAnalysis#decide", () -> {
+    PredictionWithReason predict(FullyQualifiedClassName testFqn) {
+        return Profiler.profile("SkippyAnalysis#predict", () -> {
             if (coverageData.noDataAvailableFor(testFqn)) {
-                return DecisionWithReason.executeTest(NO_COVERAGE_DATA_FOR_TEST);
+                return PredictionWithReason.execute(NO_COVERAGE_DATA_FOR_TEST);
             }
             if (hashedClasses.noDataFor(testFqn)) {
-                return DecisionWithReason.executeTest(NO_HASH_FOR_TEST);
+                return PredictionWithReason.execute(NO_HASH_FOR_TEST);
             }
             if (hashedClasses.hasChanged(testFqn)) {
-                return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_TEST);
+                return PredictionWithReason.execute(BYTECODE_CHANGE_IN_TEST);
             }
-            return decideBasedOnCoveredClasses(testFqn);
+            return predictBasedOnCoveredClasses(testFqn);
         });
     }
 
-    private DecisionWithReason decideBasedOnCoveredClasses(FullyQualifiedClassName testFqn) {
+    private PredictionWithReason predictBasedOnCoveredClasses(FullyQualifiedClassName testFqn) {
         for (var coveredClassFqn : coverageData.getCoveredClasses(testFqn)) {
             if (hashedClasses.hasChanged(coveredClassFqn)) {
-                return DecisionWithReason.executeTest(BYTECODE_CHANGE_IN_COVERED_CLASS);
+                return PredictionWithReason.execute(BYTECODE_CHANGE_IN_COVERED_CLASS);
             }
             if (hashedClasses.noDataFor(coveredClassFqn)) {
-                return DecisionWithReason.executeTest(NO_HASH_FOR_COVERED_CLASS);
+                return PredictionWithReason.execute(NO_HASH_FOR_COVERED_CLASS);
             }
         }
-        return DecisionWithReason.skipTest(Reason.NO_CHANGE);
+        return PredictionWithReason.skip(Reason.NO_CHANGE);
     }
 
 }
