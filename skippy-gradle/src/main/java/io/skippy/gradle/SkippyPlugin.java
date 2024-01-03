@@ -17,7 +17,6 @@
 package io.skippy.gradle;
 
 import org.gradle.api.Project;
-import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
 /**
  * The Skippy plugin adds the
@@ -35,7 +34,6 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        project.getPlugins().apply(JacocoPlugin.class);
         project.getTasks().register("skippyClean", SkippyCleanTask.class);
         project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
         project.afterEvaluate(action ->

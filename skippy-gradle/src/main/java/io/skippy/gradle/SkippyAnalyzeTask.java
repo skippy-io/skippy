@@ -24,6 +24,7 @@ import org.gradle.api.tasks.testing.Test;
 import javax.inject.Inject;
 
 import io.skippy.core.SkippyConstants;
+import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
 /**
  * Triggers a Skippy analysis that will populate the skippy folder with
@@ -41,6 +42,7 @@ class SkippyAnalyzeTask extends DefaultTask {
     @Inject
     public SkippyAnalyzeTask() {
         setGroup("skippy");
+        getProject().getPlugins().apply(JacocoPlugin.class);
         SkippyBuildApiFactory.getInstanceFor(this).ifPresent(skippyBuildApi -> {
             // set up task dependencies
             for (var sourceSet : getProject().getExtensions().getByType(SourceSetContainer.class)) {
