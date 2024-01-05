@@ -17,10 +17,7 @@
 package io.skippy.junit5;
 
 import io.skippy.junit.SkippyTestApi;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
-import org.junit.jupiter.api.extension.TestInstancePreConstructCallback;
-import org.junit.jupiter.api.extension.TestInstancePreDestroyCallback;
+import org.junit.jupiter.api.extension.*;
 
 import static io.skippy.junit.SkippyExceptionHandler.executeAndHandleKnownExceptions;
 
@@ -30,21 +27,19 @@ import static io.skippy.junit.SkippyExceptionHandler.executeAndHandleKnownExcept
  *
  * @author Florian McKee
  */
-public final class CoverageFileCallbacks implements TestInstancePreConstructCallback, TestInstancePreDestroyCallback {
-
+public final class CoverageFileCallbacks implements BeforeAllCallback, AfterAllCallback {
 
     @Override
-    public void preConstructTestInstance(TestInstanceFactoryContext factoryContext, ExtensionContext context) {
+    public void beforeAll(ExtensionContext context) {
         executeAndHandleKnownExceptions(() -> {
             context.getTestClass().ifPresent(SkippyTestApi::prepareCoverageDataCaptureFor);
         });
     }
 
     @Override
-    public void preDestroyTestInstance(ExtensionContext context) {
+    public void afterAll(ExtensionContext context) {
         executeAndHandleKnownExceptions(() -> {
             context.getTestClass().ifPresent(SkippyTestApi::captureCoverageDataFor);
         });
     }
-
 }
