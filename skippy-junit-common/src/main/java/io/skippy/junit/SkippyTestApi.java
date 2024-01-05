@@ -92,8 +92,7 @@ public final class SkippyTestApi {
      */
     public static void prepareCoverageDataCaptureFor(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareCoverageDataCaptureFor", () -> {
-            // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
-            if (!isTestImpactAnalysisBuild()) {
+            if ( ! testImpactAnalysisIsRunning()) {
                 return;
             }
             swallowJaCoCoExceptions(() -> {
@@ -112,7 +111,7 @@ public final class SkippyTestApi {
     public static void captureCoverageDataFor(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#captureCoverageDataFor", () -> {
             // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
-            if ( ! isTestImpactAnalysisBuild()) {
+            if ( ! testImpactAnalysisIsRunning()) {
                 return;
             }
             swallowJaCoCoExceptions(() -> {
@@ -142,7 +141,8 @@ public final class SkippyTestApi {
         }
     }
 
-    private static boolean isTestImpactAnalysisBuild() {
+    private static boolean testImpactAnalysisIsRunning() {
+        // the property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
         return Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING)) ||
                 Boolean.valueOf(System.getenv().get(TEST_IMPACT_ANALYSIS_RUNNING));
     }
