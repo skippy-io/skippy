@@ -25,7 +25,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import static io.skippy.core.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING_MARKER;
+import static io.skippy.core.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING;
 
 /**
  * Compacts the {@code .cov} file in the skippy folder and writes the {@code classes.md5} file.
@@ -47,7 +47,7 @@ public class SkippyAnalyzeMojo extends AbstractMojo {
     public void execute() {
         if (executeGoal()) {
             var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), new MavenClassFileCollector(project));
-            project.getProperties().setProperty(TEST_IMPACT_ANALYSIS_RUNNING_MARKER, "true");
+            project.getProperties().setProperty(TEST_IMPACT_ANALYSIS_RUNNING, "true");
             skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
             getLog().info("skippy:analyze executed");
         } else {
@@ -56,7 +56,7 @@ public class SkippyAnalyzeMojo extends AbstractMojo {
     }
 
     private boolean executeGoal() {
-        var isSkippyAnalyzeBuild = Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING_MARKER));
+        var isSkippyAnalyzeBuild = Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING));
         var goalExecutedDirectly = session.getRequest().getGoals().contains("skippy:analyze");
         return isSkippyAnalyzeBuild || goalExecutedDirectly;
     }

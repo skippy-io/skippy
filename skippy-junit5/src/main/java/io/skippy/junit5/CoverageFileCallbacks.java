@@ -19,11 +19,8 @@ package io.skippy.junit5;
 import io.skippy.junit.SkippyTestApi;
 import org.junit.jupiter.api.extension.*;
 
-import static io.skippy.junit.SkippyExceptionHandler.executeAndHandleKnownExceptions;
-
 /**
- * Callbacks that notify the {@link SkippyTestApi} before and after the execution of a test.
- * The {@link SkippyTestApi} uses those notifications to generate a coverage file for the test.
+ * Callbacks that trigger the capture of coverage data for a test class.
  *
  * @author Florian McKee
  */
@@ -31,15 +28,11 @@ public final class CoverageFileCallbacks implements BeforeAllCallback, AfterAllC
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        executeAndHandleKnownExceptions(() -> {
-            context.getTestClass().ifPresent(SkippyTestApi::prepareCoverageDataCaptureFor);
-        });
+        context.getTestClass().ifPresent(SkippyTestApi::prepareCoverageDataCaptureFor);
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
-        executeAndHandleKnownExceptions(() -> {
-            context.getTestClass().ifPresent(SkippyTestApi::captureCoverageDataFor);
-        });
+        context.getTestClass().ifPresent(SkippyTestApi::captureCoverageDataFor);
     }
 }

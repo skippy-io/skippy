@@ -57,7 +57,7 @@ class SkippyAnalyzeTask extends DefaultTask {
 
             if (isSkippyAnalyzeBuild(getProject())) {
                 getProject().getTasks().withType(Test.class,
-                        test -> test.environment(SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING_MARKER, true)
+                        test -> test.environment(SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING, true)
                 );
             }
         });

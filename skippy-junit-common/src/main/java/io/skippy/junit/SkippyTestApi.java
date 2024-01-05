@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import static io.skippy.core.SkippyConstants.*;
+import static io.skippy.junit.JaCoCoExceptionHandler.swallowJaCoCoExceptions;
 import static java.nio.file.StandardOpenOption.*;
 
 import java.util.LinkedList;
@@ -95,8 +96,10 @@ public final class SkippyTestApi {
             if (!isTestImpactAnalysisBuild()) {
                 return;
             }
-            IAgent agent = RT.getAgent();
-            agent.reset();
+            swallowJaCoCoExceptions(() -> {
+                IAgent agent = RT.getAgent();
+                agent.reset();
+            });
         });
     }
 
@@ -112,29 +115,36 @@ public final class SkippyTestApi {
             if ( ! isTestImpactAnalysisBuild()) {
                 return;
             }
-            IAgent agent = RT.getAgent();
-            var coveredClasses = new LinkedList<String>();
-            byte[] executionData = agent.getExecutionData(true);
-            ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(executionData));
-            executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
-            executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName()));
-            try {
-                executionDataReader.read();
-                var name = testClass.getName();
-                Files.write(SKIPPY_DIRECTORY.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
-                        CREATE, TRUNCATE_EXISTING);
-                if (WRITE_EXEC_FILE) {
-                    Files.write(SKIPPY_DIRECTORY.resolve("%s.exec".formatted(name)), executionData,
-                            CREATE, TRUNCATE_EXISTING);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
-            }
+            swallowJaCoCoExceptions(() -> {
+                writeCovFileFor(testClass);
+            });
         });
     }
 
+    private static void writeCovFileFor(Class<?> testClass) {
+        IAgent agent = RT.getAgent();
+        var coveredClasses = new LinkedList<String>();
+        byte[] executionData = agent.getExecutionData(true);
+        ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(executionData));
+        executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
+        executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName()));
+        try {
+            executionDataReader.read();
+            var name = testClass.getName();
+            Files.write(SKIPPY_DIRECTORY.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
+                    CREATE, TRUNCATE_EXISTING);
+            if (WRITE_EXEC_FILE) {
+                Files.write(SKIPPY_DIRECTORY.resolve("%s.exec".formatted(name)), executionData,
+                        CREATE, TRUNCATE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
+        }
+    }
+
     private static boolean isTestImpactAnalysisBuild() {
-        return Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING_MARKER)) || Boolean.valueOf(System.getenv().get(TEST_IMPACT_ANALYSIS_RUNNING_MARKER));
+        return Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING)) ||
+                Boolean.valueOf(System.getenv().get(TEST_IMPACT_ANALYSIS_RUNNING));
     }
 
 }
