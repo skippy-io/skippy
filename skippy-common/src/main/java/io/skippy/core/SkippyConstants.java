@@ -49,6 +49,6 @@ public class SkippyConstants {
      * Environment variable that is set when a Test Impact Analysis is running. It instructs Skippy's JUnit libraries
      * (e.g., skippy-junit5) to emit coverage data for skippified tests.
      */
-    public static final String TEST_IMPACT_ANALYSIS_RUNNING_MARKER = "skippyAnalyze";
+    public static final String TEST_IMPACT_ANALYSIS_RUNNING = "skippyAnalyze";
 
 }

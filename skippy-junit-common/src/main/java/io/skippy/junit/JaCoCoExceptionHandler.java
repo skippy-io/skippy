@@ -19,20 +19,21 @@ package io.skippy.junit;
 import java.util.logging.Logger;
 
 /**
- * Performs helpful logging for exceptions with known root causes.
+ * Swallows certain JaCoCo related exceptions to prevent builds being broken by Skippy.
  *
  * @author Florian McKee
  */
-public class SkippyExceptionHandler {
+class JaCoCoExceptionHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(SkippyExceptionHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JaCoCoExceptionHandler.class.getName());
 
     /**
-     * Executes the {@code runnable} and performs helpful logging for exceptions with known root cause
+     * Executes the {@code runnable} and swallows certain JaCoCo related exceptions to prevent builds being broken by
+     * Skippy.
      *
      * @param runnable a {@link Runnable}
      */
-    public static void executeAndHandleKnownExceptions(Runnable runnable) {
+    static void swallowJaCoCoExceptions(Runnable runnable) {
         try {
             runnable.run();
         } catch (NoClassDefFoundError e) {
