@@ -89,7 +89,8 @@ public class Profiler {
      * Writes the results to the profiling.log file in the skippy folder.
      */
     static void writeResults() {
-        if ( ! SKIPPY_DIRECTORY.toFile().exists()) {
+        var skippyFolder = SkippyUtils.getSkippyFolder();
+        if ( ! skippyFolder.toFile().exists()) {
             return;
         }
         var result =  "=== %s ===%s%s%s%s".formatted(
@@ -102,7 +103,7 @@ public class Profiler {
                 System.lineSeparator(),
                 System.lineSeparator());
         try {
-            Files.writeString(SKIPPY_DIRECTORY.resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
+            Files.writeString(skippyFolder.resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

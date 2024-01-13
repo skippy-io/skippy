@@ -16,6 +16,8 @@
 
 package io.skippy.build;
 
+import io.skippy.core.SkippyUtils;
+
 import java.nio.file.Path;
 
 import static io.skippy.core.SkippyConstants.*;
@@ -59,7 +61,7 @@ public final class SkippyBuildApi {
      * Removes the skippy folder.
      */
     public void removeSkippyFolder() {
-        var skippyFolder = projectDir.resolve(SKIPPY_DIRECTORY).toFile();
+        var skippyFolder = SkippyUtils.getSkippyFolder(projectDir).toFile();
         if (skippyFolder.exists()) {
             for (var file : skippyFolder.listFiles()) {
                 file.delete();
@@ -72,7 +74,7 @@ public final class SkippyBuildApi {
      * Removes log files from the skippy folder.
      */
     public void deleteLogFiles() {
-        var skippyFolder = projectDir.resolve(SKIPPY_DIRECTORY);
+        var skippyFolder = SkippyUtils.getSkippyFolder(projectDir);
 
         var predictionsLog = skippyFolder.resolve(PREDICTIONS_LOG_FILE).toFile();
         if (predictionsLog.exists()) {
