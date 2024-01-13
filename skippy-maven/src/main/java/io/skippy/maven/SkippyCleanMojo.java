@@ -28,7 +28,7 @@ import org.apache.maven.project.MavenProject;
 import static io.skippy.core.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING;
 
 /**
- * Clears the skippy folder (by calling {@link SkippyBuildApi#clearSkippyFolder()}).
+ * Clears the skippy folder (by calling {@link SkippyBuildApi#removeSkippyFolder()}).
  * <br /><br />
  * Direct invocation: {@code mvn skippy:clean}
  *
@@ -47,10 +47,10 @@ public class SkippyCleanMojo extends AbstractMojo {
     public void execute() {
         var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), new MavenClassFileCollector(project));
         if (executeGoal()) {
-            skippyBuildApi.clearSkippyFolder();
+            skippyBuildApi.removeSkippyFolder();
             getLog().info("skippy:clean executed");
         } else {
-            skippyBuildApi.deleteLogFilesAndCreateSkippyFolderIfItDoesntExist();
+            skippyBuildApi.deleteLogFiles();
             getLog().info("skippy:clean skipped");
         }
     }

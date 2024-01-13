@@ -51,23 +51,14 @@ class SkippyAnalyzeTask extends DefaultTask {
             dependsOn("clean", "skippyClean", "check");
             getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
 
-            doLast((task) -> {
-                skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
-            });
+            doLast(task ->
+                skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles()
+            );
 
-            if (isSkippyAnalyzeBuild(getProject())) {
-                getProject().getTasks().withType(Test.class,
-                        test -> test.environment(SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING, true)
-                );
-            }
+            getProject().getTasks().withType(Test.class, test ->
+                    test.environment(SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING, true)
+            );
         });
-    }
-
-    private static boolean isSkippyAnalyzeBuild(Project project) {
-        var taskRequests = project.getGradle().getStartParameter().getTaskRequests();
-        return taskRequests.stream().anyMatch(
-                request -> request.getArgs().stream().anyMatch(task -> task.endsWith("skippyAnalyze"))
-        );
     }
 
 }

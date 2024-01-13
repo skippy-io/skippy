@@ -56,23 +56,20 @@ public final class SkippyBuildApi {
     }
 
     /**
-     * Clears the skippy directory.
+     * Removes the skippy folder.
      */
-    public void clearSkippyFolder() {
-        if (! projectDir.resolve(SKIPPY_DIRECTORY).toFile().exists()) {
-            projectDir.resolve(SKIPPY_DIRECTORY).toFile().mkdir();
-        }
-        for (var file : projectDir.resolve(SKIPPY_DIRECTORY).toFile().listFiles()) {
-            file.delete();
+    public void removeSkippyFolder() {
+        var skippyFolder = projectDir.resolve(SKIPPY_DIRECTORY).toFile();
+        if (skippyFolder.exists()) {
+            skippyFolder.delete();
         }
     }
 
     /**
-     * Creates the skippy folder if it doesn't exist and removes log files.
+     * Removes log files from the skippy folder.
      */
-    public void deleteLogFilesAndCreateSkippyFolderIfItDoesntExist() {
+    public void deleteLogFiles() {
         var skippyFolder = projectDir.resolve(SKIPPY_DIRECTORY);
-        skippyFolder.toFile().mkdirs();
 
         var predictionsLog = skippyFolder.resolve(PREDICTIONS_LOG_FILE).toFile();
         if (predictionsLog.exists()) {

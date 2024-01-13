@@ -70,13 +70,16 @@ public final class SkippyTestApi {
                     return predictions.get(test) == SkippyAnalysis.Prediction.EXECUTE;
                 }
                 var predictionWithReason = skippyAnalysis.predict(new FullyQualifiedClassName(test.getName()));
-                if (SKIPPY_DIRECTORY.toFile().exists()) {
-                    Files.writeString(
-                        SKIPPY_DIRECTORY.resolve(PREDICTIONS_LOG_FILE),
-                        "%s:%s:%s%s".formatted(test.getName(), predictionWithReason.prediction(), predictionWithReason.reason(), System.lineSeparator()),
-                        StandardCharsets.UTF_8, CREATE, APPEND
-                    );
+
+                if ( ! SKIPPY_DIRECTORY.toFile().exists()) {
+                    SKIPPY_DIRECTORY.toFile().mkdirs();
                 }
+
+                Files.writeString(
+                    SKIPPY_DIRECTORY.resolve(PREDICTIONS_LOG_FILE),
+                    "%s:%s:%s%s".formatted(test.getName(), predictionWithReason.prediction(), predictionWithReason.reason(), System.lineSeparator()),
+                    StandardCharsets.UTF_8, CREATE, APPEND
+                );
                 predictions.put(test, predictionWithReason.prediction());
                 return predictionWithReason.prediction() == SkippyAnalysis.Prediction.EXECUTE;
             } catch (IOException e) {
@@ -130,6 +133,11 @@ public final class SkippyTestApi {
         try {
             executionDataReader.read();
             var name = testClass.getName();
+
+            if ( ! SKIPPY_DIRECTORY.toFile().exists()) {
+                SKIPPY_DIRECTORY.toFile().mkdirs();
+            }
+
             Files.write(SKIPPY_DIRECTORY.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
                     CREATE, TRUNCATE_EXISTING);
             if (WRITE_EXEC_FILE) {
