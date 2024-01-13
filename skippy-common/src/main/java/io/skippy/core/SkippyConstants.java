@@ -28,7 +28,7 @@ public class SkippyConstants {
     /**
      * Directory that contains the Skippy analysis.
      */
-    static final Path SKIPPY_DIRECTORY = Path.of("skippy");
+    static final Path SKIPPY_DIRECTORY = Path.of(".skippy");
 
     /**
      * File with hashes of all class files.
