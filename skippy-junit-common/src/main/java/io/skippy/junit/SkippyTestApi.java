@@ -17,6 +17,7 @@
 package io.skippy.junit;
 
 import io.skippy.core.Profiler;
+import io.skippy.core.SkippyUtils;
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
 import org.jacoco.core.data.ExecutionDataReader;
@@ -71,12 +72,8 @@ public final class SkippyTestApi {
                 }
                 var predictionWithReason = skippyAnalysis.predict(new FullyQualifiedClassName(test.getName()));
 
-                if ( ! SKIPPY_DIRECTORY.toFile().exists()) {
-                    SKIPPY_DIRECTORY.toFile().mkdirs();
-                }
-
                 Files.writeString(
-                    SKIPPY_DIRECTORY.resolve(PREDICTIONS_LOG_FILE),
+                    SkippyUtils.getOrCreateSkippyFolder().resolve(PREDICTIONS_LOG_FILE),
                     "%s:%s:%s%s".formatted(test.getName(), predictionWithReason.prediction(), predictionWithReason.reason(), System.lineSeparator()),
                     StandardCharsets.UTF_8, CREATE, APPEND
                 );
@@ -133,16 +130,10 @@ public final class SkippyTestApi {
         try {
             executionDataReader.read();
             var name = testClass.getName();
-
-            if ( ! SKIPPY_DIRECTORY.toFile().exists()) {
-                SKIPPY_DIRECTORY.toFile().mkdirs();
-            }
-
-            Files.write(SKIPPY_DIRECTORY.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8,
-                    CREATE, TRUNCATE_EXISTING);
+            var skippyFolder = SkippyUtils.getOrCreateSkippyFolder();
+            Files.write(skippyFolder.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
             if (WRITE_EXEC_FILE) {
-                Files.write(SKIPPY_DIRECTORY.resolve("%s.exec".formatted(name)), executionData,
-                        CREATE, TRUNCATE_EXISTING);
+                Files.write(skippyFolder.resolve("%s.exec".formatted(name)), executionData, CREATE, TRUNCATE_EXISTING);
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);

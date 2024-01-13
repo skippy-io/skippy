@@ -17,6 +17,8 @@
 package io.skippy.build;
 
 
+import io.skippy.core.SkippyUtils;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
@@ -24,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.skippy.core.SkippyConstants.CLASSES_MD5_FILE;
-import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.Files.writeString;
 import static java.util.stream.Collectors.joining;
@@ -62,10 +63,7 @@ final class ClassesMd5Writer {
 
     void write() {
         try {
-            if ( ! SKIPPY_DIRECTORY.toFile().exists()) {
-                SKIPPY_DIRECTORY.toFile().mkdirs();
-            }
-            var skippyAnalysisFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(CLASSES_MD5_FILE);
+            var skippyAnalysisFile = SkippyUtils.getOrCreateSkippyFolder(projectDir).resolve(CLASSES_MD5_FILE);
             skippyAnalysisFile.toFile().createNewFile();
             List<String> lines = new ArrayList<>();
             for (var directoryWithClasses : classFileCollector.collect()) {

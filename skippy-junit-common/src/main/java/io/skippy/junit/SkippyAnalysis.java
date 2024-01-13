@@ -18,10 +18,10 @@ package io.skippy.junit;
 
 import io.skippy.core.Profiler;
 import io.skippy.core.SkippyConstants;
+import io.skippy.core.SkippyUtils;
 
 import java.nio.file.Path;
 
-import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 import static io.skippy.junit.SkippyAnalysis.Reason.*;
 
 /**
@@ -59,7 +59,7 @@ class SkippyAnalysis {
     }
 
     private static final SkippyAnalysis UNAVAILABLE = new SkippyAnalysis(HashedClasses.UNAVAILABLE, CoverageData.UNAVAILABLE);
-    static final SkippyAnalysis INSTANCE = parse(SKIPPY_DIRECTORY);
+    static final SkippyAnalysis INSTANCE = parse(SkippyUtils.getSkippyFolder());
 
     private final HashedClasses hashedClasses;
     private final CoverageData coverageData;

@@ -17,6 +17,8 @@
 package io.skippy.build;
 
 
+import io.skippy.core.SkippyUtils;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,8 +26,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.skippy.core.SkippyConstants.SKIPPY_DIRECTORY;
 
 /**
  * Removes all entries from .cov files in the skippy folder that do not have corresponding class file in one of the
@@ -69,7 +69,7 @@ final class CoverageFileCompactor {
                     .flatMap(dir -> dir.classFiles().stream())
                     .map(ClassFile::getFullyQualifiedClassName)
                     .toList();
-            for (var covFile : projectDir.resolve(SKIPPY_DIRECTORY).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov"))) {
+            for (var covFile : SkippyUtils.getOrCreateSkippyFolder(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov"))) {
                 List<String> filteredLines = new ArrayList<>();
                 for (String clazz : Files.readAllLines(covFile.toPath(), StandardCharsets.UTF_8)) {
                     if (fullyQualifiedClassNames.contains(clazz.replace("/", "."))) {
