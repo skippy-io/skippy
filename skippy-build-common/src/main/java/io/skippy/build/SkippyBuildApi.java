@@ -61,6 +61,9 @@ public final class SkippyBuildApi {
     public void removeSkippyFolder() {
         var skippyFolder = projectDir.resolve(SKIPPY_DIRECTORY).toFile();
         if (skippyFolder.exists()) {
+            for (var file : skippyFolder.listFiles()) {
+                file.delete();
+            }
             skippyFolder.delete();
         }
     }
