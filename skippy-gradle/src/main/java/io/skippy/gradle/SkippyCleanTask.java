@@ -33,7 +33,7 @@ class SkippyCleanTask extends DefaultTask {
         setGroup("skippy");
         SkippyBuildApiFactory.getInstanceFor(this).ifPresent(skippyBuildApi -> {
             doLast((task) -> {
-                skippyBuildApi.clearSkippyFolder();
+                skippyBuildApi.removeSkippyFolder();
             });
         });
     }
