@@ -62,6 +62,9 @@ final class ClassesMd5Writer {
 
     void write() {
         try {
+            if ( ! SKIPPY_DIRECTORY.toFile().exists()) {
+                SKIPPY_DIRECTORY.toFile().mkdirs();
+            }
             var skippyAnalysisFile = projectDir.resolve(SKIPPY_DIRECTORY).resolve(CLASSES_MD5_FILE);
             skippyAnalysisFile.toFile().createNewFile();
             List<String> lines = new ArrayList<>();
