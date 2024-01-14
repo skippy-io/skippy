@@ -112,13 +112,17 @@ public class OssrhPublishPlugin implements Plugin<Project> {
                     });
                 });
 
-                project.getExtensions().configure(SigningExtension.class, signing -> {
-                    signing.useInMemoryPgpKeys(
-                            System.getenv("SKIPPY_PRIVATE_KEY"),
-                            System.getenv("SKIPPY_PRIVATE_KEY_SECRET")
-                    );
-                    signing.sign(publication);
-                });
+                var signingKey = System.getenv("SKIPPY_PRIVATE_KEY");
+                var signingKeySecret = System.getenv("SKIPPY_PRIVATE_KEY_SECRET");
+
+                if (signingKey != null && signingKeySecret != null) {
+                    project.getExtensions().configure(SigningExtension.class, signing -> {
+                        signing.useInMemoryPgpKeys(signingKey, signingKeySecret);
+                        signing.sign(publication);
+                    });
+                } else {
+                    project.getLogger().debug("Environment variables SKIPPY_PRIVATE_KEY / SKIPPY_PRIVATE_KEY_SECRET not set: Skipping signing of artifacts.");
+                }
             });
         });
 
