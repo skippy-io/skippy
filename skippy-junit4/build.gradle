@@ -5,7 +5,7 @@ plugins {
 
 ossrhPublish {
     title = 'skippy-junit4'
-    description = 'Skippy\'s Conditional Test Execution for JUnit 4'
+    description = 'Skippy\'s Predictive Test Selection for JUnit 4'
 }
 
 dependencies {

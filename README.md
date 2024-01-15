@@ -49,15 +49,15 @@ Let's take a whirlwind tour of Skippy.
 
 ```groovy
     plugins {
-+       id 'io.skippy' version '0.0.13'
++       id 'io.skippy' version '0.0.14'
     }
     
     dependencies {
-+       testImplementation 'io.skippy:skippy-junit5:0.0.13'
++       testImplementation 'io.skippy:skippy-junit5:0.0.14'
     }
 ```
 
-### Step 2: Annotate your tests with `@Skippified`
+### Step 2: Skippify your tests
 
 ```java
 +    import io.skippy.junit5.Skippified;
@@ -79,7 +79,7 @@ Let's take a whirlwind tour of Skippy.
 ./gradlew skippyAnalyze
 ```
 
-`skippyAnalyze` stores a bunch of files in the skippy folder:
+`skippyAnalyze` stores impact data for skippified tests in the .skippy folder:
 
 ```
 classes.md5
@@ -96,9 +96,8 @@ FooTest > testFoo() SKIPPED
 BarTest > testBar() SKIPPED
 ```
 
-Skippy examines the current state of the project and compares it with the data in the
-skippy folder. It then makes skip-or-execute predictions for each skippified test. If nothing has changed, all 
-skippified tests will be skipped.
+Skippy examines the current state of the project and compares it with the data in the .skippy folder. It then makes
+skip-or-execute predictions for skippified test. If nothing has changed, skippified tests will be skipped.
 
 ### Step 5: Testing after modifications
 
@@ -129,8 +128,8 @@ regression is caught quickly, since only `FooTest` was executed.
 
 ## Use Skippy In Your CI Pipeline
 
-It's safe to add the skippy folder to version control. This will automatically enable Skippy's Predictive Test
-Selection when your pipeline runs. Support to store a Test Impact Analysis outside the filesystem (e.g., a
+It's safe to add the .skippy folder to version control. This will automatically enable Skippy's Predictive Test
+Selection when your pipeline runs. Support to store impact data outside the filesystem (e.g., a
 database) is on the roadmap: https://github.com/skippy-io/skippy/issues/104
 
 ## Contributions & Issues
