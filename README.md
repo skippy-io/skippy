@@ -43,9 +43,9 @@ From there, good next steps are:
 
 ## Teaser
 
-Let's take a look at Skippy in action.  
+Let's take a whirlwind tour of Skippy. 
 
-Step 1: Add the Skippy plugin and JUnit library to your build file:
+### Step 1: Add the Skippy plugin and JUnit library to your build file
 
 ```groovy
     plugins {
@@ -57,18 +57,23 @@ Step 1: Add the Skippy plugin and JUnit library to your build file:
     }
 ```
 
-Step 2: Annotate your tests with `@Skippified`:
+### Step 2: Annotate your tests with `@Skippified`
 
 ```java
 +    import io.skippy.junit5.Skippified;
 
 +    @Skippified
-     public class FooTest {
-         ...   
+     public class FooTest {     
+
+         @Test
+         public void testDoSomething() {
+             assertEquals("foo", Foo.doSomething());
+         }
+
      }
 ```
 
-Step 3: Perform a Test Impact Analysis:
+### Step 3: Perform a Test Impact Analysis
 
 ```
 ./gradlew skippyAnalyze
@@ -82,10 +87,7 @@ com.example.FooTest.cov
 com.example.BarTest.cov
 ```
 
-Step 4: Run your tests
-
-Each time your tests run, Skippy examines the current state of the project and compares it with the data in the 
-skippy folder. It then makes skip-or-execute predictions for each skippified test:
+### Step 4: Run your tests
 
 ```
 ./gradlew test
@@ -94,10 +96,26 @@ FooTest > testFoo() SKIPPED
 BarTest > testBar() SKIPPED
 ```
 
-Step 5: Testing after modifications
+Skippy examines the current state of the project and compares it with the data in the
+skippy folder. It then makes skip-or-execute predictions for each skippified test. If nothing has changed, all 
+skippified tests will be skipped.
 
-Now, assume a bug was introduces in class `Foo`. Skippy detects the change and makes an execute prediction for `FooTest` 
-and a skip prediction for `BarTest`:
+### Step 5: Testing after modifications
+
+Introduce a bug in class `Foo`:
+```java
+     class Foo {
+    
+         static String doSomething() {
+-            return "foo";
++            return "null";
+         }
+         
+     }
+
+```
+
+Re-run the tests:
 
 ```
 ./gradlew test
@@ -106,7 +124,8 @@ FooTest > testFoo() FAILED
 BarTest > testBar() SKIPPED
 ```
 
-The regression is caught quickly, since only `FooTest` was executed.
+Skippy detects the change and makes an execute prediction for `FooTest` and a skip prediction for `BarTest`. The
+regression is caught quickly, since only `FooTest` was executed.
 
 ## Use Skippy In Your CI Pipeline
 
