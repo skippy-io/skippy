@@ -43,7 +43,7 @@ From there, good next steps are:
 
 ## Teaser
 
-Let's take a whirlwind tour of Skippy. 
+Let's take a whirlwind tour of Skippy.
 
 ### Step 1: Add the Skippy plugin and JUnit library to your build file
 
@@ -131,7 +131,7 @@ regression is caught quickly, since only `FooTest` was executed.
 
 It's safe to add the skippy folder to version control. This will automatically enable Skippy's Predictive Test
 Selection when your pipeline runs. Support to store a Test Impact Analysis outside the filesystem (e.g., a
-database) is on the roadmap.
+database) is on the roadmap: https://github.com/skippy-io/skippy/issues/104
 
 ## Contributions & Issues
 
