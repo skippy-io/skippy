@@ -85,7 +85,7 @@ com.example.BarTest.cov
 Step 4: Run your tests
 
 Each time your tests run, Skippy examines the current state of the project and compares it with the data in the 
-skippy folder. Skippy then makes skip-or-execute predictions for each skippified test:
+skippy folder. It then makes skip-or-execute predictions for each skippified test:
 
 ```
 ./gradlew test
