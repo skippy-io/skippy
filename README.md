@@ -79,12 +79,15 @@ Let's take a whirlwind tour of Skippy.
 ./gradlew skippyAnalyze
 ```
 
-`skippyAnalyze` stores impact data for skippified tests in the .skippy folder:
+`skippyAnalyze` stores impact data for skippified tests and a bunch of other files in the .skippy folder:
 
 ```
+ls -l .skippy
+
 classes.md5
 com.example.FooTest.cov
 com.example.BarTest.cov
+predictions.log
 ```
 
 ### Step 4: Run your tests
