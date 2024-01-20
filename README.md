@@ -10,17 +10,15 @@ Skippy is a Test Impact Analysis & Predictive Test Selection framework for the J
 and flakiness without compromising the integrity of your builds. You can run it from the command line, your favorite IDE
 and continuous integration server. Skippy supports Gradle, Maven, JUnit 4 and JUnit 5.
 
-Skippy supports all types of tests where the tests and the code under test run in the same JVM. It provides the most
-value for test suites that are either slow or flaky, regardless of whether the suite contains unit, integration, or
-functional tests.
+Skippy is specifically designed to prevent regressions in your codebase.
+It supports all types of tests where the tests and the code under test run in the same JVM.
+It is best suited for deterministic tests, even those prone to occasional flakiness.
+It provides the most value for test suites that are either slow or flaky (regardless of whether the test suite contains unit, integration, or functional tests).
 
 ## What is it not?
 
-Skippy is specifically designed to prevent regressions in your codebase. It is best suited for deterministic tests, even
-those prone to occasional flakiness. However, if your tests rely on external service calls and you require these tests
-to fail in response to external service issues, then Skippy may not be the appropriate tool for your needs.
-
-Skippy currently does not support end-2-end tests where the tests and the code under test run in separate JVMs.
+Skippy is not designed for tests that assert the overall health of a system. Don't use it for tests you want to fail
+in response to misbehaving services, infrastructure issues, etc.
 
 ## Highlights
 
@@ -43,9 +41,9 @@ From there, good next steps are:
 
 ## Teaser
 
-Let's take a whirlwind tour of Skippy.
+Let's take a whirlwind tour of Skippy, Gradle & JUnit 5. The concepts are similar for Maven & JUnit 4.
 
-### Step 1: Add the Skippy plugin and JUnit library to your build file
+### Step 1: Install Skippy
 
 ```groovy
     plugins {
@@ -57,7 +55,7 @@ Let's take a whirlwind tour of Skippy.
     }
 ```
 
-### Step 2: Skippify your tests
+### Step 2: Skippify Your Tests
 
 ```java
 +    import io.skippy.junit5.Skippified;
@@ -66,8 +64,8 @@ Let's take a whirlwind tour of Skippy.
      public class FooTest {     
 
          @Test
-         public void testDoSomething() {
-             assertEquals("foo", Foo.doSomething());
+         public void testGetFoo() {
+             assertEquals("foo", Foo.getFoo());
          }
 
      }
@@ -79,18 +77,17 @@ Let's take a whirlwind tour of Skippy.
 ./gradlew skippyAnalyze
 ```
 
-`skippyAnalyze` stores impact data for skippified tests and a bunch of other files in the .skippy folder:
+`skippyAnalyze` stores impact data for skippified tests and a bunch of other files in the .skippy folder.
 
 ```
 ls -l .skippy
 
 classes.md5
 com.example.FooTest.cov
-com.example.BarTest.cov
-predictions.log
+...
 ```
 
-### Step 4: Run your tests
+### Step 4: Skippy's Predictive Test Selection In Action
 
 ```
 ./gradlew test
@@ -99,16 +96,14 @@ FooTest > testFoo() SKIPPED
 BarTest > testBar() SKIPPED
 ```
 
-Skippy examines the current state of the project and compares it with the data in the .skippy folder. It then makes
-skip-or-execute predictions for skippified test. If nothing has changed, skippified tests will be skipped.
-
-### Step 5: Testing after modifications
+Skippy compares the current state of the project with the data in the .skippy folder to make skip-or-execute
+predictions for skippified tests. Skippy detects no changes and skips `FooTest` and `BarTest`.
 
 Introduce a bug in class `Foo`:
 ```java
      class Foo {
     
-         static String doSomething() {
+         static String getFoo() {
 -            return "foo";
 +            return "null";
          }
@@ -126,8 +121,8 @@ FooTest > testFoo() FAILED
 BarTest > testBar() SKIPPED
 ```
 
-Skippy detects the change and makes an execute prediction for `FooTest` and a skip prediction for `BarTest`. The
-regression is caught quickly, since only `FooTest` was executed.
+Skippy detects the change and makes an execute prediction for `FooTest`. The regression is caught quickly -
+unrelated tests remain skipped.
 
 ## Use Skippy In Your CI Pipeline
 
