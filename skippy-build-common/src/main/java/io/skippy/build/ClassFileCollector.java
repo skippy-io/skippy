@@ -16,20 +16,22 @@
 
 package io.skippy.build;
 
+import io.skippy.common.model.ClassFile;
+
 import java.util.List;
 
 /**
- * Collects {@link ClassFile}s in a project.
+ * Collects {@link ClassFile}s in the output directories of the project.
  *
  * @author Florian McKee
  */
 public interface ClassFileCollector {
 
     /**
-     * Collects all {@link ClassFile}s in the output directories of the project organized by classes folders.
+     * Collects all {@link ClassFile}s in the output directories of the project.
      *
-     * @return all {@link ClassFile}s in the output directories of the project organized by classes folders.
+     * @return all {@link ClassFile}s in the output directories of the project.
      */
-    List<DirectoryWithClassFiles> collect();
+    List<ClassFile> collect();
 
 }

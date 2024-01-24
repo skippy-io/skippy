@@ -25,7 +25,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import static io.skippy.core.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING;
+import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING;
 
 /**
  * Compacts the {@code .cov} file in the skippy folder and writes the {@code classes.md5} file.
@@ -48,7 +48,7 @@ public class SkippyAnalyzeMojo extends AbstractMojo {
         if (executeGoal()) {
             var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), new MavenClassFileCollector(project));
             project.getProperties().setProperty(TEST_IMPACT_ANALYSIS_RUNNING, "true");
-            skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles();
+            skippyBuildApi.upsertTestImpactAnalysisJson();
             getLog().info("skippy:analyze executed");
         } else {
             getLog().info("skippy:analyze skipped");

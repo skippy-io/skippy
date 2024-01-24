@@ -36,7 +36,7 @@ final class SkippyBuildApiFactory {
             return Optional.empty();
         }
         return Optional.of(new SkippyBuildApi(project.getProjectDir().toPath(),
-                new GradleClassFileCollector(sourceSetContainer)));
+                new GradleClassFileCollector(project.getProjectDir().toPath(), sourceSetContainer)));
     }
 
     static Optional<SkippyBuildApi> getInstanceFor(Task task) {

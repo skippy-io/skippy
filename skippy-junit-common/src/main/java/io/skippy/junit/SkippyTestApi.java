@@ -16,8 +16,10 @@
 
 package io.skippy.junit;
 
-import io.skippy.core.Profiler;
-import io.skippy.core.SkippyUtils;
+import io.skippy.common.model.Prediction;
+import io.skippy.common.model.TestImpactAnalysis;
+import io.skippy.common.util.Profiler;
+import io.skippy.common.SkippyFolder;
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
 import org.jacoco.core.data.ExecutionDataReader;
@@ -29,10 +31,11 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static io.skippy.core.SkippyConstants.*;
+import static io.skippy.common.SkippyConstants.*;
 import static io.skippy.junit.JaCoCoExceptionHandler.swallowJaCoCoExceptions;
 import static java.nio.file.StandardOpenOption.*;
 
+import java.rmi.ServerError;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,13 +52,13 @@ public final class SkippyTestApi {
     /**
      * The SkippyTestApi singleton.
      */
-    public static final SkippyTestApi INSTANCE = new SkippyTestApi(SkippyAnalysis.INSTANCE);
+    public static final SkippyTestApi INSTANCE = new SkippyTestApi(TestImpactAnalysis.readFromSkippyFolder());
 
-    private final SkippyAnalysis skippyAnalysis;
-    private final Map<Class<?>, SkippyAnalysis.Prediction> predictions = new ConcurrentHashMap<>();
+    private final TestImpactAnalysis testImpactAnalysis;
+    private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();
 
-    private SkippyTestApi(SkippyAnalysis skippyAnalysis) {
-        this.skippyAnalysis = skippyAnalysis;
+    private SkippyTestApi(TestImpactAnalysis testImpactAnalysis) {
+        this.testImpactAnalysis = testImpactAnalysis;
     }
 
     /**
@@ -67,18 +70,17 @@ public final class SkippyTestApi {
     public boolean testNeedsToBeExecuted(Class<?> test) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
-                if (predictions.containsKey(test)) {
-                    return predictions.get(test) == SkippyAnalysis.Prediction.EXECUTE;
+                if (predictions.containsKey(test.getName())) {
+                    return predictions.get(test.getName()) == Prediction.EXECUTE;
                 }
-                var predictionWithReason = skippyAnalysis.predict(new FullyQualifiedClassName(test.getName()));
-
+                var predictionWithReason = testImpactAnalysis.predict(test.getName());
                 Files.writeString(
-                    SkippyUtils.getOrCreateSkippyFolder().resolve(PREDICTIONS_LOG_FILE),
+                    SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
                     "%s:%s:%s%s".formatted(test.getName(), predictionWithReason.prediction(), predictionWithReason.reason(), System.lineSeparator()),
                     StandardCharsets.UTF_8, CREATE, APPEND
                 );
-                predictions.put(test, predictionWithReason.prediction());
-                return predictionWithReason.prediction() == SkippyAnalysis.Prediction.EXECUTE;
+                predictions.put(test.getName(), predictionWithReason.prediction());
+                return predictionWithReason.prediction() == Prediction.EXECUTE;
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -130,7 +132,7 @@ public final class SkippyTestApi {
         try {
             executionDataReader.read();
             var name = testClass.getName();
-            var skippyFolder = SkippyUtils.getOrCreateSkippyFolder();
+            var skippyFolder = SkippyFolder.get();
             Files.write(skippyFolder.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
             if (WRITE_EXEC_FILE) {
                 Files.write(skippyFolder.resolve("%s.exec".formatted(name)), executionData, CREATE, TRUNCATE_EXISTING);

@@ -16,11 +16,11 @@
 
 package io.skippy.build;
 
-import io.skippy.core.SkippyUtils;
+import io.skippy.common.SkippyFolder;
 
 import java.nio.file.Path;
 
-import static io.skippy.core.SkippyConstants.*;
+import static io.skippy.common.SkippyConstants.*;
 
 /**
  * API with functionality that is used across build-tool specific libraries (e.g., skippy-gradle and skippy-maven).
@@ -30,8 +30,7 @@ import static io.skippy.core.SkippyConstants.*;
 public final class SkippyBuildApi {
 
     private final Path projectDir;
-    private final ClassesMd5Writer classesMd5Writer;
-    private final CoverageFileCompactor coverageFileCompactor;
+    private final TestImpactAnalysisWriter testImpactAnalysisWriter;
 
     /**
      * C'tor.
@@ -41,27 +40,21 @@ public final class SkippyBuildApi {
      */
     public SkippyBuildApi(Path projectDir, ClassFileCollector classFileCollector) {
         this.projectDir = projectDir;
-        this.classesMd5Writer = new ClassesMd5Writer(projectDir, classFileCollector);
-        this.coverageFileCompactor = new CoverageFileCompactor(projectDir, classFileCollector);
+        this.testImpactAnalysisWriter = new TestImpactAnalysisWriter(projectDir, classFileCollector);
     }
 
     /**
-     * Performs the following actions:
-     * <ul>
-     *     <li>Compacts the coverage files (see {@link CoverageFileCompactor})</li>
-     *     <li>Writes the {@code classes.md5} file (see {@link ClassesMd5Writer})</li>
-     * </ul>
+     * Upserts the test-impact-analysis.json file in the Skippy folder.
      */
-    public void writeClassesMd5FileAndCompactCoverageFiles() {
-        classesMd5Writer.write();
-        coverageFileCompactor.compact();
+    public void upsertTestImpactAnalysisJson() {
+        testImpactAnalysisWriter.upsert();
     }
 
     /**
      * Removes the skippy folder.
      */
     public void removeSkippyFolder() {
-        var skippyFolder = SkippyUtils.getSkippyFolder(projectDir).toFile();
+        var skippyFolder = SkippyFolder.get(projectDir).toFile();
         if (skippyFolder.exists()) {
             for (var file : skippyFolder.listFiles()) {
                 file.delete();
@@ -74,8 +67,7 @@ public final class SkippyBuildApi {
      * Removes log files from the skippy folder.
      */
     public void deleteLogFiles() {
-        var skippyFolder = SkippyUtils.getSkippyFolder(projectDir);
-
+        var skippyFolder = SkippyFolder.get(projectDir);
         var predictionsLog = skippyFolder.resolve(PREDICTIONS_LOG_FILE).toFile();
         if (predictionsLog.exists()) {
             predictionsLog.delete();
