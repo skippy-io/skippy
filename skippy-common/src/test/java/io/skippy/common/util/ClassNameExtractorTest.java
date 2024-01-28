@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package io.skippy.gradle;
+package io.skippy.common.util;
 
-import org.gradle.api.DefaultTask;
-import javax.inject.Inject;
+import org.junit.jupiter.api.Test;
+
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Clears the skippy directory.
- * <br /><br />
- * Invocation: {@code ./gradlew skippyClean}
+ * Tests for {@link ClassNameExtractor}.
  *
  * @author Florian McKee
  */
-class SkippyCleanTask extends DefaultTask {
+public class ClassNameExtractorTest {
 
-    @Inject
-    public SkippyCleanTask() {
-        setGroup("skippy");
-        SkippyBuildApiFactory.getInstanceFor(this).ifPresent(skippyBuildApi -> {
-            doLast((task) -> skippyBuildApi.removeSkippyFolder());
-        });
+    @Test
+    void testFetFullyQualifiedClassName() throws URISyntaxException {
+        var classFile = Paths.get(getClass().getResource("StringUtils.class").toURI());
+        assertEquals("com.example.StringUtils", ClassNameExtractor.getFullyQualifiedClassName(classFile));
     }
+
 }

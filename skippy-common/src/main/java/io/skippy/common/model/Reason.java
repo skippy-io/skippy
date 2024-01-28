@@ -14,25 +14,11 @@
  * limitations under the License.
  */
 
-package io.skippy.gradle;
+package io.skippy.common.model;
 
-import org.gradle.api.DefaultTask;
-import javax.inject.Inject;
-
-/**
- * Clears the skippy directory.
- * <br /><br />
- * Invocation: {@code ./gradlew skippyClean}
- *
- * @author Florian McKee
- */
-class SkippyCleanTask extends DefaultTask {
-
-    @Inject
-    public SkippyCleanTask() {
-        setGroup("skippy");
-        SkippyBuildApiFactory.getInstanceFor(this).ifPresent(skippyBuildApi -> {
-            doLast((task) -> skippyBuildApi.removeSkippyFolder());
-        });
-    }
+public enum Reason {
+    NO_CHANGE,
+    UNKNOWN_TEST,
+    BYTECODE_CHANGE_IN_TEST,
+    BYTECODE_CHANGE_IN_COVERED_CLASS
 }

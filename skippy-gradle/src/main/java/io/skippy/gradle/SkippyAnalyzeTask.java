@@ -17,13 +17,12 @@
 package io.skippy.gradle;
 
 import org.gradle.api.DefaultTask;
-import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.testing.Test;
 
 import javax.inject.Inject;
 
-import io.skippy.core.SkippyConstants;
+import io.skippy.common.SkippyConstants;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
 /**
@@ -51,9 +50,7 @@ class SkippyAnalyzeTask extends DefaultTask {
             dependsOn("clean", "skippyClean", "check");
             getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
 
-            doLast(task ->
-                skippyBuildApi.writeClassesMd5FileAndCompactCoverageFiles()
-            );
+            doLast(task -> skippyBuildApi.upsertTestImpactAnalysisJson());
 
             getProject().getTasks().withType(Test.class, test ->
                     test.environment(SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING, true)

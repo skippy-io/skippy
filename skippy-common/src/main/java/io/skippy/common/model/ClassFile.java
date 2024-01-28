@@ -1,0 +1,191 @@
+/*
+ * Copyright 2023-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.skippy.common.model;
+
+import io.skippy.common.util.ClassNameExtractor;
+import io.skippy.common.util.DebugAgnosticHash;
+
+import java.nio.file.Path;
+import java.util.HashMap;
+
+/**
+ * Programmatic representation of a class file in `test-impact-analysis.json`:
+ *
+ * <pre>
+ *  {
+ *      "test": "com.example.FooTest",
+ *      "path": "com/example/FooTest.class",
+ *      "outputFolder": "build/classes/java/test",
+ *      "hash": "ZT0GoiWG8Az5TevH9/JwBg==",
+ *  }
+ * </pre>
+ *
+ * @author Florian McKee
+ */
+public final class ClassFile {
+
+    private final Path outputFolder;
+    private final Path classFile;
+    private final String className;
+    private final String hash;
+
+    /**
+     * C'tor.
+     *
+     * @param className the fully qualified class name
+     * @param outputFolder the path of the output folder relative to the project root (e.g., build/classes/java/main)
+     * @param classFile the path of the class file relative to the output folder (e.g., com/example/Foo.class)
+     * @param hash a hash of the class file
+     */
+    private ClassFile(String className, Path outputFolder, Path classFile, String hash) {
+        this.outputFolder = outputFolder;
+        this.classFile = classFile;
+        this.className = className;
+        this.hash = hash;
+    }
+
+    /**
+     * Creates a new instance based off a class file in one of the project's output folders.
+     *
+     * @param projectDir   the absolute path of the project (e.g., ~/repo)
+     * @param outputFolder the absolute path of the output folder (e.g., ~/repo/build/classes/java/main)
+     * @param classFile    the absolute path of the class file (e.g., ~/repos/build/classes/java/main/com/example/Foo.class)
+     * @return a new instance based off a class file in one of the project's output folders
+     */
+    public static ClassFile fromFileSystem(Path projectDir, Path outputFolder, Path classFile) {
+        return new ClassFile(
+            ClassNameExtractor.getFullyQualifiedClassName(classFile),
+            projectDir.relativize(outputFolder),
+            outputFolder.relativize(classFile),
+            DebugAgnosticHash.hash(classFile)
+        );
+    }
+
+    /**
+     * Creates a new instance based off parsed JSON.
+     *
+     * @param className    the fully qualified class name
+     * @param outputFolder the path of the output folder relative to the project root (e.g., build/classes/java/main)
+     * @param classFile    the path of the class file relative to the output folder (e.g., com/example/Foo.class)
+     * @param hash         a hash of the class file
+     * @return a new instance based off parsed JSON
+     */
+    static ClassFile fromParsedJson(String className, Path outputFolder, Path classFile, String hash) {
+        return new ClassFile(className, outputFolder, classFile, hash);
+    }
+
+    static ClassFile parse(Tokenizer tokenizer) {
+        tokenizer.skip("{");
+        var entries = new HashMap<String, String>();
+        while (entries.size() < 4) {
+            var key = tokenizer.next();
+            tokenizer.skip(":");
+            var value = tokenizer.next();
+            entries.put(key, value);
+            if (entries.size() < 4) {
+                tokenizer.skip(",");
+            }
+        }
+        tokenizer.skip("}");
+        return fromParsedJson(entries.get("class"), Path.of(entries.get("outputFolder")), Path.of(entries.get("path")), entries.get("hash"));
+    }
+
+    /**
+     * Render the instance for the array in the covered classes array:
+     * <pre>
+     * "coveredClasses": [
+     *      {
+     *          "class": "com.example.Foo",
+     *          "path": "com/example/Foo.class",
+     *          "outputFolder": "build/classes/java/main",
+     *          "hash": "sGLJTZJw4beE9m2Kg6chUg=="
+     *      }
+     * ]
+     * </pre>
+     */
+    public String toJson() {
+        return """
+            \t\t\t{
+            \t\t\t\t"class": "%s",
+            \t\t\t\t"path": "%s",
+            \t\t\t\t"outputFolder": "%s",
+            \t\t\t\t"hash": "%s"
+            \t\t\t}""".formatted(className, classFile, outputFolder, hash);
+    }
+
+    /**
+     * Render the instance for the test property:
+     *
+     * <pre>
+     *  "testClass": {
+     *      "class": "com.example.FooTestTest",
+     *      "path": "com/example/FooTest.class",
+     *      "outputFolder": "build/classes/java/test",
+     *      "hash": "E/ObvuQTODFFqU6gxjbxTQ=="
+     *  }
+     * </pre>
+     */
+    String toTestClassJson() {
+        return """
+            {
+            \t\t\t"class": "%s",
+            \t\t\t"path": "%s",
+            \t\t\t"outputFolder": "%s",
+            \t\t\t"hash": "%s"
+            \t\t}""".formatted(className, classFile, outputFolder, hash);
+    }
+
+    /**
+     * Returns the fully qualified class name (e.g., com.example.Foo).
+     *
+     * @return the fully qualified class name (e.g., com.example.Foo)
+     */
+    public String getClassName() {
+        return className;
+    }
+
+    /**
+     * Returns the output folder that contains the class (e.g., ~/repo/build/classes/java/main).
+     *
+     * @return the output folder that contains the class
+     */
+    Path getOutputFolder() {
+        return outputFolder;
+    }
+
+    /**
+     * Returns the path of the class file relative to the output folder (e.g., com/example/Foo.class).
+     *
+     * @return the path of the class file relative to the output folder (e.g., com/example/Foo.class)
+     */
+    Path getClassFile() {
+        return classFile;
+    }
+
+    /**
+     * Returns a hash of the class file.
+     *
+     * @return a hash of the class file
+     */
+    String getHash() {
+        return hash;
+    }
+
+    boolean hasChanged() {
+        return ! hash.equals(DebugAgnosticHash.hash(outputFolder.resolve(classFile)));
+    }
+}

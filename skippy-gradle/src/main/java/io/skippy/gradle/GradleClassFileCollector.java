@@ -17,12 +17,12 @@
 package io.skippy.gradle;
 
 import io.skippy.build.ClassFileCollector;
-import io.skippy.build.ClassFile;
-import io.skippy.build.DirectoryWithClassFiles;
+import io.skippy.common.model.ClassFile;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
 import static java.util.Comparator.comparing;
@@ -34,6 +34,7 @@ import static java.util.Comparator.comparing;
  */
 final class GradleClassFileCollector implements ClassFileCollector {
 
+    private final Path projectDir;
     private final SourceSetContainer sourceSetContainer;
 
     /**
@@ -41,7 +42,8 @@ final class GradleClassFileCollector implements ClassFileCollector {
      *
      * @param sourceSetContainer a {@link SourceSetContainer}
      */
-    GradleClassFileCollector(SourceSetContainer sourceSetContainer) {
+    GradleClassFileCollector(Path projectDir, SourceSetContainer sourceSetContainer) {
+        this.projectDir = projectDir;
         this.sourceSetContainer = sourceSetContainer;
     }
 
@@ -51,32 +53,32 @@ final class GradleClassFileCollector implements ClassFileCollector {
      * @return all {@link ClassFile}s in the output directories of the project organized by classes folders.
      */
     @Override
-    public List<DirectoryWithClassFiles> collect() {
-        var result = new ArrayList<DirectoryWithClassFiles>();
+    public List<ClassFile> collect() {
+        var result = new ArrayList<ClassFile>();
         for (var sourceSet : sourceSetContainer) {
             result.addAll(collect(sourceSet));
         }
         return result;
     }
 
-     private List<DirectoryWithClassFiles> collect(SourceSet sourceSet) {
+     private List<ClassFile> collect(SourceSet sourceSet) {
         var classesDirs = sourceSet.getOutput().getClassesDirs().getFiles();
-        var result = new ArrayList<DirectoryWithClassFiles>();
+        var result = new ArrayList<ClassFile>();
         for (var classesDir : classesDirs) {
-            result.add(new DirectoryWithClassFiles(classesDir.toPath(), sort(collect(classesDir))));
+            result.addAll(sort(collect(classesDir, classesDir)));
         }
         return result;
     }
 
-    private List<ClassFile> collect(File directory) {
+    private List<ClassFile> collect(File outputFolder, File directory) {
         var result = new LinkedList<ClassFile>();
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    result.addAll(collect(file));
+                    result.addAll(collect(outputFolder, file));
                 } else if (file.getName().endsWith(".class")) {
-                    result.add(new ClassFile(file.toPath()));
+                    result.add(ClassFile.fromFileSystem(projectDir, outputFolder.toPath(), file.toPath()));
                 }
             }
         }
@@ -85,7 +87,7 @@ final class GradleClassFileCollector implements ClassFileCollector {
 
     private List<ClassFile> sort(List<ClassFile> input) {
         return input.stream()
-                .sorted(comparing(ClassFile::getFullyQualifiedClassName))
+                .sorted(comparing(ClassFile::getClassName))
                 .toList();
     }
 

@@ -25,7 +25,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import static io.skippy.core.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING;
+import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING;
 
 /**
  * Clears the skippy folder (by calling {@link SkippyBuildApi#removeSkippyFolder()}).

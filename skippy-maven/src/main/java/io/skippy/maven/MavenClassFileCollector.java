@@ -16,16 +16,15 @@
 
 package io.skippy.maven;
 
-import io.skippy.build.ClassFile;
+import io.skippy.common.model.ClassFile;
 import io.skippy.build.ClassFileCollector;
-import io.skippy.build.DirectoryWithClassFiles;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 
 /**
@@ -42,29 +41,29 @@ final class MavenClassFileCollector implements ClassFileCollector {
     }
 
     /**
-     * Collects all {@link ClassFile}s in the output directories of the project (organized by output directory).
+     * Collects all {@link ClassFile}s in the output directories of the project.
      *
-     * @return all {@link ClassFile}s in the output directories of the project (organized by output directory)
+     * @return all {@link ClassFile}s in the output directories of the project.
      */
     @Override
-    public List<DirectoryWithClassFiles> collect() {
+    public List<ClassFile> collect() {
         var classesDir = new File(project.getBuild().getOutputDirectory());
         var testClassesDir = new File(project.getBuild().getTestOutputDirectory());
-        return asList(
-                new DirectoryWithClassFiles(classesDir.toPath(), sort(collect(classesDir))),
-                new DirectoryWithClassFiles(testClassesDir.toPath(), sort(collect(testClassesDir)))
-        );
+        var result = new ArrayList<ClassFile>();
+        result.addAll(sort(collect(classesDir, classesDir)));
+        result.addAll(sort(collect(testClassesDir, testClassesDir)));
+        return result;
     }
 
-    private List<ClassFile> collect(File directory) {
+    private List<ClassFile> collect(File outputFolder, File searchDirectory) {
         var result = new LinkedList<ClassFile>();
-        File[] files = directory.listFiles();
+        File[] files = searchDirectory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    result.addAll(collect(file));
+                    result.addAll(collect(outputFolder, file));
                 } else if (file.getName().endsWith(".class")) {
-                    result.add(new ClassFile(file.toPath()));
+                    result.add(ClassFile.fromFileSystem(project.getBasedir().toPath(), outputFolder.toPath(), file.toPath()));
                 }
             }
         }
@@ -73,7 +72,7 @@ final class MavenClassFileCollector implements ClassFileCollector {
 
     private List<ClassFile> sort(List<ClassFile> input) {
         return input.stream()
-                .sorted(comparing(ClassFile::getFullyQualifiedClassName))
+                .sorted(comparing(ClassFile::getClassName))
                 .toList();
     }
 

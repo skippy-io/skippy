@@ -24,11 +24,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -41,36 +41,73 @@ import static org.mockito.Mockito.when;
 public class GradleClassFileCollectorTest {
 
     @Test
-    void testCollect() {
+    void testCollect() throws URISyntaxException {
 
-        var sourceSetContainer = mockSourceSetContainer("sourceset1", "sourceset2");
+        var sourceSetContainer = mockSourceSetContainer("main", "test");
 
-        var classFileCollector = new GradleClassFileCollector(sourceSetContainer);
+        var projectDir = Paths.get(GradleClassFileCollectorTest.class.getResource("build").toURI()).getParent();
 
-        var directoriesWithClassFiles = classFileCollector.collect();
+        var classFileCollector = new GradleClassFileCollector(projectDir, sourceSetContainer);
 
-        assertEquals(2, directoriesWithClassFiles.size());
+        var classFiles = classFileCollector.collect();
 
-        var dir0 = directoriesWithClassFiles.get(0);
-        var dir1 = directoriesWithClassFiles.get(1);
-
-        assertEquals(2, dir0.classFiles().size());
-        assertEquals(2, dir1.classFiles().size());
-
-        assertEquals("com.example.NormalClass1", dir0.classFiles().get(0).getFullyQualifiedClassName());
-        assertEquals(Path.of("sourceset1/NormalClass1.class"), dir0.directory().getParent().relativize(dir0.classFiles().get(0).getAbsolutePath()));
-
-        assertEquals("com.example.SkippifiedTest1", dir0.classFiles().get(1).getFullyQualifiedClassName());
-        assertEquals(Path.of("sourceset1/SkippifiedTest1.class"), dir0.directory().getParent().relativize(dir0.classFiles().get(1).getAbsolutePath()));
+        assertEquals(6, classFiles.size());
 
 
-        assertEquals("com.example.NormalClass2", dir1.classFiles().get(0).getFullyQualifiedClassName());
-        assertEquals(Path.of("sourceset2/NormalClass2.class"), dir1.directory().getParent().relativize(dir1.classFiles().get(0).getAbsolutePath()));
+        assertThat(classFiles.get(0).toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "class": "com.example.LeftPadder",
+                "path": "com/example/LeftPadder.class",
+                "outputFolder": "build/classes/java/main",
+                "hash": "9U3+WYit7uiiNqA9jplN2A=="
+            }
+        """);
 
-        assertEquals("com.example.SkippifiedTest2", dir1.classFiles().get(1).getFullyQualifiedClassName());
-        assertEquals(Path.of("sourceset2/SkippifiedTest2.class"), dir1.directory().getParent().relativize(dir1.classFiles().get(1).getAbsolutePath()));
+        assertThat(classFiles.get(1).toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "class": "com.example.RightPadder",
+                "path": "com/example/RightPadder.class",
+                "outputFolder": "build/classes/java/main",
+                "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
+            }
+        """);
+
+        assertThat(classFiles.get(2).toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "class": "com.example.StringUtils",
+                "path": "com/example/StringUtils.class",
+                "outputFolder": "build/classes/java/main",
+                "hash": "4VP9fWGFUJHKIBG47OXZTQ=="
+            }
+        """);
+
+        assertThat(classFiles.get(3).toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "class": "com.example.LeftPadderTest",
+                "path": "com/example/LeftPadderTest.class",
+                "outputFolder": "build/classes/java/test",
+                "hash": "sGLJTZJw4beE9m2Kg6chUg=="
+            }
+        """);
+
+        assertThat(classFiles.get(4).toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "class": "com.example.RightPadderTest",
+                "path": "com/example/RightPadderTest.class",
+                "outputFolder": "build/classes/java/test",
+                "hash": "wAwQMlDS3xxmX/Yl5fsSdA=="
+            }
+        """);
+
+        assertThat(classFiles.get(5).toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "class": "com.example.TestConstants",
+                "path": "com/example/TestConstants.class",
+                "outputFolder": "build/classes/java/test",
+                "hash": "3qNbG+sSd1S1OGe0EZ9GPA=="
+            }
+        """);
     }
-
 
     private static SourceSetContainer mockSourceSetContainer(String... sourceSetDirectories) {
         var sourceSetContainer = mock(SourceSetContainer.class);
@@ -84,7 +121,7 @@ public class GradleClassFileCollectorTest {
 
     private static SourceSet mockSourceSet(String directory) {
         try {
-            File outputDirectory = Paths.get(GradleClassFileCollectorTest.class.getResource(directory).toURI()).toFile();
+            File outputDirectory = Paths.get(GradleClassFileCollectorTest.class.getResource("build/classes/java/" + directory).toURI()).toFile();
             var sourceSet = mock(SourceSet.class);
             var sourceSetOutput = mock(SourceSetOutput.class);
             when(sourceSet.getOutput()).thenReturn(sourceSetOutput);
