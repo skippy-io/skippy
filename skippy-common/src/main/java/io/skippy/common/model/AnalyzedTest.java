@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static java.lang.System.lineSeparator;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -39,7 +40,7 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Florian McKee
  */
-public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> coveredClasses) {
+public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> coveredClasses) implements Comparable<AnalyzedTest> {
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip("{");
@@ -91,8 +92,12 @@ public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> co
             \t}""".formatted(
                 test.toTestClassJson(),
                 result,
-                coveredClasses.stream().map(c -> c.toJson()).collect(joining("," + lineSeparator())
+                coveredClasses.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator())
         ));
     }
 
+    @Override
+    public int compareTo(AnalyzedTest other) {
+        return comparing(AnalyzedTest::test).compare(this, other);
+    }
 }

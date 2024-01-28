@@ -22,6 +22,8 @@ import io.skippy.common.util.DebugAgnosticHash;
 import java.nio.file.Path;
 import java.util.HashMap;
 
+import static java.util.Comparator.comparing;
+
 /**
  * Programmatic representation of a class file in `test-impact-analysis.json`:
  *
@@ -36,7 +38,7 @@ import java.util.HashMap;
  *
  * @author Florian McKee
  */
-public final class ClassFile {
+public final class ClassFile implements Comparable<ClassFile> {
 
     private final Path outputFolder;
     private final Path classFile;
@@ -158,6 +160,13 @@ public final class ClassFile {
         return className;
     }
 
+    @Override
+    public int compareTo(ClassFile other) {
+        return comparing(ClassFile::getClassName)
+                .thenComparing(ClassFile::getOutputFolder)
+                .compare(this, other);
+    }
+
     /**
      * Returns the output folder that contains the class (e.g., ~/repo/build/classes/java/main).
      *
@@ -188,4 +197,5 @@ public final class ClassFile {
     boolean hasChanged() {
         return ! hash.equals(DebugAgnosticHash.hash(outputFolder.resolve(classFile)));
     }
+
 }

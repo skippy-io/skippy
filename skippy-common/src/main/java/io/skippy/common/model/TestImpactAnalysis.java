@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
-import static io.skippy.common.model.Reason.*;
+import static io.skippy.common.model.Reason.*;q
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
@@ -136,7 +136,7 @@ public final class TestImpactAnalysis {
         return """
             [
             %s
-            ]""".formatted(analyzedTests.stream().map(c -> c.toJson()).collect(joining("," + lineSeparator()))
+            ]""".formatted(analyzedTests.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator()))
         );
     }
 
