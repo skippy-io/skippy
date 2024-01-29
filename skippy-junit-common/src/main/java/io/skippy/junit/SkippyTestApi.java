@@ -35,7 +35,6 @@ import static io.skippy.common.SkippyConstants.*;
 import static io.skippy.junit.JaCoCoExceptionHandler.swallowJaCoCoExceptions;
 import static java.nio.file.StandardOpenOption.*;
 
-import java.rmi.ServerError;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -94,9 +93,6 @@ public final class SkippyTestApi {
      */
     public static void prepareCoverageDataCaptureFor(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareCoverageDataCaptureFor", () -> {
-            if ( ! testImpactAnalysisIsRunning()) {
-                return;
-            }
             swallowJaCoCoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 agent.reset();
@@ -113,9 +109,6 @@ public final class SkippyTestApi {
     public static void captureCoverageDataFor(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#captureCoverageDataFor", () -> {
             // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
-            if ( ! testImpactAnalysisIsRunning()) {
-                return;
-            }
             swallowJaCoCoExceptions(() -> {
                 writeCovFileFor(testClass);
             });
@@ -140,12 +133,6 @@ public final class SkippyTestApi {
         } catch (IOException e) {
             throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
         }
-    }
-
-    private static boolean testImpactAnalysisIsRunning() {
-        // the property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
-        return Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING)) ||
-                Boolean.valueOf(System.getenv().get(TEST_IMPACT_ANALYSIS_RUNNING));
     }
 
 }

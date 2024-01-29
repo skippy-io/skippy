@@ -44,13 +44,6 @@ public final class SkippyBuildApi {
     }
 
     /**
-     * Upserts the test-impact-analysis.json file in the Skippy folder.
-     */
-    public void upsertTestImpactAnalysisJson() {
-        testImpactAnalysisWriter.upsert();
-    }
-
-    /**
      * Removes the skippy folder.
      */
     public void removeSkippyFolder() {
@@ -64,9 +57,9 @@ public final class SkippyBuildApi {
     }
 
     /**
-     * Removes log files from the skippy folder.
+     * Informs Skippy that a build has started.
      */
-    public void deleteLogFiles() {
+    public void buildStarted() {
         var skippyFolder = SkippyFolder.get(projectDir);
         var predictionsLog = skippyFolder.resolve(PREDICTIONS_LOG_FILE).toFile();
         if (predictionsLog.exists()) {
@@ -76,6 +69,23 @@ public final class SkippyBuildApi {
         if (profilingLog.exists()) {
             profilingLog.delete();
         }
+    }
+
+
+    /**
+     * Informs Skippy that a build has finished.
+     */
+    public void buildFinished() {
+        testImpactAnalysisWriter.upsert();
+    }
+
+    /**
+     * Informs Skippy that a build has finished.
+     *
+     * @param className the class name of the failed tests
+     */
+    public void testFailed(String className) {
+        System.out.println(className);
     }
 
 }

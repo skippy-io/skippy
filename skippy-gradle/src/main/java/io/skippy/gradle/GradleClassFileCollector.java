@@ -18,6 +18,7 @@ package io.skippy.gradle;
 
 import io.skippy.build.ClassFileCollector;
 import io.skippy.common.model.ClassFile;
+import io.skippy.common.util.Profiler;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
@@ -54,11 +55,13 @@ final class GradleClassFileCollector implements ClassFileCollector {
      */
     @Override
     public List<ClassFile> collect() {
-        var result = new ArrayList<ClassFile>();
-        for (var sourceSet : sourceSetContainer) {
-            result.addAll(collect(sourceSet));
-        }
-        return result;
+        return Profiler.profile("GradleClassFileCollector#collect", () -> {
+            var result = new ArrayList<ClassFile>();
+            for (var sourceSet : sourceSetContainer) {
+                result.addAll(collect(sourceSet));
+            }
+            return result;
+        });
     }
 
      private List<ClassFile> collect(SourceSet sourceSet) {

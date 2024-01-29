@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +62,7 @@ public final class Profiler {
     public static <T> T profile(String label, Supplier<T> supplier) {
         if (lastSave.isBefore(Instant.now().minusSeconds(1))) {
             lastSave = Instant.now();
-            writeResults();
+            writeResults(SkippyFolder.get());
 
         }
         if ( ! data.containsKey(label)) {
@@ -90,8 +91,10 @@ public final class Profiler {
 
     /**
      * Writes the results to the profiling.log file in the skippy folder.
+     *
+     * @param skippyFolder the Skippy folder
      */
-    static void writeResults() {
+    public static void writeResults(Path skippyFolder) {
         var result =  "=== %s ===%s%s%s%s".formatted(
                 Runtime.getRuntime().toString(),
                 System.lineSeparator(),
@@ -102,10 +105,17 @@ public final class Profiler {
                 System.lineSeparator(),
                 System.lineSeparator());
         try {
-            Files.writeString(SkippyFolder.get().resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
+            Files.writeString(skippyFolder.resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /**
+     * Clears all profiling data.
+     */
+    public static void clear() {
+        data.clear();
     }
 
 }
