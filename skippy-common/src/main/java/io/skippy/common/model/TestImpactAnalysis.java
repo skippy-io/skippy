@@ -19,11 +19,12 @@ package io.skippy.common.model;
 import io.skippy.common.SkippyFolder;
 import io.skippy.common.util.Profiler;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
@@ -65,12 +66,12 @@ public final class TestImpactAnalysis {
     }
 
     /**
-     * Creates a new instance based off the data in the Skippy folder.
+     * Creates a new instance based off the {@code testImpactAnalysisJsonFile}.
      *
-     * @return a new instance based off the JSON file in the Skippy folder
+     * @param testImpactAnalysisJsonFile JSON file that contains the Test Impact Analysis
+     * @return a new instance based off the {@code testImpactAnalysisJsonFile}
      */
-    public static TestImpactAnalysis readFromSkippyFolder() {
-        var testImpactAnalysisJsonFile = SkippyFolder.get().resolve(TEST_IMPACT_ANALYSIS_JSON_FILE);
+    public static TestImpactAnalysis readFromFile(Path testImpactAnalysisJsonFile) {
         if ( ! testImpactAnalysisJsonFile.toFile().exists()) {
             return new TestImpactAnalysis(emptyList());
         }
@@ -79,6 +80,16 @@ public final class TestImpactAnalysis {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Creates a new instance based off the JSON file in the Skippy folder.
+     *
+     * @return a new instance based off the JSON file in the Skippy folder
+     */
+    public static TestImpactAnalysis readFromSkippyFolder() {
+        var testImpactAnalysisJsonFile = SkippyFolder.get().resolve(TEST_IMPACT_ANALYSIS_JSON_FILE);
+        return readFromFile(testImpactAnalysisJsonFile);
     }
 
     /**
@@ -129,9 +140,9 @@ public final class TestImpactAnalysis {
     }
 
     /**
-     * Returns a JSON representation of this instance.
+     * Renders this instance as JSON string.
      *
-     * @return a JSON representation of this instance
+     * @return the instance as JSON string
      */
     public String toJson() {
         return """
@@ -142,15 +153,16 @@ public final class TestImpactAnalysis {
     }
 
     /**
-     * Returns a JSON representation of this instance.
+     * Renders this instance as JSON string.
      *
-     * @return a JSON representation of this instance
+     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
+     * @return this instance as JSON string
      */
-    public String toJson(JsonProperty... propertiesToPrint) {
+    public String toJson(JsonProperty... propertiesToRender) {
         return """
             [
             %s
-            ]""".formatted(analyzedTests.stream().sorted().map(c -> c.toJson(propertiesToPrint)).collect(joining("," + lineSeparator()))
+            ]""".formatted(analyzedTests.stream().sorted().map(c -> c.toJson(propertiesToRender)).collect(joining("," + lineSeparator()))
         );
     }
 

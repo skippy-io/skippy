@@ -109,7 +109,7 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     /**
-     * Invokes {@link ClassFile#toJson(JsonProperty...)} for all available properties.
+     * Renders this instance as JSON string.
      *
      * @return the instance as JSON string
      */
@@ -118,22 +118,11 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     /**
-     * Render {@link AnalyzedTest#coveredClasses()} instances as JSON:
-     * <pre>
-     * "coveredClasses": [
-     *      {
-     *          "class": "com.example.Foo",
-     *          "path": "com/example/Foo.class",
-     *          "outputFolder": "build/classes/java/main",
-     *          "hash": "sGLJTZJw4beE9m2Kg6chUg=="
-     *      }
-     * ]
-     * </pre>
-     *
-     * The only difference compared to {@link ClassFile#toTestClassJson(JsonProperty...)} is indentation.
+     * Renders this instance as JSON string. The only difference compared to
+     * {@link ClassFile#toTestClassJson(JsonProperty...)} is indentation.
      *
      * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
-     * @return the instance as JSON string
+     * @return this instance as JSON string
      */
     public String toJson(JsonProperty... propertiesToRender) {
         var result = new StringBuilder();
@@ -147,18 +136,8 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     /**
-     * Renders {@link AnalyzedTest#test()} instances as JSON:
-     *
-     * <pre>
-     *  "testClass": {
-     *      "class": "com.example.FooTestTest",
-     *      "path": "com/example/FooTest.class",
-     *      "outputFolder": "build/classes/java/test",
-     *      "hash": "E/ObvuQTODFFqU6gxjbxTQ=="
-     *  }
-     * </pre>
-     *
-     * The only difference compared to {@link ClassFile#toJson(JsonProperty...)} is indentation.
+     * Renders this instance as JSON string. The only difference compared to {@link ClassFile#toJson(JsonProperty...)}
+     * is indentation.
      *
      * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
      * @return the instance as JSON string

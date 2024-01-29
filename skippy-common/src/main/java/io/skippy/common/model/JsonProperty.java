@@ -2,7 +2,7 @@ package io.skippy.common.model;
 
 import java.util.function.Function;
 
-enum JsonProperty {
+public enum JsonProperty {
     CLASS_NAME("class", ClassFile::getClassName),
     CLASS_FILE("path", ClassFile::getClassFile),
     OUTPUT_FOLDER("outputFolder", ClassFile::getOutputFolder),

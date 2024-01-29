@@ -29,13 +29,15 @@ import static java.util.stream.Collectors.joining;
  *
  * <pre>
  *  {
- *      "test": "com.example.FooTest",
- *      "path": "com/example/FooTest.class",
- *      "outputFolder": "build/classes/java/test",
- *      "hash": "ZT0GoiWG8Az5TevH9/JwBg==",
+ *      "testClass": {
+ *          "class": "com.example.FooTest",
+ *          "path": "com/example/FooTest.class",
+ *          "outputFolder": "build/classes/java/test",
+ *          "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
+ *      },
  *      "result": "SUCCESS",
  *      "coveredClasses": [...]
- *  }
+ * }
  * </pre>
  *
  * @author Florian McKee
@@ -81,17 +83,28 @@ public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> co
         return coveredClasses;
     }
 
+    /**
+     * Renders this instance as JSON string.
+     *
+     * @return the instance as JSON string
+     */
     String toJson() {
         return toJson(JsonProperty.values());
     }
 
-    public String toJson(JsonProperty... propertiesToInclude) {
+    /**
+     * Renders this instance as JSON string.
+     *
+     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
+     * @return this instance as JSON string
+     */
+    public String toJson(JsonProperty... propertiesToRender) {
         var result = new StringBuffer();
         result.append("\t{" + System.lineSeparator());
-        result.append("\t\t\"testClass\": %s,".formatted(test.toTestClassJson(propertiesToInclude)) + System.lineSeparator());
+        result.append("\t\t\"testClass\": %s,".formatted(test.toTestClassJson(propertiesToRender)) + System.lineSeparator());
         result.append("\t\t\"result\": \"%s\",".formatted(this.result) + System.lineSeparator());
         result.append("\t\t\"coveredClasses\": [" + System.lineSeparator());
-        result.append("%s".formatted(coveredClasses.stream().sorted().map(c -> c.toJson(propertiesToInclude)).collect(joining("," + lineSeparator()))) + System.lineSeparator());
+        result.append("%s".formatted(coveredClasses.stream().sorted().map(c -> c.toJson(propertiesToRender)).collect(joining("," + lineSeparator()))) + System.lineSeparator());
         result.append("\t\t]" + System.lineSeparator());
         result.append("\t}");
         return result.toString();

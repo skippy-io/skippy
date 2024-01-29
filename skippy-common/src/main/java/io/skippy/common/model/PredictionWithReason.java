@@ -16,6 +16,13 @@
 
 package io.skippy.common.model;
 
+
+/**
+ * 2-tuple that contains a {@link Prediction} and the {@link Reason} why the prediction was made.
+ *
+ * @param prediction a {@link Prediction}
+ * @param reason the reason the {@link Prediction} was made
+ */
 public record PredictionWithReason(Prediction prediction, Reason reason) {
     static PredictionWithReason execute(Reason reason) {
         return new PredictionWithReason(Prediction.EXECUTE, reason);
