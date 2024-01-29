@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ClassFileTest {
 
     @Test
-    void testToJson() {
+    void testToJsonAllProperties() {
         var classFile = ClassFile.fromParsedJson(
                 "com.example.RightPadder",
                 Path.of("build/classes/java/main"), Path.of("com/example/RightPadder.class"),
@@ -31,6 +31,38 @@ public class ClassFileTest {
                 }
                 """);
     }
+
+    @Test
+    void testToJsonSingleProperty() {
+        var classFile = ClassFile.fromParsedJson(
+                "com.example.RightPadder",
+                Path.of("build/classes/java/main"), Path.of("com/example/RightPadder.class"),
+                "ZT0GoiWG8Az5TevH9/JwBg=="
+        );
+
+        assertThat(classFile.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
+                """
+                    {
+                        "class": "com.example.RightPadder"
+                    }
+                    """);
+    }
+    @Test
+    void testToTestClassJsonSingleProperty() {
+        var classFile = ClassFile.fromParsedJson(
+                "com.example.RightPadder",
+                Path.of("build/classes/java/main"), Path.of("com/example/RightPadder.class"),
+                "ZT0GoiWG8Az5TevH9/JwBg=="
+        );
+
+        assertThat(classFile.toTestClassJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
+                """
+                    {
+                        "class": "com.example.RightPadder"
+                    }
+                    """);
+    }
+
 
     @Test
     void testParse() {

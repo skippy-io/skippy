@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
@@ -137,6 +138,19 @@ public final class TestImpactAnalysis {
             [
             %s
             ]""".formatted(analyzedTests.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator()))
+        );
+    }
+
+    /**
+     * Returns a JSON representation of this instance.
+     *
+     * @return a JSON representation of this instance
+     */
+    public String toJson(JsonProperty... propertiesToPrint) {
+        return """
+            [
+            %s
+            ]""".formatted(analyzedTests.stream().sorted().map(c -> c.toJson(propertiesToPrint)).collect(joining("," + lineSeparator()))
         );
     }
 

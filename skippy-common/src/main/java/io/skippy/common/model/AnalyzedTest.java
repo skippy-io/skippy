@@ -82,18 +82,19 @@ public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> co
     }
 
     String toJson() {
-        return """
-            \t{
-            \t\t"testClass": %s,
-            \t\t"result": "%s",
-            \t\t"coveredClasses": [
-            %s
-            \t\t]
-            \t}""".formatted(
-                test.toTestClassJson(),
-                result,
-                coveredClasses.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator())
-        ));
+        return toJson(JsonProperty.values());
+    }
+
+    public String toJson(JsonProperty... propertiesToInclude) {
+        var result = new StringBuffer();
+        result.append("\t{" + System.lineSeparator());
+        result.append("\t\t\"testClass\": %s,".formatted(test.toTestClassJson(propertiesToInclude)) + System.lineSeparator());
+        result.append("\t\t\"result\": \"%s\",".formatted(this.result) + System.lineSeparator());
+        result.append("\t\t\"coveredClasses\": [" + System.lineSeparator());
+        result.append("%s".formatted(coveredClasses.stream().sorted().map(c -> c.toJson(propertiesToInclude)).collect(joining("," + lineSeparator()))) + System.lineSeparator());
+        result.append("\t\t]" + System.lineSeparator());
+        result.append("\t}");
+        return result.toString();
     }
 
     @Override

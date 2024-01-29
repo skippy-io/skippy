@@ -20,18 +20,20 @@ import io.skippy.common.util.ClassNameExtractor;
 import io.skippy.common.util.DebugAgnosticHash;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Programmatic representation of a class file in `test-impact-analysis.json`:
  *
  * <pre>
  *  {
- *      "test": "com.example.FooTest",
- *      "path": "com/example/FooTest.class",
- *      "outputFolder": "build/classes/java/test",
+ *      "class": "com.example.Foo",
+ *      "path": "com/example/Foo.class",
+ *      "outputFolder": "build/classes/java/main",
  *      "hash": "ZT0GoiWG8Az5TevH9/JwBg==",
  *  }
  * </pre>
@@ -107,7 +109,16 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     /**
-     * Render the instance for the array in the covered classes array:
+     * Invokes {@link ClassFile#toJson(JsonProperty...)} for all available properties.
+     *
+     * @return the instance as JSON string
+     */
+    public String toJson() {
+        return toJson(JsonProperty.values());
+    }
+
+    /**
+     * Render {@link AnalyzedTest#coveredClasses()} instances as JSON:
      * <pre>
      * "coveredClasses": [
      *      {
@@ -118,19 +129,25 @@ public final class ClassFile implements Comparable<ClassFile> {
      *      }
      * ]
      * </pre>
+     *
+     * The only difference compared to {@link ClassFile#toTestClassJson(JsonProperty...)} is indentation.
+     *
+     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
+     * @return the instance as JSON string
      */
-    public String toJson() {
-        return """
-            \t\t\t{
-            \t\t\t\t"class": "%s",
-            \t\t\t\t"path": "%s",
-            \t\t\t\t"outputFolder": "%s",
-            \t\t\t\t"hash": "%s"
-            \t\t\t}""".formatted(className, classFile, outputFolder, hash);
+    public String toJson(JsonProperty... propertiesToRender) {
+        var result = new StringBuilder();
+        result.append("\t\t\t{" + System.lineSeparator());
+        var properties = Arrays.stream(propertiesToRender)
+                .map(jsonProperty -> "\t\t\t\t\"%s\": \"%s\"".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
+                .collect(joining("," + System.lineSeparator()));
+        result.append(properties + System.lineSeparator());
+        result.append("\t\t\t}");
+        return result.toString();
     }
 
     /**
-     * Render the instance for the test property:
+     * Renders {@link AnalyzedTest#test()} instances as JSON:
      *
      * <pre>
      *  "testClass": {
@@ -140,15 +157,21 @@ public final class ClassFile implements Comparable<ClassFile> {
      *      "hash": "E/ObvuQTODFFqU6gxjbxTQ=="
      *  }
      * </pre>
+     *
+     * The only difference compared to {@link ClassFile#toJson(JsonProperty...)} is indentation.
+     *
+     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
+     * @return the instance as JSON string
      */
-    String toTestClassJson() {
-        return """
-            {
-            \t\t\t"class": "%s",
-            \t\t\t"path": "%s",
-            \t\t\t"outputFolder": "%s",
-            \t\t\t"hash": "%s"
-            \t\t}""".formatted(className, classFile, outputFolder, hash);
+    String toTestClassJson(JsonProperty... propertiesToRender) {
+        var result = new StringBuilder();
+        result.append("{" + System.lineSeparator());
+        var properties = Arrays.stream(propertiesToRender)
+                .map(jsonProperty -> "\t\t\t\"%s\": \"%s\"".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
+                .collect(joining("," + System.lineSeparator()));
+        result.append(properties + System.lineSeparator());
+        result.append("\t\t}");
+        return result.toString();
     }
 
     /**
