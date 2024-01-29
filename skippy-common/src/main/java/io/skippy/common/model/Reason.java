@@ -16,9 +16,27 @@
 
 package io.skippy.common.model;
 
+/**
+ * The reson for a {@link Prediction}.
+ */
 public enum Reason {
+    /**
+     * Neither the test nor any of the covered classes have changed.
+     */
     NO_CHANGE,
+
+    /**
+     * Unknown test.
+     */
     UNKNOWN_TEST,
+
+    /**
+     * Bytecode change in test detected.
+     */
     BYTECODE_CHANGE_IN_TEST,
+
+    /**
+     * Bytecode change in covered class detected.
+     */
     BYTECODE_CHANGE_IN_COVERED_CLASS
 }

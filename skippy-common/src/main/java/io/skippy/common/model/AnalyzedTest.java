@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static java.lang.System.lineSeparator;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -28,18 +29,20 @@ import static java.util.stream.Collectors.joining;
  *
  * <pre>
  *  {
- *      "test": "com.example.FooTest",
- *      "path": "com/example/FooTest.class",
- *      "outputFolder": "build/classes/java/test",
- *      "hash": "ZT0GoiWG8Az5TevH9/JwBg==",
+ *      "testClass": {
+ *          "class": "com.example.FooTest",
+ *          "path": "com/example/FooTest.class",
+ *          "outputFolder": "build/classes/java/test",
+ *          "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
+ *      },
  *      "result": "SUCCESS",
  *      "coveredClasses": [...]
- *  }
+ * }
  * </pre>
  *
  * @author Florian McKee
  */
-public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> coveredClasses) {
+public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> coveredClasses) implements Comparable<AnalyzedTest> {
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip("{");
@@ -80,19 +83,35 @@ public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> co
         return coveredClasses;
     }
 
+    /**
+     * Renders this instance as JSON string.
+     *
+     * @return the instance as JSON string
+     */
     String toJson() {
-        return """
-            \t{
-            \t\t"testClass": %s,
-            \t\t"result": "%s",
-            \t\t"coveredClasses": [
-            %s
-            \t\t]
-            \t}""".formatted(
-                test.toTestClassJson(),
-                result,
-                coveredClasses.stream().map(c -> c.toJson()).collect(joining("," + lineSeparator())
-        ));
+        return toJson(JsonProperty.values());
     }
 
+    /**
+     * Renders this instance as JSON string.
+     *
+     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
+     * @return this instance as JSON string
+     */
+    public String toJson(JsonProperty... propertiesToRender) {
+        var result = new StringBuffer();
+        result.append("\t{" + System.lineSeparator());
+        result.append("\t\t\"testClass\": %s,".formatted(test.toTestClassJson(propertiesToRender)) + System.lineSeparator());
+        result.append("\t\t\"result\": \"%s\",".formatted(this.result) + System.lineSeparator());
+        result.append("\t\t\"coveredClasses\": [" + System.lineSeparator());
+        result.append("%s".formatted(coveredClasses.stream().sorted().map(c -> c.toJson(propertiesToRender)).collect(joining("," + lineSeparator()))) + System.lineSeparator());
+        result.append("\t\t]" + System.lineSeparator());
+        result.append("\t}");
+        return result.toString();
+    }
+
+    @Override
+    public int compareTo(AnalyzedTest other) {
+        return comparing(AnalyzedTest::test).compare(this, other);
+    }
 }

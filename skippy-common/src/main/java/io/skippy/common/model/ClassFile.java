@@ -20,23 +20,27 @@ import io.skippy.common.util.ClassNameExtractor;
 import io.skippy.common.util.DebugAgnosticHash;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
+
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Programmatic representation of a class file in `test-impact-analysis.json`:
  *
  * <pre>
  *  {
- *      "test": "com.example.FooTest",
- *      "path": "com/example/FooTest.class",
- *      "outputFolder": "build/classes/java/test",
+ *      "class": "com.example.Foo",
+ *      "path": "com/example/Foo.class",
+ *      "outputFolder": "build/classes/java/main",
  *      "hash": "ZT0GoiWG8Az5TevH9/JwBg==",
  *  }
  * </pre>
  *
  * @author Florian McKee
  */
-public final class ClassFile {
+public final class ClassFile implements Comparable<ClassFile> {
 
     private final Path outputFolder;
     private final Path classFile;
@@ -105,48 +109,48 @@ public final class ClassFile {
     }
 
     /**
-     * Render the instance for the array in the covered classes array:
-     * <pre>
-     * "coveredClasses": [
-     *      {
-     *          "class": "com.example.Foo",
-     *          "path": "com/example/Foo.class",
-     *          "outputFolder": "build/classes/java/main",
-     *          "hash": "sGLJTZJw4beE9m2Kg6chUg=="
-     *      }
-     * ]
-     * </pre>
+     * Renders this instance as JSON string.
+     *
+     * @return the instance as JSON string
      */
     public String toJson() {
-        return """
-            \t\t\t{
-            \t\t\t\t"class": "%s",
-            \t\t\t\t"path": "%s",
-            \t\t\t\t"outputFolder": "%s",
-            \t\t\t\t"hash": "%s"
-            \t\t\t}""".formatted(className, classFile, outputFolder, hash);
+        return toJson(JsonProperty.values());
     }
 
     /**
-     * Render the instance for the test property:
+     * Renders this instance as JSON string. The only difference compared to
+     * {@link ClassFile#toTestClassJson(JsonProperty...)} is indentation.
      *
-     * <pre>
-     *  "testClass": {
-     *      "class": "com.example.FooTestTest",
-     *      "path": "com/example/FooTest.class",
-     *      "outputFolder": "build/classes/java/test",
-     *      "hash": "E/ObvuQTODFFqU6gxjbxTQ=="
-     *  }
-     * </pre>
+     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
+     * @return this instance as JSON string
      */
-    String toTestClassJson() {
-        return """
-            {
-            \t\t\t"class": "%s",
-            \t\t\t"path": "%s",
-            \t\t\t"outputFolder": "%s",
-            \t\t\t"hash": "%s"
-            \t\t}""".formatted(className, classFile, outputFolder, hash);
+    public String toJson(JsonProperty... propertiesToRender) {
+        var result = new StringBuilder();
+        result.append("\t\t\t{" + System.lineSeparator());
+        var properties = Arrays.stream(propertiesToRender)
+                .map(jsonProperty -> "\t\t\t\t\"%s\": \"%s\"".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
+                .collect(joining("," + System.lineSeparator()));
+        result.append(properties + System.lineSeparator());
+        result.append("\t\t\t}");
+        return result.toString();
+    }
+
+    /**
+     * Renders this instance as JSON string. The only difference compared to {@link ClassFile#toJson(JsonProperty...)}
+     * is indentation.
+     *
+     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
+     * @return the instance as JSON string
+     */
+    String toTestClassJson(JsonProperty... propertiesToRender) {
+        var result = new StringBuilder();
+        result.append("{" + System.lineSeparator());
+        var properties = Arrays.stream(propertiesToRender)
+                .map(jsonProperty -> "\t\t\t\"%s\": \"%s\"".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
+                .collect(joining("," + System.lineSeparator()));
+        result.append(properties + System.lineSeparator());
+        result.append("\t\t}");
+        return result.toString();
     }
 
     /**
@@ -156,6 +160,13 @@ public final class ClassFile {
      */
     public String getClassName() {
         return className;
+    }
+
+    @Override
+    public int compareTo(ClassFile other) {
+        return comparing(ClassFile::getClassName)
+                .thenComparing(ClassFile::getOutputFolder)
+                .compare(this, other);
     }
 
     /**
@@ -188,4 +199,5 @@ public final class ClassFile {
     boolean hasChanged() {
         return ! hash.equals(DebugAgnosticHash.hash(outputFolder.resolve(classFile)));
     }
+
 }

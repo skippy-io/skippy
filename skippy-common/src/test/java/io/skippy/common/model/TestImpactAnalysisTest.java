@@ -106,8 +106,8 @@ public class TestImpactAnalysisTest {
                 [
                     {
                         "testClass": {
-                            "class": "com.example.FooTest",
-                            "path": "com/example/FooTest.class",
+                            "class": "com.example.BarTest",
+                            "path": "com/example/BarTest.class",
                             "outputFolder": "build/classes/java/test",
                             "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
                         },
@@ -116,8 +116,8 @@ public class TestImpactAnalysisTest {
                     },
                     {
                         "testClass": {
-                            "class": "com.example.BarTest",
-                            "path": "com/example/BarTest.class",
+                            "class": "com.example.FooTest",
+                            "path": "com/example/FooTest.class",
                             "outputFolder": "build/classes/java/test",
                             "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
                         },
