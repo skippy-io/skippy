@@ -34,7 +34,8 @@ public class TestImpactAnalysisTest {
         var test = new AnalyzedTest(
                 ClassFile.fromParsedJson(
                     "com.example.FooTest",
-                        Path.of("build/classes/java/test"), Path.of("com/example/FooTest.class"),
+                        Path.of("build/classes/java/test"),
+                        Path.of("com/example/FooTest.class"),
                         "ZT0GoiWG8Az5TevH9/JwBg=="
                 ),
                 TestResult.SUCCESS,
@@ -85,7 +86,8 @@ public class TestImpactAnalysisTest {
         var test1 = new AnalyzedTest(
                 ClassFile.fromParsedJson(
                     "com.example.FooTest",
-                        Path.of("build/classes/java/test"), Path.of("com/example/FooTest.class"),
+                        Path.of("build/classes/java/test"),
+                        Path.of("com/example/FooTest.class"),
                         "ZT0GoiWG8Az5TevH9/JwBg=="
                 ),
                 TestResult.SUCCESS,
@@ -94,7 +96,8 @@ public class TestImpactAnalysisTest {
         var test2 = new AnalyzedTest(
                 ClassFile.fromParsedJson(
                     "com.example.BarTest",
-                        Path.of("build/classes/java/test"), Path.of("com/example/BarTest.class"),
+                        Path.of("build/classes/java/test"),
+                        Path.of("com/example/BarTest.class"),
                         "ZT0GoiWG8Az5TevH9/JwBg=="
                 ),
                 TestResult.SUCCESS,

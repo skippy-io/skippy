@@ -3,9 +3,11 @@ package io.skippy.common.model;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -39,6 +41,30 @@ public class AnalyzedTestTest {
     }
 
     @Test
+    void testToJsonTestError() {
+        var analyzedTest = new AnalyzedTest(
+                ClassFile.fromParsedJson(
+                        "com.example.LeftPadderTest",
+                        Path.of("build/classes/java/test"), Path.of("com/example/LeftPadderTest.class"),
+                        "ZT0GoiWG8Az5TevH9/JwBg=="
+                ),
+                TestResult.FAILURE,
+                emptyList()
+        );
+
+        assertThat(analyzedTest.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
+                """
+                    {
+                        "testClass": {
+                            "class": "com.example.LeftPadderTest"
+                        },
+                        "result": "FAILURE",
+                        "coveredClasses": []
+                    }
+                    """);
+    }
+
+    @Test
     void testParseNoCoveredClasses() {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer(
             """
@@ -52,7 +78,7 @@ public class AnalyzedTestTest {
                     "result": "SUCCESS",
                     "coveredClasses": []
                 }
-                """));
+                """), new HashMap<>());
 
         assertEquals("com.example.LeftPadderTest", analyzedTest.test().getClassName());
         assertEquals(Path.of("com/example/LeftPadderTest.class"), analyzedTest.test().getClassFile());
@@ -123,7 +149,7 @@ public class AnalyzedTestTest {
                         }
                     ]
                 }
-                """));
+                """), new HashMap<>());
 
         assertEquals("com.example.LeftPadderTest", analyzedTest.test().getClassName());
         assertEquals(1, analyzedTest.coveredClasses().size());
@@ -206,7 +232,7 @@ public class AnalyzedTestTest {
                             }
                         ]
                     }
-                    """));
+                    """), new HashMap<>());
 
         assertEquals("com.example.LeftPadderTest", analyzedTest.test().getClassName());
         assertEquals(2, analyzedTest.coveredClasses().size());

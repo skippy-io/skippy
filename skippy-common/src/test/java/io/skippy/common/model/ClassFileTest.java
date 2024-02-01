@@ -7,7 +7,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -75,7 +77,7 @@ public class ClassFileTest {
                     "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
                 }
                 """
-        ));
+        ), new HashMap<>());
         assertEquals("com.example.RightPadder", classFile.getClassName());
         assertEquals(Path.of("com/example/RightPadder.class"), classFile.getClassFile());
         assertEquals(Path.of("build/classes/java/main"), classFile.getOutputFolder());

@@ -25,6 +25,13 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+/**
+ * Clears the skippy folder.
+ * <br /><br />
+ * Direct invocation: {@code mvn skippy:clean}
+ *
+ * @author Florian McKee
+ */
 @Mojo(name = "clean", defaultPhase = LifecyclePhase.INITIALIZE)
 public class SkippyCleanMojo extends AbstractMojo {
 

@@ -75,7 +75,12 @@ public final class SkippyTestApi {
                 var predictionWithReason = testImpactAnalysis.predict(test.getName());
                 Files.writeString(
                     SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
-                    "%s:%s:%s%s".formatted(test.getName(), predictionWithReason.prediction(), predictionWithReason.reason(), System.lineSeparator()),
+                    "%s,%s,%s,%s%s".formatted(
+                            test.getName(),
+                            predictionWithReason.prediction(),
+                            predictionWithReason.reason().category(),
+                            predictionWithReason.reason().details().orElseGet(() -> "n/a"),
+                            System.lineSeparator()),
                     StandardCharsets.UTF_8, CREATE, APPEND
                 );
                 predictions.put(test.getName(), predictionWithReason.prediction());

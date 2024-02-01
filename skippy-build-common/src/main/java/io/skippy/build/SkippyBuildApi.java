@@ -19,6 +19,8 @@ package io.skippy.build;
 import io.skippy.common.SkippyFolder;
 
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 import static io.skippy.common.SkippyConstants.*;
 
@@ -31,6 +33,8 @@ public final class SkippyBuildApi {
 
     private final Path projectDir;
     private final TestImpactAnalysisWriter testImpactAnalysisWriter;
+
+    private final Set<String> failedTests = new HashSet<>();
 
     /**
      * C'tor.
@@ -76,7 +80,7 @@ public final class SkippyBuildApi {
      * Informs Skippy that a build has finished.
      */
     public void buildFinished() {
-        testImpactAnalysisWriter.upsert();
+        testImpactAnalysisWriter.upsert(failedTests);
     }
 
     /**
@@ -85,7 +89,7 @@ public final class SkippyBuildApi {
      * @param className the class name of the failed tests
      */
     public void testFailed(String className) {
-        System.out.println(className);
+        failedTests.add(className);
     }
 
 }

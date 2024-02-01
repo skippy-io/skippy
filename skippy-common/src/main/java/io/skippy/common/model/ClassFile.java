@@ -22,6 +22,7 @@ import io.skippy.common.util.DebugAgnosticHash;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
@@ -42,9 +43,9 @@ import static java.util.stream.Collectors.joining;
  */
 public final class ClassFile implements Comparable<ClassFile> {
 
+    private final String className;
     private final Path outputFolder;
     private final Path classFile;
-    private final String className;
     private final String hash;
 
     /**
@@ -56,9 +57,9 @@ public final class ClassFile implements Comparable<ClassFile> {
      * @param hash a hash of the class file
      */
     private ClassFile(String className, Path outputFolder, Path classFile, String hash) {
+        this.className = className;
         this.outputFolder = outputFolder;
         this.classFile = classFile;
-        this.className = className;
         this.hash = hash;
     }
 
@@ -75,7 +76,7 @@ public final class ClassFile implements Comparable<ClassFile> {
             ClassNameExtractor.getFullyQualifiedClassName(classFile),
             projectDir.relativize(outputFolder),
             outputFolder.relativize(classFile),
-            DebugAgnosticHash.hash(classFile)
+            classFile.toFile().exists() ? DebugAgnosticHash.hash(classFile) : ""
         );
     }
 
@@ -88,24 +89,33 @@ public final class ClassFile implements Comparable<ClassFile> {
      * @param hash         a hash of the class file
      * @return a new instance based off parsed JSON
      */
-    static ClassFile fromParsedJson(String className, Path outputFolder, Path classFile, String hash) {
+    public static ClassFile fromParsedJson(String className, Path outputFolder, Path classFile, String hash) {
         return new ClassFile(className, outputFolder, classFile, hash);
     }
 
-    static ClassFile parse(Tokenizer tokenizer) {
-        tokenizer.skip("{");
+    static ClassFile parse(Tokenizer tokenizer, Map<String, ClassFile> parseCache) {
+
+        var cacheKey = tokenizer.getPrefixIncluding('}');
+        if (parseCache.containsKey(cacheKey)) {
+            tokenizer.skip(cacheKey.length());
+            return parseCache.get(cacheKey);
+        }
+
+        tokenizer.skip('{');
         var entries = new HashMap<String, String>();
         while (entries.size() < 4) {
             var key = tokenizer.next();
-            tokenizer.skip(":");
+            tokenizer.skip(':');
             var value = tokenizer.next();
             entries.put(key, value);
             if (entries.size() < 4) {
-                tokenizer.skip(",");
+                tokenizer.skip(',');
             }
         }
-        tokenizer.skip("}");
-        return fromParsedJson(entries.get("class"), Path.of(entries.get("outputFolder")), Path.of(entries.get("path")), entries.get("hash"));
+        tokenizer.skip('}');
+        var result = fromParsedJson(entries.get("class"), Path.of(entries.get("outputFolder")), Path.of(entries.get("path")), entries.get("hash"));
+        parseCache.put(cacheKey, result);
+        return result;
     }
 
     /**
@@ -200,4 +210,7 @@ public final class ClassFile implements Comparable<ClassFile> {
         return ! hash.equals(DebugAgnosticHash.hash(outputFolder.resolve(classFile)));
     }
 
+    boolean classFileNotFound() {
+        return ! outputFolder.resolve(classFile).toFile().exists();
+    }
 }

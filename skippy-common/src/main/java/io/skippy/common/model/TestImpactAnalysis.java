@@ -19,36 +19,21 @@ package io.skippy.common.model;
 import io.skippy.common.SkippyFolder;
 import io.skippy.common.util.Profiler;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
-import static io.skippy.common.model.Reason.*;
+import static io.skippy.common.model.Reason.Category.*;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 
 /**
- * Programmatic representation of the `test-impact-analysis.json` file:
- *
- * <pre>
- * [
- *   {
- *     "test": "com.example.FooTest",
- *     ...
- *   },
- *   {
- *     "test": "com.example.BarTest",
- *     ...
- *   },
- *   ...
- * ]
- * </pre>
+ * Programmatic representation of the `test-impact-analysis.json` file.
  *
  * @author Florian McKee
  */
@@ -102,19 +87,30 @@ public final class TestImpactAnalysis {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
             var maybeAnalyzedTest = analyzedTests.stream().filter(test -> test.test().getClassName().equals(testClassName)).findFirst();
             if (maybeAnalyzedTest.isEmpty()) {
-                return PredictionWithReason.execute(UNKNOWN_TEST);
+                return PredictionWithReason.execute(new Reason(UNKNOWN_TEST, Optional.empty()));
             }
             var analyzedTest = maybeAnalyzedTest.get();
 
+            if (analyzedTest.result() == TestResult.FAILURE) {
+                return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
+            }
+
+            if (analyzedTest.test().classFileNotFound()) {
+                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(analyzedTest.test().getClassFile().toString())));
+            }
+
             if (analyzedTest.test().hasChanged()) {
-                return PredictionWithReason.execute(BYTECODE_CHANGE_IN_TEST);
+                return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
             }
             for (var coveredClass : analyzedTest.coveredClasses()) {
+                if (coveredClass.classFileNotFound()) {
+                    return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(coveredClass.getClassFile().toString())));
+                }
                 if (coveredClass.hasChanged()) {
-                    return PredictionWithReason.execute(BYTECODE_CHANGE_IN_COVERED_CLASS);
+                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of(coveredClass.getClassName())));
                 }
             }
-            return PredictionWithReason.skip(NO_CHANGE);
+            return PredictionWithReason.skip(new Reason(NO_CHANGE, Optional.empty()));
         });
     }
 
@@ -123,19 +119,17 @@ public final class TestImpactAnalysis {
     }
 
     static TestImpactAnalysis parse(String string) {
-        return parse(new Tokenizer(string));
+        return parse(new Tokenizer(string), new HashMap<>());
     }
 
-    static TestImpactAnalysis parse(Tokenizer tokenizer) {
+    static TestImpactAnalysis parse(Tokenizer tokenizer, Map<String, ClassFile> parseCache) {
         var tests = new ArrayList<AnalyzedTest>();
-        tokenizer.skip("[");
-        while ( ! tokenizer.peek("]")) {
-            if (tokenizer.peek(",")) {
-                tokenizer.skip(",");
-            }
-            tests.add(AnalyzedTest.parse(tokenizer));
+        tokenizer.skip('[');
+        while ( ! tokenizer.peek(']')) {
+            tokenizer.skipIfNext(',');
+            tests.add(AnalyzedTest.parse(tokenizer, parseCache));
         }
-        tokenizer.skip("]");
+        tokenizer.skip(']');
         return new TestImpactAnalysis(tests);
     }
 
@@ -166,4 +160,28 @@ public final class TestImpactAnalysis {
         );
     }
 
+    /**
+     * Merges two {@link TestImpactAnalysis} instances to support incremental updates of the data in the Skippy folder.
+     *
+     * @param other a {@link TestImpactAnalysis} instance that will be merged with this instance
+     * @return a new instance that represents the merge of this and the {@code other} instance
+     */
+    public TestImpactAnalysis merge(TestImpactAnalysis other) {
+
+        record Key(Path outputFolder, Path classFile, String className) {}
+
+        var result = new ArrayList<AnalyzedTest>();
+        var otherKeys = other.analyzedTests.stream()
+                .map(AnalyzedTest::test)
+                .map(classFile -> new Key(classFile.getOutputFolder(), classFile.getClassFile(), classFile.getClassName()))
+                .collect(toSet());
+
+        for (var analyzedTest : this.analyzedTests) {
+            if (false == otherKeys.contains(new Key(analyzedTest.test().getOutputFolder(), analyzedTest.test().getClassFile(), analyzedTest.test().getClassName()))) {
+                result.add(analyzedTest);
+            }
+        }
+        result.addAll(other.analyzedTests);
+        return new TestImpactAnalysis(result);
+    }
 }

@@ -105,7 +105,7 @@ public final class Profiler {
                 System.lineSeparator(),
                 System.lineSeparator());
         try {
-            Files.writeString(skippyFolder.resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
+            Files.writeString(skippyFolder.resolve(PROFILING_LOG_FILE + "." + Runtime.getRuntime().toString()), result, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

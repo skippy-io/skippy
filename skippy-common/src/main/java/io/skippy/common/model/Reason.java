@@ -16,27 +16,48 @@
 
 package io.skippy.common.model;
 
+import java.util.Optional;
+
 /**
- * The reson for a {@link Prediction}.
+ * The reason for a {@link Prediction}.
  */
-public enum Reason {
-    /**
-     * Neither the test nor any of the covered classes have changed.
-     */
-    NO_CHANGE,
+public record Reason(Category category, Optional<String> details) {
 
-    /**
-     * Unknown test.
-     */
-    UNKNOWN_TEST,
+    enum Category {
+        /**
+         * Neither the test nor any of the covered classes have changed.
+         */
+        NO_CHANGE,
 
-    /**
-     * Bytecode change in test detected.
-     */
-    BYTECODE_CHANGE_IN_TEST,
+        /**
+         * Unknown test.
+         */
+        UNKNOWN_TEST,
 
-    /**
-     * Bytecode change in covered class detected.
-     */
-    BYTECODE_CHANGE_IN_COVERED_CLASS
+        /**
+         * Bytecode change in test detected.
+         */
+        BYTECODE_CHANGE_IN_TEST,
+
+        /**
+         * Bytecode change in covered class detected.
+         */
+        BYTECODE_CHANGE_IN_COVERED_CLASS,
+
+        /**
+         * The test failed previously.
+         */
+        TEST_FAILED_PREVIOUSLY,
+
+        /**
+         * The class file of the test was not found on the file system.
+         */
+        TEST_CLASS_CLASS_FILE_NOT_FOUND,
+
+        /**
+         * The class file of a covered class  was not found on the file system.
+         */
+        COVERED_CLASS_CLASS_FILE_NOT_FOUND
+    }
+
 }

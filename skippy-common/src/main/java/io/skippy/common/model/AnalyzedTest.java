@@ -19,6 +19,7 @@ package io.skippy.common.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.System.lineSeparator;
 import static java.util.Comparator.comparing;
@@ -44,25 +45,25 @@ import static java.util.stream.Collectors.joining;
  */
 public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> coveredClasses) implements Comparable<AnalyzedTest> {
 
-    static AnalyzedTest parse(Tokenizer tokenizer) {
-        tokenizer.skip("{");
+    static AnalyzedTest parse(Tokenizer tokenizer, Map<String, ClassFile> parseCache) {
+        tokenizer.skip('{');
         var entries = new HashMap<String, Object>();
         while (entries.size() < 3) {
             var key = tokenizer.next();
-            tokenizer.skip(":");
+            tokenizer.skip(':');
             if ("testClass".equals(key)) {
-                entries.put(key, ClassFile.parse(tokenizer));
+                entries.put(key, ClassFile.parse(tokenizer, parseCache));
             } else if ("coveredClasses".equals(key)) {
-                entries.put(key, parseCoveredClasses(tokenizer));
+                entries.put(key, parseCoveredClasses(tokenizer, parseCache));
             } else {
                 entries.put(key, tokenizer.next());
             }
             
             if (entries.size() < 3) {
-                tokenizer.skip(",");
+                tokenizer.skip(',');
             }
         }
-        tokenizer.skip("}");
+        tokenizer.skip('}');
         return new AnalyzedTest(
             (ClassFile) entries.get("testClass"),
             TestResult.valueOf(entries.get("result").toString()),
@@ -70,16 +71,14 @@ public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> co
         );
     }
 
-    private static List<ClassFile> parseCoveredClasses(Tokenizer tokenizer) {
+    private static List<ClassFile> parseCoveredClasses(Tokenizer tokenizer, Map<String, ClassFile> parseCache) {
         var coveredClasses = new ArrayList<ClassFile>();
-        tokenizer.skip("[");
-        while ( ! tokenizer.peek("]")) {
-            if (tokenizer.peek(",")) {
-                tokenizer.skip(",");
-            }
-            coveredClasses.add(ClassFile.parse(tokenizer));
+        tokenizer.skip('[');
+        while ( ! tokenizer.peek(']')) {
+            tokenizer.skipIfNext(',');
+            coveredClasses.add(ClassFile.parse(tokenizer, parseCache));
         }
-        tokenizer.skip("]");
+        tokenizer.skip(']');
         return coveredClasses;
     }
 
