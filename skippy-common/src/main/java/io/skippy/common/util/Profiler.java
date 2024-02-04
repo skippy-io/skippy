@@ -105,11 +105,25 @@ public final class Profiler {
                 System.lineSeparator(),
                 System.lineSeparator());
         try {
-            Files.writeString(skippyFolder.resolve(PROFILING_LOG_FILE + "." + Runtime.getRuntime().toString()), result, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
+            Files.writeString(skippyFolder.resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, APPEND);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
+
+    public static void printResults() {
+        var result =  "=== %s ===%s%s%s%s".formatted(
+                Runtime.getRuntime().toString(),
+                System.lineSeparator(),
+                data.entrySet().stream()
+                        .map(entry -> "%s: %s call(s), %sms".formatted(entry.getKey(), entry.getValue().invocationCount, entry.getValue().time))
+                        .sorted()
+                        .collect(joining(lineSeparator())),
+                System.lineSeparator(),
+                System.lineSeparator());
+        System.out.println(result);
+    }
+
 
     /**
      * Clears all profiling data.

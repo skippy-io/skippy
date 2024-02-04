@@ -75,16 +75,15 @@ public final class SkippyBuildApi {
         }
     }
 
-
     /**
      * Informs Skippy that a build has finished.
      */
     public void buildFinished() {
-        testImpactAnalysisWriter.upsert(failedTests);
+         testImpactAnalysisWriter.upsert(failedTests);
     }
 
     /**
-     * Informs Skippy that a build has finished.
+     * Informs Skippy that a test has finished.
      *
      * @param className the class name of the failed tests
      */

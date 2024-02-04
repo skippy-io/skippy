@@ -10,7 +10,7 @@ public enum JsonProperty {
     /**
      * The class name.
      */
-    CLASS_NAME("class", ClassFile::getClassName),
+    CLASS_NAME("name", ClassFile::getClassName),
 
     /**
      * The path to the class file relative to the output folder.

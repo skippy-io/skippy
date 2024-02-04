@@ -30,7 +30,6 @@ import static io.skippy.common.model.Reason.Category.*;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * Programmatic representation of the `test-impact-analysis.json` file.
@@ -39,6 +38,7 @@ import static java.util.stream.Collectors.toSet;
  */
 public final class TestImpactAnalysis {
 
+    private final ClassFileContainer classFileContainer;
     private final List<AnalyzedTest> analyzedTests;
 
     /**
@@ -46,7 +46,8 @@ public final class TestImpactAnalysis {
      *
      * @param analyzedTests a list of {@link AnalyzedTest}s
      */
-    public TestImpactAnalysis(List<AnalyzedTest> analyzedTests) {
+    public TestImpactAnalysis(ClassFileContainer classFileContainer, List<AnalyzedTest> analyzedTests) {
+        this.classFileContainer = classFileContainer;
         this.analyzedTests = analyzedTests;
     }
 
@@ -58,7 +59,7 @@ public final class TestImpactAnalysis {
      */
     public static TestImpactAnalysis readFromFile(Path testImpactAnalysisJsonFile) {
         if ( ! testImpactAnalysisJsonFile.toFile().exists()) {
-            return new TestImpactAnalysis(emptyList());
+            return new TestImpactAnalysis(ClassFileContainer.from(emptyList()), emptyList());
         }
         try {
             return parse(Files.readString(testImpactAnalysisJsonFile, StandardCharsets.UTF_8));
@@ -85,24 +86,27 @@ public final class TestImpactAnalysis {
      */
     public PredictionWithReason predict(String testClassName) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
-            var maybeAnalyzedTest = analyzedTests.stream().filter(test -> test.test().getClassName().equals(testClassName)).findFirst();
+            var maybeAnalyzedTest = analyzedTests.stream()
+                    .filter(test -> classFileContainer.getById(test.testClassId()).getClassName().equals(testClassName))
+                    .findFirst();
             if (maybeAnalyzedTest.isEmpty()) {
                 return PredictionWithReason.execute(new Reason(UNKNOWN_TEST, Optional.empty()));
             }
             var analyzedTest = maybeAnalyzedTest.get();
-
-            if (analyzedTest.result() == TestResult.FAILURE) {
+            var testClass = classFileContainer.getById(analyzedTest.testClassId());
+            if (analyzedTest.result() == TestResult.FAILED) {
                 return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
             }
 
-            if (analyzedTest.test().classFileNotFound()) {
-                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(analyzedTest.test().getClassFile().toString())));
+            if (testClass.classFileNotFound()) {
+                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(testClass.getClassFile().toString())));
             }
 
-            if (analyzedTest.test().hasChanged()) {
+            if (testClass.hasChanged()) {
                 return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
             }
-            for (var coveredClass : analyzedTest.coveredClasses()) {
+            for (var coveredClassId : analyzedTest.coveredClassesIds()) {
+                var coveredClass = classFileContainer.getById(coveredClassId);
                 if (coveredClass.classFileNotFound()) {
                     return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(coveredClass.getClassFile().toString())));
                 }
@@ -118,19 +122,37 @@ public final class TestImpactAnalysis {
         return analyzedTests;
     }
 
-    static TestImpactAnalysis parse(String string) {
-        return parse(new Tokenizer(string), new HashMap<>());
+    ClassFileContainer getClassFileContainer() {
+        return classFileContainer;
     }
 
-    static TestImpactAnalysis parse(Tokenizer tokenizer, Map<String, ClassFile> parseCache) {
-        var tests = new ArrayList<AnalyzedTest>();
-        tokenizer.skip('[');
-        while ( ! tokenizer.peek(']')) {
-            tokenizer.skipIfNext(',');
-            tests.add(AnalyzedTest.parse(tokenizer, parseCache));
+    static TestImpactAnalysis parse(String string) {
+        return Profiler.profile("TestImpactAnalysis#parse", () -> {
+            return parse(new Tokenizer(string));
+        });
+    }
+
+    static TestImpactAnalysis parse(Tokenizer tokenizer) {
+        tokenizer.skip('{');
+        ClassFileContainer classFileContainer = null;
+        List<AnalyzedTest> analyzedTests = null;
+        while (classFileContainer == null || analyzedTests == null) {
+            var key = tokenizer.next();
+            tokenizer.skip(':');
+            switch (key) {
+                case "classes":
+                    classFileContainer = ClassFileContainer.parse(tokenizer);
+                    break;
+                case "tests":
+                    analyzedTests = AnalyzedTest.parseList(tokenizer);
+                    break;
+            }
+            if (classFileContainer == null || analyzedTests == null) {
+                tokenizer.skip(',');
+            }
         }
-        tokenizer.skip(']');
-        return new TestImpactAnalysis(tests);
+        tokenizer.skip('}');
+        return new TestImpactAnalysis(classFileContainer, analyzedTests);
     }
 
     /**
@@ -139,24 +161,20 @@ public final class TestImpactAnalysis {
      * @return the instance as JSON string
      */
     public String toJson() {
-        return """
-            [
-            %s
-            ]""".formatted(analyzedTests.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator()))
-        );
+        return toJson(JsonProperty.values());
     }
 
-    /**
-     * Renders this instance as JSON string.
-     *
-     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
-     * @return this instance as JSON string
-     */
     public String toJson(JsonProperty... propertiesToRender) {
         return """
-            [
+            {
+                "classes": %s,
+                "tests": [
             %s
-            ]""".formatted(analyzedTests.stream().sorted().map(c -> c.toJson(propertiesToRender)).collect(joining("," + lineSeparator()))
+                ]
+            }""".formatted(
+                classFileContainer.toJson(propertiesToRender),
+                analyzedTests.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator())
+            )
         );
     }
 
@@ -167,21 +185,32 @@ public final class TestImpactAnalysis {
      * @return a new instance that represents the merge of this and the {@code other} instance
      */
     public TestImpactAnalysis merge(TestImpactAnalysis other) {
-
-        record Key(Path outputFolder, Path classFile, String className) {}
-
-        var result = new ArrayList<AnalyzedTest>();
-        var otherKeys = other.analyzedTests.stream()
-                .map(AnalyzedTest::test)
-                .map(classFile -> new Key(classFile.getOutputFolder(), classFile.getClassFile(), classFile.getClassName()))
-                .collect(toSet());
-
-        for (var analyzedTest : this.analyzedTests) {
-            if (false == otherKeys.contains(new Key(analyzedTest.test().getOutputFolder(), analyzedTest.test().getClassFile(), analyzedTest.test().getClassName()))) {
-                result.add(analyzedTest);
+        return Profiler.profile("TestImpactAnalysis#merge", () -> {
+            var mergedClassFileContainer = classFileContainer.merge(other.getClassFileContainer());
+            var remappedTests = new TreeSet<AnalyzedTest>();
+            for (var analyzedTest : other.analyzedTests) {
+                var remappedTest = remap(analyzedTest, other.classFileContainer, mergedClassFileContainer);
+                remappedTests.add(remappedTest);
             }
-        }
-        result.addAll(other.analyzedTests);
-        return new TestImpactAnalysis(result);
+            for (var analyzedTest : this.analyzedTests) {
+                var remappedTest = remap(analyzedTest, this.classFileContainer, mergedClassFileContainer);
+                if (false == remappedTests.contains(remappedTest)) {
+                    remappedTests.add(remappedTest);
+                }
+            }
+            return new TestImpactAnalysis(mergedClassFileContainer, new ArrayList<>(remappedTests));
+        });
+    }
+
+    private AnalyzedTest remap(AnalyzedTest analyzedTest, ClassFileContainer original, ClassFileContainer merged) {
+        return new AnalyzedTest(
+                remap(analyzedTest.testClassId(), original, merged),
+                analyzedTest.result(),
+                analyzedTest.coveredClassesIds().stream().map(id -> remap(id, original, merged)).toList());
+    }
+
+    private String remap(String id, ClassFileContainer original, ClassFileContainer merged) {
+        var classFile = original.getById(id);
+        return merged.getId(classFile);
     }
 }

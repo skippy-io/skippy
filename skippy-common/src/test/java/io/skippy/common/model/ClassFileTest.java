@@ -26,7 +26,7 @@ public class ClassFileTest {
         assertThat(classFile.toJson()).isEqualToIgnoringWhitespace(
             """
                 {
-                    "class": "com.example.RightPadder",
+                    "name": "com.example.RightPadder",
                     "path": "com/example/RightPadder.class",
                     "outputFolder": "build/classes/java/main",
                     "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
@@ -45,7 +45,7 @@ public class ClassFileTest {
         assertThat(classFile.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
                 """
                     {
-                        "class": "com.example.RightPadder"
+                        "name": "com.example.RightPadder"
                     }
                     """);
     }
@@ -60,7 +60,7 @@ public class ClassFileTest {
         assertThat(classFile.toTestClassJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
                 """
                     {
-                        "class": "com.example.RightPadder"
+                        "name": "com.example.RightPadder"
                     }
                     """);
     }
@@ -71,13 +71,13 @@ public class ClassFileTest {
         var classFile = ClassFile.parse(new Tokenizer(
             """
                 {
-                    "class": "com.example.RightPadder",
+                    "name": "com.example.RightPadder",
                     "path": "com/example/RightPadder.class",
                     "outputFolder": "build/classes/java/main",
                     "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
                 }
                 """
-        ), new HashMap<>());
+        ));
         assertEquals("com.example.RightPadder", classFile.getClassName());
         assertEquals(Path.of("com/example/RightPadder.class"), classFile.getClassFile());
         assertEquals(Path.of("build/classes/java/main"), classFile.getOutputFolder());

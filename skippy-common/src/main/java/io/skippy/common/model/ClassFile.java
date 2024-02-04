@@ -22,7 +22,7 @@ import io.skippy.common.util.DebugAgnosticHash;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
@@ -93,14 +93,7 @@ public final class ClassFile implements Comparable<ClassFile> {
         return new ClassFile(className, outputFolder, classFile, hash);
     }
 
-    static ClassFile parse(Tokenizer tokenizer, Map<String, ClassFile> parseCache) {
-
-        var cacheKey = tokenizer.getPrefixIncluding('}');
-        if (parseCache.containsKey(cacheKey)) {
-            tokenizer.skip(cacheKey.length());
-            return parseCache.get(cacheKey);
-        }
-
+    static ClassFile parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
         var entries = new HashMap<String, String>();
         while (entries.size() < 4) {
@@ -113,8 +106,7 @@ public final class ClassFile implements Comparable<ClassFile> {
             }
         }
         tokenizer.skip('}');
-        var result = fromParsedJson(entries.get("class"), Path.of(entries.get("outputFolder")), Path.of(entries.get("path")), entries.get("hash"));
-        parseCache.put(cacheKey, result);
+        var result = fromParsedJson(entries.get("name"), Path.of(entries.get("outputFolder")), Path.of(entries.get("path")), entries.get("hash"));
         return result;
     }
 
@@ -177,6 +169,19 @@ public final class ClassFile implements Comparable<ClassFile> {
         return comparing(ClassFile::getClassName)
                 .thenComparing(ClassFile::getOutputFolder)
                 .compare(this, other);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof ClassFile c) {
+            return Objects.equals(getClassName() + getOutputFolder(), c.getClassName()  + c.getOutputFolder());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClassName(), getOutputFolder());
     }
 
     /**

@@ -14,26 +14,30 @@ public class TestImpactAnalysisPredictTest {
     void testPredictNoChange() {
         var testImpactAnalysis = TestImpactAnalysis.parse(
             """
-                [
-                    {
-                        "testClass": {
-                            "class": "com.example.LeftPadderTest",
-                            "path": "io/skippy/common/model/LeftPadderTest.class",
-                            "outputFolder": "src/test/resources",
-                            "hash": "sGLJTZJw4beE9m2Kg6chUg=="
-                        },
-                        "result": "SUCCESS",
-                        "coveredClasses": [
-                            {
-                                "class": "com.example.LeftPadder",
-                                "path": "io/skippy/common/model/LeftPadder.class",
-                                "outputFolder": "src/test/resources",
-                                "hash": "9U3+WYit7uiiNqA9jplN2A=="
-                            }
-                        ]
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.LeftPadder",
+                        "path": "io/skippy/common/model/LeftPadder.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                    },
+                    "1": {
+                        "name": "com.example.LeftPadderTest",
+                        "path": "io/skippy/common/model/LeftPadderTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
                     }
-                ]
-            """);
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0", "1"]
+                    }
+                ]                      
+            }
+        """);
         var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
         assertEquals(SKIP, predictionWithReason.prediction());
         assertEquals(NO_CHANGE, predictionWithReason.reason().category());
@@ -42,9 +46,14 @@ public class TestImpactAnalysisPredictTest {
     @Test
     void testPredictUnknownTest() {
         var testImpactAnalysis = TestImpactAnalysis.parse(
-                """
-                    []
-                """);
+            """
+            {
+                "classes": {
+                },
+                "tests": [
+                ]
+            }
+        """);
         var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
         assertEquals(EXECUTE, predictionWithReason.prediction());
         assertEquals(UNKNOWN_TEST, predictionWithReason.reason().category());
@@ -53,27 +62,31 @@ public class TestImpactAnalysisPredictTest {
     @Test
     void testPredictBytecodeChangeInTest() {
         var testImpactAnalysis = TestImpactAnalysis.parse(
-                """
-                    [
-                        {
-                            "testClass": {
-                                "class": "com.example.LeftPadderTest",
-                                "path": "io/skippy/common/model/LeftPadderTest.class",
-                                "outputFolder": "src/test/resources",
-                                "hash": "<!!!!>sGLJTZJw4beE9m2Kg6chUg=="
-                            },
-                            "result": "SUCCESS",
-                            "coveredClasses": [
-                                {
-                                    "class": "com.example.LeftPadder",
-                                    "path": "io/skippy/common/model/LeftPadder.class",
-                                    "outputFolder": "src/test/resources",
-                                    "hash": "9U3+WYit7uiiNqA9jplN2A=="
-                                }
-                            ]
-                        }
-                    ]
-                """);
+            """
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.LeftPadder",
+                        "path": "io/skippy/common/model/LeftPadder.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                    },
+                    "1": {
+                        "name": "com.example.LeftPadderTest",
+                        "path": "io/skippy/common/model/LeftPadderTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "<!!!!>sGLJTZJw4beE9m2Kg6chUg=="                        
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0", "1"]
+                    }
+                ]                      
+            }
+        """);
         var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
         assertEquals(EXECUTE, predictionWithReason.prediction());
         assertEquals(BYTECODE_CHANGE_IN_TEST, predictionWithReason.reason().category());
@@ -82,27 +95,31 @@ public class TestImpactAnalysisPredictTest {
     @Test
     void testPredictBytecodeChangeInCoveredClass() {
         var testImpactAnalysis = TestImpactAnalysis.parse(
-                """
-                    [
-                        {
-                            "testClass": {
-                                "class": "com.example.LeftPadderTest",
-                                "path": "io/skippy/common/model/LeftPadderTest.class",
-                                "outputFolder": "src/test/resources",
-                                "hash": "sGLJTZJw4beE9m2Kg6chUg=="
-                            },
-                            "result": "SUCCESS",
-                            "coveredClasses": [
-                                {
-                                    "class": "com.example.LeftPadder",
-                                    "path": "io/skippy/common/model/LeftPadder.class",
-                                    "outputFolder": "src/test/resources",
-                                    "hash": "<!!!!>9U3+WYit7uiiNqA9jplN2A=="
-                                }
-                            ]
-                        }
-                    ]
-                """);
+            """
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.LeftPadder",
+                        "path": "io/skippy/common/model/LeftPadder.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "<!!!!>9U3+WYit7uiiNqA9jplN2A=="                       
+                    },
+                    "1": {
+                        "name": "com.example.LeftPadderTest",
+                        "path": "io/skippy/common/model/LeftPadderTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0", "1"]
+                    }
+                ]                      
+            }
+        """);
         var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
         assertEquals(EXECUTE, predictionWithReason.prediction());
         assertEquals(BYTECODE_CHANGE_IN_COVERED_CLASS, predictionWithReason.reason().category());
@@ -112,27 +129,31 @@ public class TestImpactAnalysisPredictTest {
     @Test
     void testPredictFailedTest() {
         var testImpactAnalysis = TestImpactAnalysis.parse(
-                """
-                    [
-                        {
-                            "testClass": {
-                                "class": "com.example.LeftPadderTest",
-                                "path": "io/skippy/common/model/LeftPadderTest.class",
-                                "outputFolder": "src/test/resources",
-                                "hash": "sGLJTZJw4beE9m2Kg6chUg=="
-                            },
-                            "result": "FAILURE",
-                            "coveredClasses": [
-                                {
-                                    "class": "com.example.LeftPadder",
-                                    "path": "io/skippy/common/model/LeftPadder.class",
-                                    "outputFolder": "src/test/resources",
-                                    "hash": "9U3+WYit7uiiNqA9jplN2A=="
-                                }
-                            ]
-                        }
-                    ]
-                """);
+            """
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.LeftPadder",
+                        "path": "io/skippy/common/model/LeftPadder.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                    },
+                    "1": {
+                        "name": "com.example.LeftPadderTest",
+                        "path": "io/skippy/common/model/LeftPadderTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "FAILED",
+                        "coveredClasses": ["0", "1"]
+                    }
+                ]                      
+            }
+        """);
         var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
         assertEquals(EXECUTE, predictionWithReason.prediction());
         assertEquals(TEST_FAILED_PREVIOUSLY, predictionWithReason.reason().category());
@@ -141,27 +162,31 @@ public class TestImpactAnalysisPredictTest {
     @Test
     void testPredictTestClassFileNotFound() {
         var testImpactAnalysis = TestImpactAnalysis.parse(
-                """
-                    [
-                        {
-                            "testClass": {
-                                "class": "com.example.LeftPadderTest",
-                                "path": "io/skippy/common/model/LeftPadderTest$Bla.class",
-                                "outputFolder": "src/test/resources",
-                                "hash": "sGLJTZJw4beE9m2Kg6chUg=="
-                            },
-                            "result": "SUCCESS",
-                            "coveredClasses": [
-                                {
-                                    "class": "com.example.LeftPadder",
-                                    "path": "io/skippy/common/model/LeftPadder.class",
-                                    "outputFolder": "src/test/resources",
-                                    "hash": "9U3+WYit7uiiNqA9jplN2A=="
-                                }
-                            ]
-                        }
-                    ]
-                """);
+            """
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.LeftPadder",
+                        "path": "io/skippy/common/model/LeftPadder.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                    
+                    },
+                    "1": {
+                        "name": "com.example.LeftPadderTest",
+                        "path": "io/skippy/common/model/LeftPadderTest$Bla.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0", "1"]
+                    }
+                ]                      
+            }
+        """);
         var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
         assertEquals(EXECUTE, predictionWithReason.prediction());
         assertEquals(TEST_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
@@ -171,27 +196,31 @@ public class TestImpactAnalysisPredictTest {
     @Test
     void testPredictCoveredClassClassFileNotFound() {
         var testImpactAnalysis = TestImpactAnalysis.parse(
-                """
-                    [
-                        {
-                            "testClass": {
-                                "class": "com.example.LeftPadderTest",
-                                "path": "io/skippy/common/model/LeftPadderTest.class",
-                                "outputFolder": "src/test/resources",
-                                "hash": "sGLJTZJw4beE9m2Kg6chUg=="
-                            },
-                            "result": "SUCCESS",
-                            "coveredClasses": [
-                                {
-                                    "class": "com.example.LeftPadder",
-                                    "path": "io/skippy/common/model/LeftPadder$Bla.class",
-                                    "outputFolder": "src/test/resources",
-                                    "hash": "9U3+WYit7uiiNqA9jplN2A=="
-                                }
-                            ]
-                        }
-                    ]
-                """);
+            """
+             {
+                "classes": {
+                    "0": {
+                        "name": "com.example.LeftPadder",
+                        "path": "io/skippy/common/model/LeftPadder$Bla.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                    },
+                    "1": {
+                        "name": "com.example.LeftPadderTest",
+                        "path": "io/skippy/common/model/LeftPadderTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0", "1"]
+                    }
+                ]                      
+            }
+        """);
         var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
         assertEquals(EXECUTE, predictionWithReason.prediction());
         assertEquals(COVERED_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
