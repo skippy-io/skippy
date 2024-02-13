@@ -7,7 +7,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -24,7 +26,7 @@ public class ClassFileTest {
         assertThat(classFile.toJson()).isEqualToIgnoringWhitespace(
             """
                 {
-                    "class": "com.example.RightPadder",
+                    "name": "com.example.RightPadder",
                     "path": "com/example/RightPadder.class",
                     "outputFolder": "build/classes/java/main",
                     "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
@@ -43,7 +45,7 @@ public class ClassFileTest {
         assertThat(classFile.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
                 """
                     {
-                        "class": "com.example.RightPadder"
+                        "name": "com.example.RightPadder"
                     }
                     """);
     }
@@ -58,7 +60,7 @@ public class ClassFileTest {
         assertThat(classFile.toTestClassJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
                 """
                     {
-                        "class": "com.example.RightPadder"
+                        "name": "com.example.RightPadder"
                     }
                     """);
     }
@@ -69,7 +71,7 @@ public class ClassFileTest {
         var classFile = ClassFile.parse(new Tokenizer(
             """
                 {
-                    "class": "com.example.RightPadder",
+                    "name": "com.example.RightPadder",
                     "path": "com/example/RightPadder.class",
                     "outputFolder": "build/classes/java/main",
                     "hash": "ZT0GoiWG8Az5TevH9/JwBg=="

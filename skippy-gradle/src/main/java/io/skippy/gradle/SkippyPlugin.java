@@ -16,7 +16,13 @@
 
 package io.skippy.gradle;
 
+import io.skippy.common.util.Profiler;
 import org.gradle.api.Project;
+import org.gradle.api.tasks.testing.Test;
+import org.gradle.testing.jacoco.plugins.JacocoPlugin;
+
+import static io.skippy.gradle.SkippyGradleUtils.skippyBuildApi;
+import static io.skippy.gradle.SkippyGradleUtils.supportsSkippy;
 
 /**
  * The Skippy plugin adds the
@@ -34,10 +40,16 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        Profiler.clear();
+        project.getPlugins().apply(JacocoPlugin.class);
         project.getTasks().register("skippyClean", SkippyCleanTask.class);
         project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
-        project.afterEvaluate(action ->
-                SkippyBuildApiFactory.getInstanceFor(project).ifPresent(api -> api.deleteLogFiles()));
+        project.getTasks().withType(Test.class, testTask -> testTask.finalizedBy("skippyAnalyze"));
+        project.afterEvaluate(action -> {
+            if (supportsSkippy(action.getProject())) {
+                skippyBuildApi(action.getProject()).buildStarted();
+            }
+        });
     }
 
 }

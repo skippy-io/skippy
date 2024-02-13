@@ -26,14 +26,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Clears the skippy folder.
- * <br /><br />
- * Direct invocation: {@code mvn skippy:clean}
- *
- * @author Florian McKee
+ * Mojo that informs Skippy that a build has started.
  */
-@Mojo(name = "clean", defaultPhase = LifecyclePhase.INITIALIZE)
-public class SkippyCleanMojo extends AbstractMojo {
+@Mojo(name = "buildStarted", defaultPhase = LifecyclePhase.INITIALIZE)
+public class SkippyBuildStartedMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
@@ -44,7 +40,7 @@ public class SkippyCleanMojo extends AbstractMojo {
     @Override
     public void execute() {
         var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), new MavenClassFileCollector(project));
-        skippyBuildApi.removeSkippyFolder();
+        skippyBuildApi.buildStarted();
     }
 
 }

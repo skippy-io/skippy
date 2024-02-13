@@ -17,45 +17,60 @@
 package io.skippy.gradle;
 
 import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.testing.Test;
 
 import javax.inject.Inject;
 
-import io.skippy.common.SkippyConstants;
-import org.gradle.testing.jacoco.plugins.JacocoPlugin;
+import org.gradle.api.tasks.testing.TestDescriptor;
+import org.gradle.api.tasks.testing.TestListener;
+import org.gradle.api.tasks.testing.TestResult;
+
+import java.util.function.Consumer;
+
+import static io.skippy.gradle.SkippyGradleUtils.supportsSkippy;
+import static io.skippy.gradle.SkippyGradleUtils.skippyBuildApi;
 
 /**
- * Triggers a Skippy analysis that will populate the skippy folder with
- * <ul>
- *     <li>a {@code .cov} file containing coverage data for each skippified test and </l>
- *     <li>a {@code classes.md5} file containing hashes for all class files in the project's output folders.</l>
- * </ul>
- *
- * Invocation: {@code ./gradlew skippyAnalyze}
- *
- * @author Florian McKee
+ * Informs Skippy that the relevant parts of the build (e.g., compilation and testing) have finished.
  */
 class SkippyAnalyzeTask extends DefaultTask {
 
     @Inject
     public SkippyAnalyzeTask() {
         setGroup("skippy");
-        getProject().getPlugins().apply(JacocoPlugin.class);
-        SkippyBuildApiFactory.getInstanceFor(this).ifPresent(skippyBuildApi -> {
-            // set up task dependencies
-            for (var sourceSet : getProject().getExtensions().getByType(SourceSetContainer.class)) {
-                dependsOn(sourceSet.getClassesTaskName());
+        if (supportsSkippy(getProject())) {
+            var skippyBuildApi = skippyBuildApi(getProject());
+            var testFailedListener = new TestFailedListener((className) -> skippyBuildApi.testFailed(className));
+            getProject().getTasks().withType(Test.class, testTask -> testTask.addTestListener(testFailedListener));
+            doLast(task -> skippyBuildApi.buildFinished());
+        }
+    }
+
+    static private class TestFailedListener implements TestListener {
+        private final Consumer<String> testFailedAction;
+
+        TestFailedListener(Consumer<String> testFailedAction) {
+            this.testFailedAction = testFailedAction;
+        }
+
+        @Override
+        public void beforeSuite(TestDescriptor testDescriptor) {
+        }
+
+        @Override
+        public void afterSuite(TestDescriptor testDescriptor, TestResult testResult) {
+        }
+
+        @Override
+        public void beforeTest(TestDescriptor testDescriptor) {
+        }
+
+        @Override
+        public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
+            if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
+                testFailedAction.accept(testDescriptor.getClassName());
             }
-            dependsOn("clean", "skippyClean", "check");
-            getProject().getTasks().getByName("check").mustRunAfter("clean", "skippyClean");
-
-            doLast(task -> skippyBuildApi.upsertTestImpactAnalysisJson());
-
-            getProject().getTasks().withType(Test.class, test ->
-                    test.environment(SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING, true)
-            );
-        });
+        }
     }
 
 }

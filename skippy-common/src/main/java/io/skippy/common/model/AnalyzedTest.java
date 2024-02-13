@@ -16,11 +16,12 @@
 
 package io.skippy.common.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import io.skippy.common.util.Profiler;
 
-import static java.lang.System.lineSeparator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
@@ -28,58 +29,65 @@ import static java.util.stream.Collectors.joining;
  * Programmatic representation of a test in `test-impact-analysis.json`:
  *
  * <pre>
- *  {
- *      "testClass": {
- *          "class": "com.example.FooTest",
- *          "path": "com/example/FooTest.class",
- *          "outputFolder": "build/classes/java/test",
- *          "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
- *      },
- *      "result": "SUCCESS",
- *      "coveredClasses": [...]
+ * {
+ *      "class": "0",
+ *      "result": "PASSED",
+ *      "coveredClasses": ["0", "1"]
  * }
  * </pre>
  *
  * @author Florian McKee
  */
-public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> coveredClasses) implements Comparable<AnalyzedTest> {
+public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds) implements Comparable<AnalyzedTest> {
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
-        tokenizer.skip("{");
-        var entries = new HashMap<String, Object>();
-        while (entries.size() < 3) {
+        tokenizer.skip('{');
+        String clazz = null;
+        List<String> coveredClasses = null;
+        TestResult testResult = null;
+        while (clazz == null || coveredClasses == null || testResult == null) {
             var key = tokenizer.next();
-            tokenizer.skip(":");
-            if ("testClass".equals(key)) {
-                entries.put(key, ClassFile.parse(tokenizer));
-            } else if ("coveredClasses".equals(key)) {
-                entries.put(key, parseCoveredClasses(tokenizer));
-            } else {
-                entries.put(key, tokenizer.next());
+            tokenizer.skip(':');
+            switch (key) {
+                case "class":
+                    clazz = tokenizer.next();
+                    break;
+                case "coveredClasses":
+                    coveredClasses = parseCoveredClasses(tokenizer);
+                    break;
+                case "result":
+                    testResult = TestResult.valueOf(tokenizer.next());
+                    break;
             }
-            
-            if (entries.size() < 3) {
-                tokenizer.skip(",");
+            if (clazz == null || coveredClasses == null || testResult == null) {
+                tokenizer.skip(',');
             }
         }
-        tokenizer.skip("}");
-        return new AnalyzedTest(
-            (ClassFile) entries.get("testClass"),
-            TestResult.valueOf(entries.get("result").toString()),
-            (List<ClassFile>) entries.get("coveredClasses")
-        );
+        tokenizer.skip('}');
+        return new AnalyzedTest(clazz, testResult, coveredClasses);
     }
 
-    private static List<ClassFile> parseCoveredClasses(Tokenizer tokenizer) {
-        var coveredClasses = new ArrayList<ClassFile>();
-        tokenizer.skip("[");
-        while ( ! tokenizer.peek("]")) {
-            if (tokenizer.peek(",")) {
-                tokenizer.skip(",");
+    static List<AnalyzedTest> parseList(Tokenizer tokenizer) {
+        return Profiler.profile("AnalyzedTest#parseList", () -> {
+            var analyzedTests = new ArrayList<AnalyzedTest>();
+            tokenizer.skip('[');
+            while (!tokenizer.peek(']')) {
+                tokenizer.skipIfNext(',');
+                analyzedTests.add(parse(tokenizer));
             }
-            coveredClasses.add(ClassFile.parse(tokenizer));
+            tokenizer.skip(']');
+            return analyzedTests;
+        });
+    }
+
+    private static List<String> parseCoveredClasses(Tokenizer tokenizer) {
+        var coveredClasses = new ArrayList<String>();
+        tokenizer.skip('[');
+        while ( ! tokenizer.peek(']')) {
+            tokenizer.skipIfNext(',');
+            coveredClasses.add(tokenizer.next());
         }
-        tokenizer.skip("]");
+        tokenizer.skip(']');
         return coveredClasses;
     }
 
@@ -89,29 +97,34 @@ public record AnalyzedTest(ClassFile test, TestResult result, List<ClassFile> co
      * @return the instance as JSON string
      */
     String toJson() {
-        return toJson(JsonProperty.values());
-    }
-
-    /**
-     * Renders this instance as JSON string.
-     *
-     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
-     * @return this instance as JSON string
-     */
-    public String toJson(JsonProperty... propertiesToRender) {
+        var coveredClassIdList = coveredClassesIds.stream()
+                .map(Integer::valueOf)
+                .sorted()
+                .map(id -> "\"%s\"".formatted(id)).collect(joining(","));
         var result = new StringBuffer();
-        result.append("\t{" + System.lineSeparator());
-        result.append("\t\t\"testClass\": %s,".formatted(test.toTestClassJson(propertiesToRender)) + System.lineSeparator());
-        result.append("\t\t\"result\": \"%s\",".formatted(this.result) + System.lineSeparator());
-        result.append("\t\t\"coveredClasses\": [" + System.lineSeparator());
-        result.append("%s".formatted(coveredClasses.stream().sorted().map(c -> c.toJson(propertiesToRender)).collect(joining("," + lineSeparator()))) + System.lineSeparator());
-        result.append("\t\t]" + System.lineSeparator());
-        result.append("\t}");
+        result.append("\t\t{" + System.lineSeparator());
+        result.append("\t\t\t\"class\": \"%s\",".formatted(testClassId) + System.lineSeparator());
+        result.append("\t\t\t\"result\": \"%s\",".formatted(this.result) + System.lineSeparator());
+        result.append("\t\t\t\"coveredClasses\": [%s]".formatted(coveredClassIdList) + System.lineSeparator());
+        result.append("\t\t}");
         return result.toString();
     }
 
     @Override
     public int compareTo(AnalyzedTest other) {
-        return comparing(AnalyzedTest::test).compare(this, other);
+        return comparing(AnalyzedTest::testClassId).compare(this, other);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof AnalyzedTest a) {
+            return Objects.equals(testClassId, a.testClassId);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(testClassId);
     }
 }

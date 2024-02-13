@@ -25,17 +25,12 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_RUNNING;
-
 /**
- * Compacts the {@code .cov} file in the skippy folder and writes the {@code classes.md5} file.
- * <br /><br />
- * Invocation: {@code ./gradlew skippyAnalyze}.
- *
- * @author Florian McKee
+ * Mojo that informs Skippy that the parts of the build that are relevant for Skippy (e.g., compilation and test
+ * execution) have finished.
  */
-@Mojo(name = "analyze", defaultPhase = LifecyclePhase.TEST)
-public class SkippyAnalyzeMojo extends AbstractMojo {
+@Mojo(name = "buildFinished", defaultPhase = LifecyclePhase.TEST)
+public class SkippyBuildFinishedMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
@@ -45,20 +40,8 @@ public class SkippyAnalyzeMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        if (executeGoal()) {
-            var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), new MavenClassFileCollector(project));
-            project.getProperties().setProperty(TEST_IMPACT_ANALYSIS_RUNNING, "true");
-            skippyBuildApi.upsertTestImpactAnalysisJson();
-            getLog().info("skippy:analyze executed");
-        } else {
-            getLog().info("skippy:analyze skipped");
-        }
-    }
-
-    private boolean executeGoal() {
-        var isSkippyAnalyzeBuild = Boolean.valueOf(System.getProperty(TEST_IMPACT_ANALYSIS_RUNNING));
-        var goalExecutedDirectly = session.getRequest().getGoals().contains("skippy:analyze");
-        return isSkippyAnalyzeBuild || goalExecutedDirectly;
+        var skippyBuildApi = new SkippyBuildApi(project.getBasedir().toPath(), new MavenClassFileCollector(project));
+        skippyBuildApi.buildFinished();
     }
 
 }

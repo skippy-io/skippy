@@ -56,7 +56,7 @@ public class GradleClassFileCollectorTest {
 
         assertThat(classFiles.get(0).toJson()).isEqualToIgnoringWhitespace("""
             {
-                "class": "com.example.LeftPadder",
+                "name": "com.example.LeftPadder",
                 "path": "com/example/LeftPadder.class",
                 "outputFolder": "build/classes/java/main",
                 "hash": "9U3+WYit7uiiNqA9jplN2A=="
@@ -65,7 +65,7 @@ public class GradleClassFileCollectorTest {
 
         assertThat(classFiles.get(1).toJson()).isEqualToIgnoringWhitespace("""
             {
-                "class": "com.example.RightPadder",
+                "name": "com.example.RightPadder",
                 "path": "com/example/RightPadder.class",
                 "outputFolder": "build/classes/java/main",
                 "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
@@ -74,7 +74,7 @@ public class GradleClassFileCollectorTest {
 
         assertThat(classFiles.get(2).toJson()).isEqualToIgnoringWhitespace("""
             {
-                "class": "com.example.StringUtils",
+                "name": "com.example.StringUtils",
                 "path": "com/example/StringUtils.class",
                 "outputFolder": "build/classes/java/main",
                 "hash": "4VP9fWGFUJHKIBG47OXZTQ=="
@@ -83,7 +83,7 @@ public class GradleClassFileCollectorTest {
 
         assertThat(classFiles.get(3).toJson()).isEqualToIgnoringWhitespace("""
             {
-                "class": "com.example.LeftPadderTest",
+                "name": "com.example.LeftPadderTest",
                 "path": "com/example/LeftPadderTest.class",
                 "outputFolder": "build/classes/java/test",
                 "hash": "sGLJTZJw4beE9m2Kg6chUg=="
@@ -92,7 +92,7 @@ public class GradleClassFileCollectorTest {
 
         assertThat(classFiles.get(4).toJson()).isEqualToIgnoringWhitespace("""
             {
-                "class": "com.example.RightPadderTest",
+                "name": "com.example.RightPadderTest",
                 "path": "com/example/RightPadderTest.class",
                 "outputFolder": "build/classes/java/test",
                 "hash": "wAwQMlDS3xxmX/Yl5fsSdA=="
@@ -101,7 +101,7 @@ public class GradleClassFileCollectorTest {
 
         assertThat(classFiles.get(5).toJson()).isEqualToIgnoringWhitespace("""
             {
-                "class": "com.example.TestConstants",
+                "name": "com.example.TestConstants",
                 "path": "com/example/TestConstants.class",
                 "outputFolder": "build/classes/java/test",
                 "hash": "3qNbG+sSd1S1OGe0EZ9GPA=="

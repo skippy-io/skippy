@@ -16,8 +16,6 @@
 
 package io.skippy.common.model;
 
-import static java.lang.Character.isWhitespace;
-
 /**
  * Home-grown JSON tokenization to avoid a transitive dependencies to Jackson (or some other JSON library).
  *
@@ -28,52 +26,55 @@ final class Tokenizer {
     private final StringBuilder stream;
 
     Tokenizer(String input) {
-        this.stream = new StringBuilder(input);
+        this.stream = new StringBuilder(input.replaceAll("\\s+",""));
     }
 
     String asString() {
         return stream.toString();
     }
 
-    void skip(String s) {
-        skipLeadingWhitespaces();
-        if (! asString().startsWith(s)) {
-            throw new IllegalStateException("Can't skip over '%s' in residual characters '%s'.".formatted(s, stream));
-        }
-        stream.delete(0, s.length());
+    void skip(char c) {
+            if (stream.isEmpty() || stream.charAt(0) != c) {
+                throw new IllegalStateException("Can't skip over '%s' in residual characters '%s'.".formatted(c, stream));
+            }
+            stream.delete(0, 1);
     }
 
-    private void skipLeadingWhitespaces() {
-        while (stream.length() > 0 && isWhitespace(stream.charAt(0))) {
+    String next() {
+            if (peek('{')) {
+                stream.delete(0, 1);
+                return "{";
+            }
+            if (peek('"')) {
+                int positionOfClosingQuote = stream.indexOf("\"", 1);
+                var result = stream.substring(1, positionOfClosingQuote);
+                stream.delete(0, positionOfClosingQuote + 1);
+                return result;
+            }
+            throw new IllegalStateException("Unable to determine next token in residual characters '%s'.".formatted(stream));
+    }
+
+
+    boolean peek(char c) {
+            if (stream.isEmpty()) {
+                return false;
+            }
+            return stream.charAt(0) == c;
+    }
+    void skipIfNext(char c) {
+        if (stream.isEmpty()) {
+            return;
+        }
+        if (stream.charAt(0) == c) {
             stream.delete(0, 1);
         }
     }
 
-    String next() {
-        skipLeadingWhitespaces();
-        if (peek("{")) {
-            skip("{");
-            return "{";
-        }
-        if (peek("\"")) {
-            StringBuilder result = new StringBuilder();
-            // skip over opening quotes
-            skip("\"");
-
-            // read until closing quotes
-            while (peek("\"") == false) {
-                result.append(stream.substring(0, 1));
-                stream.delete(0, 1);
-            }
-            // skip over closing quotes
-            skip("\"");
-            return result.toString();
-        }
-        throw new IllegalStateException("Unable to determine next oken in residual characters '%s'.".formatted(stream));
+    public String getPrefixIncluding(char c) {
+        return stream.substring(0, 1 + stream.indexOf(String.valueOf(c)));
     }
 
-    boolean peek(String s) {
-        skipLeadingWhitespaces();
-        return asString().startsWith(s);
+    public void skip(int length) {
+        stream.delete(0, length);
     }
 }

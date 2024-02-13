@@ -17,10 +17,7 @@
 package io.skippy.build;
 
 import io.skippy.common.SkippyFolder;
-import io.skippy.common.model.AnalyzedTest;
-import io.skippy.common.model.TestImpactAnalysis;
-import io.skippy.common.model.TestResult;
-import io.skippy.common.model.ClassFile;
+import io.skippy.common.model.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
 import static java.util.Arrays.asList;
@@ -48,38 +44,38 @@ final class TestImpactAnalysisWriter {
         this.classFileCollector = classFileCollector;
     }
 
-    void upsert() {
+    void upsert(Set<String> failedTests) {
         try {
             var covFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov")));
-            var testImpactAnalysis = getTestImpactAnalysis(covFiles);
-            Files.writeString(SkippyFolder.get(projectDir).resolve( TEST_IMPACT_ANALYSIS_JSON_FILE), testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            var existingAnalysis = TestImpactAnalysis.readFromFile(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+            var newAnalysis = getTestImpactAnalysis(failedTests, covFiles);
+            var mergedAnalysis = existingAnalysis.merge(newAnalysis);
+            Files.writeString(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), mergedAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             covFiles.stream().forEach(File::delete);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private TestImpactAnalysis getTestImpactAnalysis(List<File> covFiles) throws IOException {
-        Map<String, ClassFile> classFiles = classFileCollector.collect().stream()
-                // this implementation currently ignores duplicate class names across output folders
-                .collect(Collectors.toMap(ClassFile::getClassName, it -> it, (first, second) -> first));
-        var skippifiedTests = covFiles.stream().map(covFile -> getSkippifiedTest(covFile, classFiles)).toList();
-        return new TestImpactAnalysis(skippifiedTests);
+    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, List<File> covFiles) throws IOException {
+        var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
+        var skippifiedTests = covFiles.stream().flatMap(covFile -> getSkippifiedTest(failedTests, covFile, classFileContainer).stream()).toList();
+        return new TestImpactAnalysis(classFileContainer, skippifiedTests);
     }
 
-    private AnalyzedTest getSkippifiedTest(File covFile, Map<String, ClassFile> classFiles) {
+    private List<AnalyzedTest> getSkippifiedTest(Set<String> failedTests, File covFile, ClassFileContainer classFileContainer) {
         var testName = covFile.getName().substring(0, covFile.getName().indexOf(".cov"));
-        return new AnalyzedTest(classFiles.get(testName), TestResult.SUCCESS, getCoveredClasses(covFile, classFiles));
+        var testResult = failedTests.contains(testName) ? TestResult.FAILED : TestResult.PASSED;
+        return classFileContainer.getIdsByClassName(testName).stream()
+                .map(id -> new AnalyzedTest(id, testResult, getCoveredClasses(covFile, classFileContainer)))
+                .toList();
     }
 
-    private static List<ClassFile> getCoveredClasses(File covFile, Map<String, ClassFile> classFiles) {
+    private static List<String> getCoveredClasses(File covFile, ClassFileContainer classFileContainer) {
         try {
-            List<ClassFile> coveredClasses = new LinkedList<>();
+            List<String> coveredClasses = new LinkedList<>();
             for (String clazz : Files.readAllLines(covFile.toPath(), StandardCharsets.UTF_8)) {
-                var classFile = classFiles.get(clazz.replace("/", "."));
-                if (classFile != null) {
-                    coveredClasses.add(classFile);
-                }
+                coveredClasses.addAll(classFileContainer.getIdsByClassName(clazz.replace("/", ".").trim()));
             }
             return coveredClasses;
         } catch (IOException e) {

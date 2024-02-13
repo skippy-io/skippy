@@ -16,21 +16,21 @@ public class TokenizerTest {
     }, delimiter = ':')
     void testSkip(String stream) {
         var tokenizer = new Tokenizer(stream);
-        tokenizer.skip("a");
+        tokenizer.skip('a');
         assertEquals("b", tokenizer.asString());
     }
 
     @Test
     void testInvalidSkip() {
         var tokenizer = new Tokenizer("a");
-        var ex = assertThrows(IllegalStateException.class, () -> tokenizer.skip("b"));
+        var ex = assertThrows(IllegalStateException.class, () -> tokenizer.skip('b'));
         assertEquals("Can't skip over 'b' in residual characters 'a'.", ex.getMessage());
     }
 
     @Test
     void testSkipConsumesLeadingWhitespaces() {
         var tokenizer = new Tokenizer("   ab");
-        tokenizer.skip("a");
+        tokenizer.skip('a');
         assertEquals("b", tokenizer.asString());
     }
 
@@ -51,7 +51,7 @@ public class TokenizerTest {
             "    ab:a:true",
             "    ab:b:false"
     }, delimiter = ':')
-    void testPeek(String stream, String search, boolean expected) {
+    void testPeek(String stream, char search, boolean expected) {
         var tokenizer = new Tokenizer(stream);
         assertEquals(expected, tokenizer.peek(search));
     }

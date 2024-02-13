@@ -19,6 +19,8 @@ package io.skippy.build;
 import io.skippy.common.SkippyFolder;
 
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 import static io.skippy.common.SkippyConstants.*;
 
@@ -32,6 +34,8 @@ public final class SkippyBuildApi {
     private final Path projectDir;
     private final TestImpactAnalysisWriter testImpactAnalysisWriter;
 
+    private final Set<String> failedTests = new HashSet<>();
+
     /**
      * C'tor.
      *
@@ -41,13 +45,6 @@ public final class SkippyBuildApi {
     public SkippyBuildApi(Path projectDir, ClassFileCollector classFileCollector) {
         this.projectDir = projectDir;
         this.testImpactAnalysisWriter = new TestImpactAnalysisWriter(projectDir, classFileCollector);
-    }
-
-    /**
-     * Upserts the test-impact-analysis.json file in the Skippy folder.
-     */
-    public void upsertTestImpactAnalysisJson() {
-        testImpactAnalysisWriter.upsert();
     }
 
     /**
@@ -64,9 +61,9 @@ public final class SkippyBuildApi {
     }
 
     /**
-     * Removes log files from the skippy folder.
+     * Informs Skippy that a build has started.
      */
-    public void deleteLogFiles() {
+    public void buildStarted() {
         var skippyFolder = SkippyFolder.get(projectDir);
         var predictionsLog = skippyFolder.resolve(PREDICTIONS_LOG_FILE).toFile();
         if (predictionsLog.exists()) {
@@ -76,6 +73,22 @@ public final class SkippyBuildApi {
         if (profilingLog.exists()) {
             profilingLog.delete();
         }
+    }
+
+    /**
+     * Informs Skippy that a build has finished.
+     */
+    public void buildFinished() {
+         testImpactAnalysisWriter.upsert(failedTests);
+    }
+
+    /**
+     * Informs Skippy that a test has finished.
+     *
+     * @param className the class name of the failed tests
+     */
+    public void testFailed(String className) {
+        failedTests.add(className);
     }
 
 }

@@ -26,10 +26,10 @@ public enum TestResult {
     /**
      * The test was successful.
      */
-    SUCCESS,
+    PASSED,
 
     /**
      * The test was failed.
      */
-    FAILURE;
+    FAILED;
 }

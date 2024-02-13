@@ -2,8 +2,6 @@ package io.skippy.common.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,206 +11,108 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonNoCoveredClasses() {
-        var analyzedTest = new AnalyzedTest(
-                ClassFile.fromParsedJson(
-                    "com.example.LeftPadderTest",
-                        Path.of("build/classes/java/test"), Path.of("com/example/LeftPadderTest.class"),
-                        "ZT0GoiWG8Az5TevH9/JwBg=="
-                ),
-                TestResult.SUCCESS,
-                emptyList()
-        );
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList());
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace(
-            """
-                {
-                    "testClass": {
-                        "class": "com.example.LeftPadderTest",
-                        "path": "com/example/LeftPadderTest.class",
-                        "outputFolder": "build/classes/java/test",
-                        "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                    },
-                    "result": "SUCCESS",
-                    "coveredClasses": []
-                }
-                """);
-    }
-
-    @Test
-    void testParseNoCoveredClasses() {
-        var analyzedTest = AnalyzedTest.parse(new Tokenizer(
-            """
-                {
-                    "testClass": {
-                        "class": "com.example.LeftPadderTest",
-                        "path": "com/example/LeftPadderTest.class",
-                        "outputFolder": "build/classes/java/test",
-                        "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                    },
-                    "result": "SUCCESS",
-                    "coveredClasses": []
-                }
-                """));
-
-        assertEquals("com.example.LeftPadderTest", analyzedTest.test().getClassName());
-        assertEquals(Path.of("com/example/LeftPadderTest.class"), analyzedTest.test().getClassFile());
-        assertEquals(Path.of("build/classes/java/test"), analyzedTest.test().getOutputFolder());
-        assertEquals("ZT0GoiWG8Az5TevH9/JwBg==", analyzedTest.test().getHash());
-        assertEquals(TestResult.SUCCESS, analyzedTest.result());
-        assertEquals(emptyList(), analyzedTest.coveredClasses());
-
+        """
+            {
+                "class": "0",
+                "result": "PASSED",
+                "coveredClasses": []
+            }
+        """);
     }
 
     @Test
     void testToJsonOneCoveredClass() {
-        var analyzedTest = new AnalyzedTest(
-                ClassFile.fromParsedJson(
-                    "com.example.LeftPadderTest",
-                        Path.of("build/classes/java/test"), Path.of("com/example/LeftPadderTest.class"),
-                        "ZT0GoiWG8Az5TevH9/JwBg=="
-                ),
-                TestResult.SUCCESS,
-                asList(ClassFile.fromParsedJson(
-                        "com.example.LeftPadder",
-                        Path.of("build/classes/java/main"), Path.of("com/example/LeftPadder.class"),
-                        "ZT0GoiWG8Az5TevH9/JwBg=="
-                    )
-                )
-        );
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0"));
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace(
-            """
-                {
-                    "testClass": {
-                        "class": "com.example.LeftPadderTest",
-                        "path": "com/example/LeftPadderTest.class",
-                        "outputFolder": "build/classes/java/test",
-                        "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                    },
-                    "result": "SUCCESS",
-                    "coveredClasses": [
-                        {
-                            "class": "com.example.LeftPadder",
-                            "path": "com/example/LeftPadder.class",
-                            "outputFolder": "build/classes/java/main",
-                            "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                        }
-                    ]
+                """
+                 {
+                    "class": "0",
+                    "result": "PASSED",
+                    "coveredClasses": ["0"]
+                }
+                """);
+    }
+    @Test
+    void testToJsonTwoCoveredClasses() {
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"));
+
+        assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace(
+                """
+                 {
+                    "class": "0",
+                    "result": "PASSED",
+                    "coveredClasses": ["0", "1"]
                 }
                 """);
     }
 
     @Test
-    void testParseOneCoveredClass() {
-        var analyzedTest = AnalyzedTest.parse(new Tokenizer(
-            """
-                {
-                    "testClass": {
-                        "class": "com.example.LeftPadderTest",
-                        "path": "com/example/LeftPadderTest.class",
-                        "outputFolder": "build/classes/java/test",
-                        "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                    },
-                    "result": "SUCCESS",
-                    "coveredClasses": [
-                        {
-                            "class": "com.example.LeftPadder",
-                            "path": "com/example/LeftPadder.class",
-                            "outputFolder": "build/classes/java/main",
-                            "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                        }
-                    ]
-                }
-                """));
+    void testToJsonFailedTest() {
+        var analyzedTest = new AnalyzedTest("0", TestResult.FAILED, asList());
 
-        assertEquals("com.example.LeftPadderTest", analyzedTest.test().getClassName());
-        assertEquals(1, analyzedTest.coveredClasses().size());
-        assertEquals("com.example.LeftPadder", analyzedTest.coveredClasses().get(0).getClassName());
+        assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace(
+        """
+            {
+                "class": "0",
+                "result": "FAILED",
+                "coveredClasses": []
+            }
+        """);
     }
 
     @Test
-    void testToJsonTwoCoveredClasses() {
-        var analyzedTest = new AnalyzedTest(
-                ClassFile.fromParsedJson(
-                    "com.example.LeftPadderTest",
-                        Path.of("build/classes/java/test"), Path.of("com/example/LeftPadderTest.class"),
-                        "ZT0GoiWG8Az5TevH9/JwBg=="
-                ),
-                TestResult.SUCCESS,
-                asList(
-                    ClassFile.fromParsedJson(
-                        "com.example.LeftPadder",
-                            Path.of("build/classes/java/main"), Path.of("com/example/LeftPadder.class"),
-                            "ZT0GoiWG8Az5TevH9/JwBg=="
-                    ),
-                    ClassFile.fromParsedJson(
-                        "com.example.StringUtils",
-                            Path.of("build/classes/java/main"), Path.of("com/example/StringUtils.class"),
-                            "4VP9fWGFUJHKIBG47OXZTQ==")
-                    )
-        );
-        assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace(
-                """
-                    {
-                        "testClass": {
-                            "class": "com.example.LeftPadderTest",
-                            "path": "com/example/LeftPadderTest.class",
-                            "outputFolder": "build/classes/java/test",
-                            "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                        },
-                        "result": "SUCCESS",
-                        "coveredClasses": [
-                            {
-                                "class": "com.example.LeftPadder",
-                                "path": "com/example/LeftPadder.class",
-                                "outputFolder": "build/classes/java/main",
-                                "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                            },
-                            {
-                                "class": "com.example.StringUtils",
-                                "path": "com/example/StringUtils.class",
-                                "outputFolder": "build/classes/java/main",
-                                "hash": "4VP9fWGFUJHKIBG47OXZTQ=="
-                            }
-                        ]
-                    }
-                    """);
+    void testParseNoCoveredClasses() {
+        var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
+            {
+                "class": "0",
+                "result": "PASSED",
+                "coveredClasses": []
+            }
+        """));
+
+        assertEquals("0", analyzedTest.testClassId());
+        assertEquals(TestResult.PASSED, analyzedTest.result());
+        assertEquals(asList(), analyzedTest.coveredClassesIds());
+    }
+
+    @Test
+    void testParseOneCoveredClass() {
+        var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
+            {
+                "class": "0",
+                "result": "PASSED",
+                "coveredClasses": ["0"]
+            }
+        """));
+        assertEquals(asList("0"), analyzedTest.coveredClassesIds());
     }
 
     @Test
     void testParseTwoCoveredClasses() {
-        var analyzedTest = AnalyzedTest.parse(new Tokenizer(
-                """
-                    {
-                        "testClass": {
-                            "class": "com.example.LeftPadderTest",
-                            "path": "com/example/LeftPadderTest.class",
-                            "outputFolder": "build/classes/java/test",
-                            "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                        },
-                        "result": "SUCCESS",
-                        "coveredClasses": [
-                            {
-                                "class": "com.example.LeftPadder",
-                                "path": "com/example/LeftPadder.class",
-                                "outputFolder": "build/classes/java/main",
-                                "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
-                            },
-                            {
-                                "class": "com.example.StringUtils",
-                                "path": "com/example/StringUtils.class",
-                                "outputFolder": "build/classes/java/main",
-                                "hash": "4VP9fWGFUJHKIBG47OXZTQ=="
-                            }
-                        ]
-                    }
-                    """));
-
-        assertEquals("com.example.LeftPadderTest", analyzedTest.test().getClassName());
-        assertEquals(2, analyzedTest.coveredClasses().size());
-        assertEquals("com.example.LeftPadder", analyzedTest.coveredClasses().get(0).getClassName());
-        assertEquals("com.example.StringUtils", analyzedTest.coveredClasses().get(1).getClassName());
+        var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
+            {
+                "class": "0",
+                "result": "PASSED",
+                "coveredClasses": ["0", "1"]
+            }
+        """));
+        assertEquals(asList("0", "1"), analyzedTest.coveredClassesIds());
     }
 
+    @Test
+    void testParseFailedTest() {
+        var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
+            {
+                "class": "0",
+                "result": "FAILED",
+                "coveredClasses": []
+            }
+        """));
+        assertEquals(TestResult.FAILED, analyzedTest.result());
+    }
 
 }
