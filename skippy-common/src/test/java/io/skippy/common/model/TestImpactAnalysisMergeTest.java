@@ -63,7 +63,6 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -83,7 +82,6 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -106,7 +104,6 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -125,7 +122,6 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -151,12 +147,10 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     },
                     {
                         "class": "1",
-                        "result": "PASSED",
                         "coveredClasses": ["1"]
                     }
                 ]
@@ -179,7 +173,6 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "FAILED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -198,7 +191,6 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "FAILED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -218,7 +210,6 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "FAILED",
                         "coveredClasses": ["0"]
                     }
                 ]

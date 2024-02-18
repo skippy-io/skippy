@@ -73,16 +73,28 @@ public final class SkippyTestApi {
                     return predictions.get(test.getName()) == Prediction.EXECUTE;
                 }
                 var predictionWithReason = testImpactAnalysis.predict(test.getName());
-                Files.writeString(
-                    SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
-                    "%s,%s,%s,%s%s".formatted(
-                            test.getName(),
-                            predictionWithReason.prediction(),
-                            predictionWithReason.reason().category(),
-                            predictionWithReason.reason().details().orElseGet(() -> "n/a"),
-                            System.lineSeparator()),
-                    StandardCharsets.UTF_8, CREATE, APPEND
-                );
+                if (predictionWithReason.reason().details().isPresent()) {
+                    Files.writeString(
+                        SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
+                        "%s,%s,%s,%s%s".formatted(
+                                test.getName(),
+                                predictionWithReason.prediction(),
+                                predictionWithReason.reason().category(),
+                                predictionWithReason.reason().details().orElseGet(() -> "n/a"),
+                                System.lineSeparator()),
+                        StandardCharsets.UTF_8, CREATE, APPEND
+                    );
+                } else {
+                    Files.writeString(
+                            SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
+                            "%s,%s,%s%s".formatted(
+                                    test.getName(),
+                                    predictionWithReason.prediction(),
+                                    predictionWithReason.reason().category(),
+                                    System.lineSeparator()),
+                            StandardCharsets.UTF_8, CREATE, APPEND
+                    );
+                }
                 predictions.put(test.getName(), predictionWithReason.prediction());
                 return predictionWithReason.prediction() == Prediction.EXECUTE;
             } catch (IOException e) {

@@ -90,13 +90,10 @@ public final class TestImpactAnalysis {
                     .filter(test -> classFileContainer.getById(test.testClassId()).getClassName().equals(testClassName))
                     .findFirst();
             if (maybeAnalyzedTest.isEmpty()) {
-                return PredictionWithReason.execute(new Reason(UNKNOWN_TEST, Optional.empty()));
+                return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));
             }
             var analyzedTest = maybeAnalyzedTest.get();
             var testClass = classFileContainer.getById(analyzedTest.testClassId());
-            if (analyzedTest.result() == TestResult.FAILED) {
-                return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
-            }
 
             if (testClass.classFileNotFound()) {
                 return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(testClass.getClassFile().toString())));
@@ -205,7 +202,6 @@ public final class TestImpactAnalysis {
     private AnalyzedTest remap(AnalyzedTest analyzedTest, ClassFileContainer original, ClassFileContainer merged) {
         return new AnalyzedTest(
                 remap(analyzedTest.testClassId(), original, merged),
-                analyzedTest.result(),
                 analyzedTest.coveredClassesIds().stream().map(id -> remap(id, original, merged)).toList());
     }
 
