@@ -30,9 +30,9 @@ public record Reason(Category category, Optional<String> details) {
         NO_CHANGE,
 
         /**
-         * Unknown test.
+         * The test hasn't been analyzed before.
          */
-        UNKNOWN_TEST,
+        NO_DATA_FOUND_FOR_TEST,
 
         /**
          * Bytecode change in test detected.

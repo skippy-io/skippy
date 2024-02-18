@@ -38,14 +38,13 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Florian McKee
  */
-public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds) implements Comparable<AnalyzedTest> {
+public record AnalyzedTest(String testClassId, List<String> coveredClassesIds) implements Comparable<AnalyzedTest> {
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
         String clazz = null;
         List<String> coveredClasses = null;
-        TestResult testResult = null;
-        while (clazz == null || coveredClasses == null || testResult == null) {
+        while (clazz == null || coveredClasses == null) {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
@@ -55,16 +54,13 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
                 case "coveredClasses":
                     coveredClasses = parseCoveredClasses(tokenizer);
                     break;
-                case "result":
-                    testResult = TestResult.valueOf(tokenizer.next());
-                    break;
             }
-            if (clazz == null || coveredClasses == null || testResult == null) {
+            if (clazz == null || coveredClasses == null) {
                 tokenizer.skip(',');
             }
         }
         tokenizer.skip('}');
-        return new AnalyzedTest(clazz, testResult, coveredClasses);
+        return new AnalyzedTest(clazz, coveredClasses);
     }
 
     static List<AnalyzedTest> parseList(Tokenizer tokenizer) {
@@ -104,7 +100,6 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
         var result = new StringBuffer();
         result.append("\t\t{" + System.lineSeparator());
         result.append("\t\t\t\"class\": \"%s\",".formatted(testClassId) + System.lineSeparator());
-        result.append("\t\t\t\"result\": \"%s\",".formatted(this.result) + System.lineSeparator());
         result.append("\t\t\t\"coveredClasses\": [%s]".formatted(coveredClassIdList) + System.lineSeparator());
         result.append("\t\t}");
         return result.toString();
