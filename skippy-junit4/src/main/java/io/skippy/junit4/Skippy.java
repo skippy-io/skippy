@@ -21,13 +21,13 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 /**
- * {@link TestRule} that skippifies a JUnit 4 test:
+ * {@link TestRule} that enables Skippy's predictive test selection for a JUnit 4 test:
  *
  * <pre>
  * public class FooTest {
  *
  *    {@literal @}ClassRule
- *     public static TestRule skippyRule = Skippy.skippify();
+ *     public static TestRule skippyRule = Skippy.predictWithSkippy();
  *
  *    {@literal @}Test
  *     public void testFoo() {
@@ -36,21 +36,15 @@ import org.junit.rules.TestRule;
  *
  * }
  * </pre>
- *
- * A skippified test differs from a regular JUnit test in two ways:
- * <ul>
- *     <li>It will be skipped if Skippy decides that it is safe to do so.</li>
- *     <li>It will emit a .cov file in the skippy directory when the system property {@code SKIPPY_CONSTANTS#SKIPPY_ANALYZE_ENVIRONMENT_VARIABLE} is set.</li>
- * </ul>
  */
 public class Skippy extends ExternalResource {
 
     /**
-     * Creates the {@link TestRule} that skippifies a JUnit 4 test.
+     * Creates a {@link TestRule} that enables predictive test selection for a JUnit 4 test.
      *
-     * @return the {@link TestRule} that skippifies a JUnit 4 test
+     * @return a {@link TestRule} that enables predictive test selection for a JUnit 4 test
      */
-    public static TestRule skippify() {
+    public static TestRule predictWithSkippy() {
         return RuleChain
                 .outerRule(new SkipOrExecuteRule())
                 .around(new CoverageFileRule());

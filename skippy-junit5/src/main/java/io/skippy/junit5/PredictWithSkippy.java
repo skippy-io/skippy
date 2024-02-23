@@ -24,10 +24,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Skippifies a JUnit test:
+ * Enables predictive test selection for a JUnit 5 test :
  * <br />
  * <pre>
- * {@literal @}Skippified
+ * {@literal @}PredictWithSkippy
  *  public class FooTest {
  *
  *    {@literal @}Test
@@ -38,17 +38,11 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * A skippified test differs from a regular JUnit test in two ways:
- * <ul>
- *     <li>It will be skipped if Skippy decides that it is safe to do so.</li>
- *     <li>It will emit a .cov file in the skippy directory when the system property {@code skippyEmitCovFiles} is set.</li>
- * </ul>
- *
  * @author Florian McKee
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith(SkipOrExecuteCondition.class)
 @ExtendWith(CoverageFileCallbacks.class)
-public @interface Skippified {
+public @interface PredictWithSkippy {
 }

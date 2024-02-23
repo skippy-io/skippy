@@ -59,11 +59,11 @@ final class TestImpactAnalysisWriter {
 
     private TestImpactAnalysis getTestImpactAnalysis(List<File> covFiles) throws IOException {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
-        var skippifiedTests = covFiles.stream().flatMap(covFile -> getSkippifiedTest(covFile, classFileContainer).stream()).toList();
-        return new TestImpactAnalysis(classFileContainer, skippifiedTests);
+        var predictiveTests = covFiles.stream().flatMap(covFile -> getPredictiveTests(covFile, classFileContainer).stream()).toList();
+        return new TestImpactAnalysis(classFileContainer, predictiveTests);
     }
 
-    private List<AnalyzedTest> getSkippifiedTest(File covFile, ClassFileContainer classFileContainer) {
+    private List<AnalyzedTest> getPredictiveTests(File covFile, ClassFileContainer classFileContainer) {
         var testName = covFile.getName().substring(0, covFile.getName().indexOf(".cov"));
         return classFileContainer.getIdsByClassName(testName).stream()
                 .map(id -> new AnalyzedTest(id, getCoveredClasses(covFile, classFileContainer)))
