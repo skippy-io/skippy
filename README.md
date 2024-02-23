@@ -119,7 +119,7 @@ Re-run the tests:
 ```
 ./gradlew test
 
-LeftPadderTest > testPadLeft() FAILED
+FooTest > testFoo() FAILED
     org.opentest4j.AssertionFailedError: expected: <foo> but was: <null>
 BarTest > testBar() SKIPPED
 ```
