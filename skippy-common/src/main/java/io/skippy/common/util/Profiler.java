@@ -46,6 +46,8 @@ import static java.util.stream.Collectors.joining;
  */
 public final class Profiler {
 
+    private static final boolean PROFILING_ENABLED = false;
+
     record InvocationCountAndTime(AtomicInteger invocationCount, AtomicLong time) {};
 
     private static Map<String, InvocationCountAndTime> data = new ConcurrentHashMap<>();
@@ -95,19 +97,21 @@ public final class Profiler {
      * @param skippyFolder the Skippy folder
      */
     public static void writeResults(Path skippyFolder) {
-        var result =  "=== %s ===%s%s%s%s".formatted(
-                Runtime.getRuntime().toString(),
-                System.lineSeparator(),
-                data.entrySet().stream()
-                        .map(entry -> "%s: %s call(s), %sms".formatted(entry.getKey(), entry.getValue().invocationCount, entry.getValue().time))
-                        .sorted()
-                        .collect(joining(lineSeparator())),
-                System.lineSeparator(),
-                System.lineSeparator());
-        try {
-            Files.writeString(skippyFolder.resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, APPEND);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        if (PROFILING_ENABLED) {
+            var result =  "=== %s ===%s%s%s%s".formatted(
+                    Runtime.getRuntime().toString(),
+                    System.lineSeparator(),
+                    data.entrySet().stream()
+                            .map(entry -> "%s: %s call(s), %sms".formatted(entry.getKey(), entry.getValue().invocationCount, entry.getValue().time))
+                            .sorted()
+                            .collect(joining(lineSeparator())),
+                    System.lineSeparator(),
+                    System.lineSeparator());
+            try {
+                Files.writeString(skippyFolder.resolve(PROFILING_LOG_FILE), result, StandardCharsets.UTF_8, CREATE, APPEND);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 
