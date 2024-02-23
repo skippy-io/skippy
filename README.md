@@ -66,7 +66,7 @@ Annotate the test you want to optimize with `@PredictWithSkippy`:
      public class FooTest {     
 
          @Test
-         public void testGetFoo() {
+         public void testFoo() {
              assertEquals("foo", Foo.getFoo());
          }
 
