@@ -15,6 +15,8 @@ It supports all types of tests where the tests and the code under test run in th
 It is best suited for deterministic tests, even those prone to occasional flakiness.
 It provides the most value for test suites that are either slow or flaky (regardless of whether the test suite contains unit, integration, or functional tests).
 
+[![Skippy.io in 3 minutes](skippy-in-3-mins.png)](http://www.youtube.com/watch?v=VZ_MmQI0mOA "Skippy.io in 3 minutes")
+
 ## What is it not?
 
 Skippy is not designed for tests that assert the overall health of a system. Don't use it for tests you want to fail
