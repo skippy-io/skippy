@@ -6,7 +6,7 @@ Mono-repo for all Skippy projects.
 
 ## What is it?
 
-Skippy is a Test Impact Analysis & Predictive Test Selection framework for the JVM. It cuts down on unnecessary testing
+Skippy is a Test Impact Analysis & Predictive Test Selection framework for Java and the JVM. It cuts down on unnecessary testing
 and flakiness without compromising the integrity of your builds. You can run it from the command line, your favorite IDE
 and continuous integration server. Skippy supports Gradle, Maven, JUnit 4 and JUnit 5.
 
