@@ -44,11 +44,11 @@ final class TestImpactAnalysisWriter {
         this.classFileCollector = classFileCollector;
     }
 
-    void upsert() {
+    void upsert(Set<String> failedTests) {
         try {
             var covFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov")));
             var existingAnalysis = TestImpactAnalysis.readFromFile(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
-            var newAnalysis = getTestImpactAnalysis(covFiles);
+            var newAnalysis = getTestImpactAnalysis(failedTests, covFiles);
             var mergedAnalysis = existingAnalysis.merge(newAnalysis);
             Files.writeString(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), mergedAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             covFiles.stream().forEach(File::delete);
@@ -57,16 +57,17 @@ final class TestImpactAnalysisWriter {
         }
     }
 
-    private TestImpactAnalysis getTestImpactAnalysis(List<File> covFiles) throws IOException {
+    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, List<File> covFiles) throws IOException {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
-        var analyzedTests = covFiles.stream().flatMap(covFile -> getAnalyzedTests(covFile, classFileContainer).stream()).toList();
+        var analyzedTests = covFiles.stream().flatMap(covFile -> getAnalyzedTests(failedTests, covFile, classFileContainer).stream()).toList();
         return new TestImpactAnalysis(classFileContainer, analyzedTests);
     }
 
-    private List<AnalyzedTest> getAnalyzedTests(File covFile, ClassFileContainer classFileContainer) {
+    private List<AnalyzedTest> getAnalyzedTests(Set<String> failedTests, File covFile, ClassFileContainer classFileContainer) {
         var testName = covFile.getName().substring(0, covFile.getName().indexOf(".cov"));
+        var testResult = failedTests.contains(testName) ? TestResult.FAILED : TestResult.PASSED;
         return classFileContainer.getIdsByClassName(testName).stream()
-                .map(id -> new AnalyzedTest(id, getCoveredClasses(covFile, classFileContainer)))
+                .map(id -> new AnalyzedTest(id, testResult, getCoveredClasses(covFile, classFileContainer)))
                 .toList();
     }
 

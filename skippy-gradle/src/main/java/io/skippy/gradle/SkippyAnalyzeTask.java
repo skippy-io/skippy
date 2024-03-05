@@ -16,7 +16,6 @@
 
 package io.skippy.gradle;
 
-import io.skippy.build.SkippyBuildApi;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.testing.Test;
 
@@ -41,17 +40,17 @@ class SkippyAnalyzeTask extends DefaultTask {
         setGroup("skippy");
         if (supportsSkippy(getProject())) {
             var skippyBuildApi = skippyBuildApi(getProject());
-            var testFailedListener = new TestFailedListener(skippyBuildApi);
+            var testFailedListener = new TestFailedListener((className) -> skippyBuildApi.testFailed(className));
             getProject().getTasks().withType(Test.class, testTask -> testTask.addTestListener(testFailedListener));
             doLast(task -> skippyBuildApi.buildFinished());
         }
     }
 
     static private class TestFailedListener implements TestListener {
-        private final SkippyBuildApi skippyBuildApi;
+        private final Consumer<String> testFailedAction;
 
-        TestFailedListener(SkippyBuildApi skippyBuildApi) {
-            this.skippyBuildApi = skippyBuildApi;
+        TestFailedListener(Consumer<String> testFailedAction) {
+            this.testFailedAction = testFailedAction;
         }
 
         @Override
@@ -69,7 +68,7 @@ class SkippyAnalyzeTask extends DefaultTask {
         @Override
         public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
             if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
-                skippyBuildApi.testFailed();
+                testFailedAction.accept(testDescriptor.getClassName());
             }
         }
     }

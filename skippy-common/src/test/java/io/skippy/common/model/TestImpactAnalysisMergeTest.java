@@ -2,12 +2,7 @@ package io.skippy.common.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestImpactAnalysisMergeTest {
 
@@ -63,6 +58,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -82,6 +78,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -104,6 +101,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -122,6 +120,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -147,10 +146,12 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     },
                     {
                         "class": "1",
+                        "result": "PASSED",
                         "coveredClasses": ["1"]
                     }
                 ]
@@ -173,6 +174,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "FAILED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -191,6 +193,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "FAILED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -210,6 +213,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "FAILED",
                         "coveredClasses": ["0"]
                     }
                 ]

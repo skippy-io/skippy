@@ -12,8 +12,7 @@ public class TestImpactAnalysisPredictTest {
 
     @Test
     void testPredictNoChange() {
-        var testImpactAnalysis = TestImpactAnalysis.parse(
-            """
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -32,6 +31,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
+                        "result": "PASSED",
                         "coveredClasses": ["0", "1"]
                     }
                 ]                      
@@ -44,8 +44,7 @@ public class TestImpactAnalysisPredictTest {
 
     @Test
     void testPredictUnknownTest() {
-        var testImpactAnalysis = TestImpactAnalysis.parse(
-            """
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                 },
@@ -60,8 +59,7 @@ public class TestImpactAnalysisPredictTest {
 
     @Test
     void testPredictBytecodeChangeInTest() {
-        var testImpactAnalysis = TestImpactAnalysis.parse(
-            """
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -80,6 +78,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
+                        "result": "PASSED",
                         "coveredClasses": ["0", "1"]
                     }
                 ]                      
@@ -92,8 +91,7 @@ public class TestImpactAnalysisPredictTest {
 
     @Test
     void testPredictBytecodeChangeInCoveredClass() {
-        var testImpactAnalysis = TestImpactAnalysis.parse(
-            """
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -112,6 +110,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
+                        "result": "PASSED",
                         "coveredClasses": ["0", "1"]
                     }
                 ]                      
@@ -124,9 +123,40 @@ public class TestImpactAnalysisPredictTest {
     }
 
     @Test
+    void testPredictFailedTest() {
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.LeftPadder",
+                        "path": "io/skippy/common/model/LeftPadder.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                    },
+                    "1": {
+                        "name": "com.example.LeftPadderTest",
+                        "path": "io/skippy/common/model/LeftPadderTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "FAILED",
+                        "coveredClasses": ["0", "1"]
+                    }
+                ]                      
+            }
+        """);
+        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
+        assertEquals(EXECUTE, predictionWithReason.prediction());
+        assertEquals(TEST_FAILED_PREVIOUSLY, predictionWithReason.reason().category());
+    }
+
+    @Test
     void testPredictTestClassFileNotFound() {
-        var testImpactAnalysis = TestImpactAnalysis.parse(
-            """
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -145,6 +175,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
+                        "result": "PASSED",
                         "coveredClasses": ["0", "1"]
                     }
                 ]                      
@@ -158,8 +189,7 @@ public class TestImpactAnalysisPredictTest {
 
     @Test
     void testPredictCoveredClassClassFileNotFound() {
-        var testImpactAnalysis = TestImpactAnalysis.parse(
-            """
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
              {
                 "classes": {
                     "0": {
@@ -178,6 +208,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
+                        "result": "PASSED",
                         "coveredClasses": ["0", "1"]
                     }
                 ]                      

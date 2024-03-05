@@ -115,7 +115,10 @@ public final class Profiler {
         }
     }
 
-    public static void printResults() {
+    /**
+     * Writes the profiling results to standard out.
+     */
+     public static void printResults() {
         var result =  "=== %s ===%s%s%s%s".formatted(
                 Runtime.getRuntime().toString(),
                 System.lineSeparator(),
