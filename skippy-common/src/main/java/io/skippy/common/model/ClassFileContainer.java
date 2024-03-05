@@ -54,6 +54,12 @@ public class ClassFileContainer {
         return classFilesById.get(id);
     }
 
+    /**
+     * Returns the ids of the classes that match the provided class name.
+     *
+     * @param className a class name
+     * @return the ids of the classes that match the provided class name
+     */
     public List<String> getIdsByClassName(String className) {
         if (false == idsByClassName.containsKey(className)) {
             return emptyList();

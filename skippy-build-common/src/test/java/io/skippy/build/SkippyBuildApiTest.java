@@ -122,15 +122,66 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": "1",
+                        "result": "PASSED",
                         "coveredClasses": ["0","1"]
                     },
                     {
                         "class": "3",
+                        "result": "PASSED",
                         "coveredClasses": ["2","3"]
                     }
                 ]
             }
     """);
+    }
+
+    @Test
+    void testEmptySkippyFolderWithTwoCovFilesOneFailedTests() throws IOException {
+        buildApi.buildStarted();
+
+        Files.writeString(skippyFolder.resolve("com.example.FooTest.cov"), """
+            com.example.Foo
+        """, StandardCharsets.UTF_8);
+
+        Files.writeString(skippyFolder.resolve("com.example.BarTest.cov"), """
+            com.example.Bar
+        """, StandardCharsets.UTF_8);
+
+        buildApi.testFailed("com.example.FooTest");
+
+        buildApi.buildFinished();
+
+        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.Bar"
+                    },
+                    "1": {
+                        "name": "com.example.BarTest"
+                    },
+                    "2": {
+                        "name": "com.example.Foo"
+                    },
+                    "3": {
+                        "name": "com.example.FooTest"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0"]
+                    },
+                    {
+                        "class": "3",
+                        "result": "FAILED",
+                        "coveredClasses": ["2"]
+                    }
+                ]
+            }
+        """);
     }
 
     @Test
@@ -191,6 +242,7 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": "0",
+                        "result": "PASSED",
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -226,6 +278,7 @@ public final class SkippyBuildApiTest {
              "tests": [
                 {
                     "class": "3",
+                    "result": "PASSED",
                     "coveredClasses": ["2","3"]
                 }
              ]
@@ -233,4 +286,91 @@ public final class SkippyBuildApiTest {
         """);
     }
 
+    @Test
+    void testExistingJsonFileNewTestFailure() throws IOException {
+        Files.writeString(skippyFolder.resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), """
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.Bar",
+                        "path": "com/example/Bar.class",
+                        "outputFolder": "build/classes/java/main",
+                        "hash": "hash-bar"
+                    },
+                    "1": {
+                        "name": "com.example.BarTest",
+                        "path": "com/example/BarTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "hash-bar-test"
+                    },
+                    "2": {
+                        "name": "com.example.Foo",
+                        "path": "com/example/Foo.class",
+                        "outputFolder": "build/classes/java/main",
+                        "hash": "hash-foo"
+                    },
+                    "3": {
+                        "name": "com.example.FooTest",
+                        "path": "com/example/FooTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "hash-foo-test"
+                    },
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0","1"]
+                    },
+                    {
+                        "class": "3",
+                        "result": "PASSED",
+                        "coveredClasses": ["2","3"]
+                    }
+                ]
+            }
+        """, StandardCharsets.UTF_8);
+
+        buildApi.buildStarted();
+
+        Files.writeString(skippyFolder.resolve("com.example.FooTest.cov"), """
+            com.example.Foo
+            com.example.FooTest
+        """, StandardCharsets.UTF_8);
+        buildApi.testFailed("com.example.FooTest");
+
+        buildApi.buildFinished();
+
+        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+           {
+                "classes": {
+                    "0": {
+                        "name": "com.example.Bar"
+                    },
+                    "1": {
+                        "name": "com.example.BarTest"
+                    },
+                    "2": {
+                        "name": "com.example.Foo"
+                    },
+                    "3": {
+                        "name": "com.example.FooTest"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0","1"]
+                    },
+                    {
+                        "class": "3",
+                        "result": "FAILED",
+                        "coveredClasses": ["2","3"]
+                    }
+                ]
+            }
+        """);
+    }
 }

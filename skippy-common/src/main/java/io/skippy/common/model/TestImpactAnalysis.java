@@ -44,6 +44,7 @@ public final class TestImpactAnalysis {
     /**
      * Creates a new instance.
      *
+     * @param classFileContainer a {@link ClassFileContainer}
      * @param analyzedTests a list of {@link AnalyzedTest}s
      */
     public TestImpactAnalysis(ClassFileContainer classFileContainer, List<AnalyzedTest> analyzedTests) {
@@ -94,6 +95,10 @@ public final class TestImpactAnalysis {
             }
             var analyzedTest = maybeAnalyzedTest.get();
             var testClass = classFileContainer.getById(analyzedTest.testClassId());
+
+            if (analyzedTest.result() == TestResult.FAILED) {
+                return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
+            }
 
             if (testClass.classFileNotFound()) {
                 return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(testClass.getClassFile().toString())));
@@ -161,6 +166,12 @@ public final class TestImpactAnalysis {
         return toJson(JsonProperty.values());
     }
 
+    /**
+     * Renders this instance as JSON string.
+     *
+     * @param propertiesToRender the properties to include in the JSON string
+     * @return this instance as JSON string
+     */
     public String toJson(JsonProperty... propertiesToRender) {
         return """
             {
@@ -202,6 +213,7 @@ public final class TestImpactAnalysis {
     private AnalyzedTest remap(AnalyzedTest analyzedTest, ClassFileContainer original, ClassFileContainer merged) {
         return new AnalyzedTest(
                 remap(analyzedTest.testClassId(), original, merged),
+                analyzedTest.result(),
                 analyzedTest.coveredClassesIds().stream().map(id -> remap(id, original, merged)).toList());
     }
 
