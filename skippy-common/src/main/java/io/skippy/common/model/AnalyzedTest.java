@@ -18,9 +18,7 @@ package io.skippy.common.model;
 
 import io.skippy.common.util.Profiler;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
@@ -38,14 +36,23 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Florian McKee
  */
-public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds) implements Comparable<AnalyzedTest> {
+public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, Optional<String> jacocoExecutionDataRef) implements Comparable<AnalyzedTest> {
+
+    AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, String jacocoExecutionDataRef) {
+        this(testClassId, result, coveredClassesIds, Optional.of(jacocoExecutionDataRef));
+    }
+
+    AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds) {
+        this(testClassId, result, coveredClassesIds, Optional.empty());
+    }
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
         String clazz = null;
         List<String> coveredClasses = null;
         TestResult testResult = null;
-        while (clazz == null || coveredClasses == null || testResult == null) {
+        Optional<String> executionDataRef = Optional.empty();
+        while (clazz == null || coveredClasses == null || testResult == null || executionDataRef.isEmpty()) {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
@@ -58,13 +65,19 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
                 case "result":
                     testResult = TestResult.valueOf(tokenizer.next());
                     break;
+                case "executionDataRef":
+                    executionDataRef = Optional.of(tokenizer.next());
+                    break;
             }
-            if (clazz == null || coveredClasses == null || testResult == null) {
-                tokenizer.skip(',');
+            if (clazz == null || coveredClasses == null || testResult == null || executionDataRef.isEmpty()) {
+                tokenizer.skipIfNext(',');
+            }
+            if (tokenizer.peek('}')) {
+                break;
             }
         }
         tokenizer.skip('}');
-        return new AnalyzedTest(clazz, testResult, coveredClasses);
+        return new AnalyzedTest(clazz, testResult, coveredClasses, executionDataRef);
     }
 
     static List<AnalyzedTest> parseList(Tokenizer tokenizer) {
@@ -105,7 +118,12 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
         result.append("\t\t{" + System.lineSeparator());
         result.append("\t\t\t\"class\": \"%s\",".formatted(testClassId) + System.lineSeparator());
         result.append("\t\t\t\"result\": \"%s\",".formatted(this.result) + System.lineSeparator());
-        result.append("\t\t\t\"coveredClasses\": [%s]".formatted(coveredClassIdList) + System.lineSeparator());
+        if (jacocoExecutionDataRef.isPresent()) {
+            result.append("\t\t\t\"coveredClasses\": [%s],".formatted(coveredClassIdList) + System.lineSeparator());
+            result.append("\t\t\t\"executionDataRef\": \"%s\"".formatted(this.jacocoExecutionDataRef.get()) + System.lineSeparator());
+        } else {
+            result.append("\t\t\t\"coveredClasses\": [%s]".formatted(coveredClassIdList) + System.lineSeparator());
+        }
         result.append("\t\t}");
         return result.toString();
     }

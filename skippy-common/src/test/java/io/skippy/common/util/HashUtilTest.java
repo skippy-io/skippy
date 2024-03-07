@@ -7,24 +7,24 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DebugAgnosticHashTest {
+public class HashUtilTest {
 
     @Test
-    void testOriginalClass() throws URISyntaxException {
+    void testDebugAgnosticHashOriginalClass() throws URISyntaxException {
         var classFile = Path.of(getClass().getResource("StringUtils.class").toURI());
-        assertEquals("4VP9fWGFUJHKIBG47OXZTQ==", DebugAgnosticHash.hash(classFile));
+        assertEquals("ECE5D94D", HashUtil.debugAgnosticHash(classFile));
     }
 
     @Test
-    void testOriginalClassWithNewComment() throws URISyntaxException {
+    void testDebugAgnosticHashOriginalClassWithNewComment() throws URISyntaxException {
         var classFile = Path.of(getClass().getResource("StringUtilsWithComment.class").toURI());
-        assertEquals("4VP9fWGFUJHKIBG47OXZTQ==", DebugAgnosticHash.hash(classFile));
+        assertEquals("ECE5D94D", HashUtil.debugAgnosticHash(classFile));
     }
 
     @Test
-    void testOriginalClassWithNewAnnotation() throws URISyntaxException {
+    void testDebugAgnosticHashOriginalClassWithNewAnnotation() throws URISyntaxException {
         var classFile = Path.of(getClass().getResource("StringUtilsWithAnnotation.class").toURI());
-        assertEquals("ZygI2p1Kb3I7WghMF9FOQQ==", DebugAgnosticHash.hash(classFile));
+        assertEquals("17D14E41", HashUtil.debugAgnosticHash(classFile));
     }
 
 }

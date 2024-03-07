@@ -26,41 +26,50 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.util.Base64;
-import java.util.logging.Logger;
+import java.security.NoSuchAlgorithmException;
 
 /**
- * Generates hashes for class files that are agnostic of debug information. If the only difference between two class
- * files is debug information within the bytecode, their hash will be the same.
- * <br /><br />
- * This allows Skippy to treat certain changes like
- * <ul>
- *     <li>change in formatting and indentation,</li>
- *     <li>updated JavaDocs and</li>
- *     <li>addition of newlines and linebreaks</li>
- * </ul>
- * as 'no-ops'.
- *
- * @author Florian McKee
+ * Hash functions for non-security purposes.
  */
-public final class DebugAgnosticHash {
-
-    private static final Logger LOGGER = Logger.getLogger(DebugAgnosticHash.class.getName());
+public final class HashUtil {
 
     /**
-     * Generates a hash for the {@code classfile} that is agnostic of debug information.
+     * Generates a 32-digit hexadecimal hash of the input.
+     *
+     * @param data the input
+     * @return a 32-digit hexadecimal hash of the input
+     */
+    public static String hashWith32Digits(byte[] data) {
+        return fullHash(data);
+    }
+
+    /**
+     * Generates a 8-digit hexadecimal hash for the {@code classfile} that is agnostic of debug information.
+     *
+     * If the only difference between two class files is debug information within the bytecode, their hash will be the same.
+     * <br /><br />
+     * This allows Skippy to treat certain changes like
+     * <ul>
+     *     <li>change in formatting and indentation,</li>
+     *     <li>updated JavaDocs and</li>
+     *     <li>addition of newlines and linebreaks</li>
+     * </ul>
+     * as 'no-ops'.
      *
      * @param classFile a class file
-     * @return a hash of the {@code classfile} that is agnostic of debug information
+     * @return a 8-digit hexadecimal  hash of the {@code classfile} that is agnostic of debug information
      */
-    public static String hash(Path classFile) {
+    public static String debugAgnosticHash(Path classFile) {
+        return fullHash(getBytecodeWithoutDebugInformation(classFile)).substring(24, 32);
+    }
+
+    private static String fullHash(byte[] data) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(getBytecodeWithoutDebugInformation(classFile));
-            return Base64.getEncoder().encodeToString(md.digest());
-        } catch (Exception e) {
-            LOGGER.severe("Unable to generate hash for file '%s': '%s'".formatted(classFile, e.getMessage()));
-            throw new RuntimeException(e);
+            md.update(data);
+            return bytesToHex(md.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Generation of hash failed.", e);
         }
     }
 
@@ -75,4 +84,11 @@ public final class DebugAgnosticHash {
         }
     }
 
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString().toUpperCase();
+    }
 }

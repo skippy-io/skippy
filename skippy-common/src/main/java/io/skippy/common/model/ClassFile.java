@@ -17,13 +17,14 @@
 package io.skippy.common.model;
 
 import io.skippy.common.util.ClassNameExtractor;
-import io.skippy.common.util.DebugAgnosticHash;
+import io.skippy.common.util.Profiler;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
+import static io.skippy.common.util.HashUtil.debugAgnosticHash;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
@@ -76,7 +77,7 @@ public final class ClassFile implements Comparable<ClassFile> {
             ClassNameExtractor.getFullyQualifiedClassName(classFile),
             projectDir.relativize(outputFolder),
             outputFolder.relativize(classFile),
-            classFile.toFile().exists() ? DebugAgnosticHash.hash(classFile) : ""
+            classFile.toFile().exists() ? debugAgnosticHash(classFile) : ""
         );
     }
 
@@ -94,20 +95,22 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     static ClassFile parse(Tokenizer tokenizer) {
-        tokenizer.skip('{');
-        var entries = new HashMap<String, String>();
-        while (entries.size() < 4) {
-            var key = tokenizer.next();
-            tokenizer.skip(':');
-            var value = tokenizer.next();
-            entries.put(key, value);
-            if (entries.size() < 4) {
-                tokenizer.skip(',');
+        return Profiler.profile("ClassFile#parse", () -> {
+            tokenizer.skip('{');
+            var entries = new HashMap<String, String>();
+            while (entries.size() < 4) {
+                var key = tokenizer.next();
+                tokenizer.skip(':');
+                var value = tokenizer.next();
+                entries.put(key, value);
+                if (entries.size() < 4) {
+                    tokenizer.skip(',');
+                }
             }
-        }
-        tokenizer.skip('}');
-        var result = fromParsedJson(entries.get("name"), Path.of(entries.get("outputFolder")), Path.of(entries.get("path")), entries.get("hash"));
-        return result;
+            tokenizer.skip('}');
+            var result = fromParsedJson(entries.get("name"), Path.of(entries.get("outputFolder")), Path.of(entries.get("path")), entries.get("hash"));
+            return result;
+        });
     }
 
     /**
@@ -212,7 +215,7 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     boolean hasChanged() {
-        return ! hash.equals(DebugAgnosticHash.hash(outputFolder.resolve(classFile)));
+        return ! hash.equals(debugAgnosticHash(outputFolder.resolve(classFile)));
     }
 
     boolean classFileNotFound() {

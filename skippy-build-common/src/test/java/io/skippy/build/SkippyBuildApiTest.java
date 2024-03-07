@@ -136,6 +136,65 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
+    void testEmptySkippyFolderWithTwoCovFilesAndTwoExecFiles() throws IOException {
+        buildApi.buildStarted();
+
+        Files.writeString(skippyFolder.resolve("com.example.FooTest.cov"), """
+            com.example.Foo
+            com.example.FooTest
+        """, StandardCharsets.UTF_8);
+
+        Files.writeString(skippyFolder.resolve("com.example.BarTest.cov"), """
+            com.example.Bar
+            com.example.BarTest
+        """, StandardCharsets.UTF_8);
+
+        Files.writeString(skippyFolder.resolve("com.example.FooTest.exec"), """
+            AAAAAAAAAA
+        """, StandardCharsets.UTF_8);
+
+        Files.writeString(skippyFolder.resolve("com.example.BarTest.exec"), """
+            BBBBBBBBBB
+        """, StandardCharsets.UTF_8);
+
+        buildApi.buildFinished();
+
+        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.Bar"
+                    },
+                    "1": {
+                        "name": "com.example.BarTest"
+                    },
+                    "2": {
+                        "name": "com.example.Foo"
+                    },
+                    "3": {
+                        "name": "com.example.FooTest"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0","1"],
+                        "executionDataRef": "1E879EAB8A2218642C8FABF2F51740AF"
+                    },
+                    {
+                        "class": "3",
+                        "result": "PASSED",
+                        "coveredClasses": ["2","3"],
+                        "executionDataRef": "083AAD6F53062D78C57F877F6F9BF164"
+                    }
+                ]
+            }
+    """);
+    }
+
+    @Test
     void testEmptySkippyFolderWithTwoCovFilesOneFailedTests() throws IOException {
         buildApi.buildStarted();
 

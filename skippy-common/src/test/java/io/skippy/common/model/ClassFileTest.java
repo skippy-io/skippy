@@ -123,8 +123,8 @@ public class ClassFileTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "LeftPadder.class:9U3+WYit7uiiNqA9jplN2A==",
-            "LeftPadderTest.class:sGLJTZJw4beE9m2Kg6chUg=="
+            "LeftPadder.class:8E994DD8",
+            "LeftPadderTest.class:83A72152"
     }, delimiter = ':')
     void getHash(String fileName, String expectedValue) throws URISyntaxException {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());

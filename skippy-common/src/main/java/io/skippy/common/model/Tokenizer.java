@@ -16,6 +16,8 @@
 
 package io.skippy.common.model;
 
+import java.util.Arrays;
+
 /**
  * Home-grown JSON tokenization to avoid a transitive dependencies to Jackson (or some other JSON library).
  *
@@ -23,58 +25,62 @@ package io.skippy.common.model;
  */
 final class Tokenizer {
 
-    private final StringBuilder stream;
+    private final char[] stream;
+    private int head;
+    private final int tail;
 
     Tokenizer(String input) {
-        this.stream = new StringBuilder(input.replaceAll("\\s+",""));
+        this.stream = input.replaceAll("\\s+","").toCharArray();
+        this.head = 0;
+        this.tail = stream.length;
     }
 
+    @Override
+    public String toString() {
+        return asString();
+
+    }
     String asString() {
-        return stream.toString();
+        return new String(Arrays.copyOfRange(stream, head, tail));
     }
 
     void skip(char c) {
-            if (stream.isEmpty() || stream.charAt(0) != c) {
-                throw new IllegalStateException("Can't skip over '%s' in residual characters '%s'.".formatted(c, stream));
-            }
-            stream.delete(0, 1);
+        if (head == tail || stream[head] != c) {
+             throw new IllegalStateException("Can't skip over '%s' in residual characters '%s'.".formatted(c, asString()));
+        }
+        head++;
     }
 
     String next() {
-            if (peek('{')) {
-                stream.delete(0, 1);
-                return "{";
+        if (peek('{')) {
+            head++;
+            return "{";
+        }
+        if (peek('"')) {
+            int pointer = head + 1;
+            while (stream[pointer] != '"') {
+                pointer++;
             }
-            if (peek('"')) {
-                int positionOfClosingQuote = stream.indexOf("\"", 1);
-                var result = stream.substring(1, positionOfClosingQuote);
-                stream.delete(0, positionOfClosingQuote + 1);
-                return result;
-            }
-            throw new IllegalStateException("Unable to determine next token in residual characters '%s'.".formatted(stream));
+            var result = new String(Arrays.copyOfRange(stream, head + 1, pointer));
+            head = pointer + 1;
+            return result;
+        }
+        throw new IllegalStateException("Unable to determine next token in residual characters '%s'.".formatted(asString()));
     }
-
 
     boolean peek(char c) {
-            if (stream.isEmpty()) {
-                return false;
-            }
-            return stream.charAt(0) == c;
+        if (head == tail) {
+            return false;
+        }
+        return stream[head] == c;
     }
     void skipIfNext(char c) {
-        if (stream.isEmpty()) {
+        if (head == tail) {
             return;
         }
-        if (stream.charAt(0) == c) {
-            stream.delete(0, 1);
+        if (stream[head] == c) {
+            head++;
         }
     }
 
-    public String getPrefixIncluding(char c) {
-        return stream.substring(0, 1 + stream.indexOf(String.valueOf(c)));
-    }
-
-    public void skip(int length) {
-        stream.delete(0, length);
-    }
 }

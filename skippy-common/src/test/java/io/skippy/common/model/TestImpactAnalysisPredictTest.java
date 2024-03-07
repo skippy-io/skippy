@@ -19,13 +19,13 @@ public class TestImpactAnalysisPredictTest {
                         "name": "com.example.LeftPadder",
                         "path": "io/skippy/common/model/LeftPadder.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                        "hash": "8E994DD8"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
                         "path": "io/skippy/common/model/LeftPadderTest.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                        "hash": "83A72152"
                     }
                 },
                 "tests": [
@@ -66,13 +66,13 @@ public class TestImpactAnalysisPredictTest {
                         "name": "com.example.LeftPadder",
                         "path": "io/skippy/common/model/LeftPadder.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                        "hash": "8E994DD8"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
                         "path": "io/skippy/common/model/LeftPadderTest.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "<!!!!>sGLJTZJw4beE9m2Kg6chUg=="                        
+                        "hash": "00000000"
                     }
                 },
                 "tests": [
@@ -98,13 +98,13 @@ public class TestImpactAnalysisPredictTest {
                         "name": "com.example.LeftPadder",
                         "path": "io/skippy/common/model/LeftPadder.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "<!!!!>9U3+WYit7uiiNqA9jplN2A=="                       
+                        "hash": "00000000"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
                         "path": "io/skippy/common/model/LeftPadderTest.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                        "hash": "83A72152"
                     }
                 },
                 "tests": [
@@ -196,13 +196,13 @@ public class TestImpactAnalysisPredictTest {
                         "name": "com.example.LeftPadder",
                         "path": "io/skippy/common/model/LeftPadder$Bla.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                        "hash": "00000000"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
                         "path": "io/skippy/common/model/LeftPadderTest.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                        "hash": "83A72152"
                     }
                 },
                 "tests": [

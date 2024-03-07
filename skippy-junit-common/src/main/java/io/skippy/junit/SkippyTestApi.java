@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class SkippyTestApi {
 
-    private static final boolean WRITE_EXEC_FILE = false;
+    private static final boolean WRITE_EXEC_FILE = true;
 
     /**
      * The SkippyTestApi singleton.

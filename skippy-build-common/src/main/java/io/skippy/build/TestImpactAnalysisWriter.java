@@ -29,6 +29,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
+import static io.skippy.common.util.HashUtil.hashWith32Digits;
 import static java.util.Arrays.asList;
 
 /**
@@ -47,28 +48,50 @@ final class TestImpactAnalysisWriter {
     void upsert(Set<String> failedTests) {
         try {
             var covFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".cov")));
+            var execFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec")));
             var existingAnalysis = TestImpactAnalysis.readFromFile(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
-            var newAnalysis = getTestImpactAnalysis(failedTests, covFiles);
+            var newAnalysis = getTestImpactAnalysis(failedTests, covFiles, execFiles);
             var mergedAnalysis = existingAnalysis.merge(newAnalysis);
             Files.writeString(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), mergedAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             covFiles.stream().forEach(File::delete);
+            execFiles.stream().forEach(File::delete);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, List<File> covFiles) throws IOException {
+    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, List<File> covFiles, List<File> execFiles) throws IOException {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
-        var analyzedTests = covFiles.stream().flatMap(covFile -> getAnalyzedTests(failedTests, covFile, classFileContainer).stream()).toList();
+        var analyzedTests = covFiles.stream().flatMap(covFile -> getAnalyzedTests(failedTests, covFile, execFiles, classFileContainer).stream()).toList();
         return new TestImpactAnalysis(classFileContainer, analyzedTests);
     }
 
-    private List<AnalyzedTest> getAnalyzedTests(Set<String> failedTests, File covFile, ClassFileContainer classFileContainer) {
+    private List<AnalyzedTest> getAnalyzedTests(Set<String> failedTests, File covFile, List<File> execFiles, ClassFileContainer classFileContainer) {
+        var executionDataRef = getExecutionDataRef(covFile, execFiles);
         var testName = covFile.getName().substring(0, covFile.getName().indexOf(".cov"));
         var testResult = failedTests.contains(testName) ? TestResult.FAILED : TestResult.PASSED;
         return classFileContainer.getIdsByClassName(testName).stream()
-                .map(id -> new AnalyzedTest(id, testResult, getCoveredClasses(covFile, classFileContainer)))
+                .map(id -> new AnalyzedTest(id, testResult, getCoveredClasses(covFile, classFileContainer), executionDataRef))
                 .toList();
+    }
+
+    private Optional<String> getExecutionDataRef(File covFile, List<File> execFiles) {
+        return execFiles.stream()
+                .filter(file -> nameWithoutExtension(file).equals(nameWithoutExtension(covFile)))
+                .findFirst()
+                .map(file -> {
+                    try {
+                        return hashWith32Digits(Files.readAllBytes(file.toPath()));
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+    }
+
+    private String nameWithoutExtension(File file) {
+        return file.getName()
+                .replaceAll("\\.exec", "")
+                .replaceAll("\\.cov", "");
     }
 
     private static List<String> getCoveredClasses(File covFile, ClassFileContainer classFileContainer) {

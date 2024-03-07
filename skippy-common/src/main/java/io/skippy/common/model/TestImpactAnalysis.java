@@ -129,12 +129,10 @@ public final class TestImpactAnalysis {
     }
 
     static TestImpactAnalysis parse(String string) {
-        return Profiler.profile("TestImpactAnalysis#parse", () -> {
-            return parse(new Tokenizer(string));
-        });
+        return Profiler.profile("TestImpactAnalysis#parse", () -> parse(new Tokenizer(string)));
     }
 
-    static TestImpactAnalysis parse(Tokenizer tokenizer) {
+    private static TestImpactAnalysis parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
         ClassFileContainer classFileContainer = null;
         List<AnalyzedTest> analyzedTests = null;
@@ -214,7 +212,8 @@ public final class TestImpactAnalysis {
         return new AnalyzedTest(
                 remap(analyzedTest.testClassId(), original, merged),
                 analyzedTest.result(),
-                analyzedTest.coveredClassesIds().stream().map(id -> remap(id, original, merged)).toList());
+                analyzedTest.coveredClassesIds().stream().map(id -> remap(id, original, merged)).toList(),
+                analyzedTest.jacocoExecutionDataRef());
     }
 
     private String remap(String id, ClassFileContainer original, ClassFileContainer merged) {
