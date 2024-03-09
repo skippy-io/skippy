@@ -11,7 +11,6 @@ ossrhPublish {
 dependencies {
     api project(':skippy-common')
     compileOnly 'org.jacoco:org.jacoco.agent:' + versions.jacoco + ':runtime'
-    implementation 'org.jacoco:org.jacoco.core:' + versions.jacoco
     testImplementation "org.junit.jupiter:junit-jupiter-api:" + versions.junit5
     testImplementation "org.junit.jupiter:junit-jupiter-params:" + versions.junit5
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:" + versions.junit5

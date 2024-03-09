@@ -16,37 +16,31 @@
 
 package io.skippy.junit;
 
+import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.Prediction;
 import io.skippy.common.model.TestImpactAnalysis;
 import io.skippy.common.util.Profiler;
-import io.skippy.common.SkippyFolder;
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
-import org.jacoco.core.data.ExecutionDataReader;
-import org.jacoco.core.data.SessionInfoStore;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-
-import static io.skippy.common.SkippyConstants.*;
-import static io.skippy.junit.JaCoCoExceptionHandler.swallowJaCoCoExceptions;
-import static java.nio.file.StandardOpenOption.*;
-
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.skippy.common.SkippyConstants.PREDICTIONS_LOG_FILE;
+import static io.skippy.junit.JaCoCoExceptionHandler.swallowJaCoCoExceptions;
+import static java.lang.System.lineSeparator;
+import static java.nio.file.StandardOpenOption.*;
+
 /**
- * API to query for skip-or-execute predictions and to trigger the generation of .cov files.
+ * API that is used by Skippy's JUnit libraries to query for skip-or-execute predictions and to trigger the generation of .exec files.
  *
  * @author Florian McKee
  */
 public final class SkippyTestApi {
-
-    private static final boolean WRITE_EXEC_FILE = true;
 
     /**
      * The SkippyTestApi singleton.
@@ -81,7 +75,7 @@ public final class SkippyTestApi {
                                 predictionWithReason.prediction(),
                                 predictionWithReason.reason().category(),
                                 predictionWithReason.reason().details().orElseGet(() -> "n/a"),
-                                System.lineSeparator()),
+                                lineSeparator()),
                         StandardCharsets.UTF_8, CREATE, APPEND
                     );
                 } else {
@@ -91,7 +85,7 @@ public final class SkippyTestApi {
                                     test.getName(),
                                     predictionWithReason.prediction(),
                                     predictionWithReason.reason().category(),
-                                    System.lineSeparator()),
+                                    lineSeparator()),
                             StandardCharsets.UTF_8, CREATE, APPEND
                     );
                 }
@@ -104,11 +98,11 @@ public final class SkippyTestApi {
     }
 
     /**
-     * Prepares for the capturing of a .cov file for {@code testClass} before any tests in the class are executed.
+     * Prepares for the capturing of a .exec file for {@code testClass} before any tests in the class are executed.
      *
      * @param testClass a test class
      */
-    public static void prepareCoverageDataCaptureFor(Class<?> testClass) {
+    public static void prepareExecFileGeneration(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareCoverageDataCaptureFor", () -> {
             swallowJaCoCoExceptions(() -> {
                 IAgent agent = RT.getAgent();
@@ -119,37 +113,22 @@ public final class SkippyTestApi {
 
 
     /**
-     * Captures a .cov file for {@code testClass} after all tests in the class have been executed.
+     * Writes a .exec file to the Skippy folder after all tests in for {@code testClass} have been executed.
      *
      * @param testClass a test class
      */
-    public static void captureCoverageDataFor(Class<?> testClass) {
-        Profiler.profile("SkippyTestApi#captureCoverageDataFor", () -> {
-            // this property / environment variable is set by Skippy's build plugins whenever a build performs a Skippy analysis
+    public static void writeExecFile(Class<?> testClass) {
+        Profiler.profile("SkippyTestApi#writeExecFile", () -> {
             swallowJaCoCoExceptions(() -> {
-                writeCovFileFor(testClass);
+                IAgent agent = RT.getAgent();
+                byte[] executionData = agent.getExecutionData(true);
+                try {
+                    Files.write(SkippyFolder.get().resolve("%s.exec".formatted(testClass.getName())), executionData, CREATE, TRUNCATE_EXISTING);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             });
         });
-    }
-
-    private static void writeCovFileFor(Class<?> testClass) {
-        IAgent agent = RT.getAgent();
-        var coveredClasses = new LinkedList<String>();
-        byte[] executionData = agent.getExecutionData(true);
-        ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(executionData));
-        executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
-        executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName()));
-        try {
-            executionDataReader.read();
-            var name = testClass.getName();
-            var skippyFolder = SkippyFolder.get();
-            Files.write(skippyFolder.resolve("%s.cov".formatted(name)), coveredClasses, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
-            if (WRITE_EXEC_FILE) {
-                Files.write(skippyFolder.resolve("%s.exec".formatted(name)), executionData, CREATE, TRUNCATE_EXISTING);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to write execution data: %s".formatted(e.getMessage()), e);
-        }
     }
 
 }

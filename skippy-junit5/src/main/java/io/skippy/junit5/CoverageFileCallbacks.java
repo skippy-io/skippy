@@ -28,12 +28,12 @@ public final class CoverageFileCallbacks implements BeforeAllCallback, AfterAllC
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        context.getTestClass().ifPresent(SkippyTestApi::prepareCoverageDataCaptureFor);
+        context.getTestClass().ifPresent(SkippyTestApi::prepareExecFileGeneration);
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
-        context.getTestClass().ifPresent(SkippyTestApi::captureCoverageDataFor);
+        context.getTestClass().ifPresent(SkippyTestApi::writeExecFile);
     }
 
 }

@@ -41,7 +41,7 @@ class CoverageFileRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                SkippyTestApi.prepareCoverageDataCaptureFor(description.getTestClass());
+                SkippyTestApi.prepareExecFileGeneration(description.getTestClass());
                 List<Throwable> errors = new ArrayList<Throwable>();
                 try {
                     base.evaluate();
@@ -49,7 +49,7 @@ class CoverageFileRule implements TestRule {
                     errors.add(t);
                 } finally {
                     try {
-                        SkippyTestApi.captureCoverageDataFor(description.getTestClass());
+                        SkippyTestApi.writeExecFile(description.getTestClass());
                     } catch (Throwable t) {
                         errors.add(t);
                     }
