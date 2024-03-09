@@ -12,13 +12,14 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonNoCoveredClasses() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList());
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList(), "0".repeat(32));
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": []
+                "coveredClasses": [],
+                "jacocoRef": "00000000000000000000000000000000"
             }
         """);
     }
@@ -32,45 +33,48 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "PASSED",
                 "coveredClasses": [],
-                "executionDataRef": "C57F877F6F9BF164"
+                "jacocoRef": "C57F877F6F9BF164"
             }
         """);
     }
 
     @Test
     void testToJsonOneCoveredClass() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0"));
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0"), "0".repeat(32));
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": ["0"]
+                "coveredClasses": ["0"],
+                "jacocoRef": "00000000000000000000000000000000"
             }
         """);
     }
     @Test
     void testToJsonTwoCoveredClasses() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"));
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": ["0", "1"]
+                "coveredClasses": ["0", "1"],
+                "jacocoRef": "00000000000000000000000000000000"
             }
         """);
     }
 
     @Test
     void testToJsonFailedTest() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.FAILED, asList());
+        var analyzedTest = new AnalyzedTest("0", TestResult.FAILED, asList(), "0".repeat(32));
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "class": "0",
                 "result": "FAILED",
-                "coveredClasses": []
+                "coveredClasses": [],
+                "jacocoRef": "00000000000000000000000000000000"
             }
         """);
     }
@@ -81,31 +85,15 @@ public class AnalyzedTestTest {
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": []
-            }
-        """));
-
-        assertEquals("0", analyzedTest.testClassId());
-        assertEquals(TestResult.PASSED, analyzedTest.result());
-        assertEquals(asList(), analyzedTest.coveredClassesIds());
-        assertEquals(Optional.empty(), analyzedTest.jacocoExecutionDataRef());
-    }
-
-    @Test
-    void testParseWithExecutionData() {
-        var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
-            {
-                "class": "0",
-                "result": "PASSED",
                 "coveredClasses": [],
-                "executionDataRef": "B062C94D9270E1B784F66D8A83A72152"
+                "jacocoRef": "B062C94D9270E1B784F66D8A83A72152"
             }
         """));
 
         assertEquals("0", analyzedTest.testClassId());
         assertEquals(TestResult.PASSED, analyzedTest.result());
         assertEquals(asList(), analyzedTest.coveredClassesIds());
-        assertEquals("B062C94D9270E1B784F66D8A83A72152", analyzedTest.jacocoExecutionDataRef().get());
+        assertEquals("B062C94D9270E1B784F66D8A83A72152", analyzedTest.jacocoExecutionDataRef());
     }
 
     @Test
@@ -114,7 +102,8 @@ public class AnalyzedTestTest {
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": ["0"]
+                "coveredClasses": ["0"],
+                "jacocoRef": "B062C94D9270E1B784F66D8A83A72152"
             }
         """));
         assertEquals(asList("0"), analyzedTest.coveredClassesIds());
@@ -126,7 +115,8 @@ public class AnalyzedTestTest {
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": ["0", "1"]
+                "coveredClasses": ["0", "1"],
+                "jacocoRef": "B062C94D9270E1B784F66D8A83A72152"
             }
         """));
         assertEquals(asList("0", "1"), analyzedTest.coveredClassesIds());
@@ -138,7 +128,8 @@ public class AnalyzedTestTest {
             {
                 "class": "0",
                 "result": "FAILED",
-                "coveredClasses": []
+                "coveredClasses": [],
+                "jacocoRef": "B062C94D9270E1B784F66D8A83A72152"
             }
         """));
         assertEquals(TestResult.FAILED, analyzedTest.result());

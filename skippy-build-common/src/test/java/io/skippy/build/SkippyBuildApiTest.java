@@ -42,7 +42,7 @@ public final class SkippyBuildApiTest {
     private Path projectDir;
     private Path skippyFolder;
     private SkippyBuildApi buildApi;
-    private ExecFileReader execFileReader = mock(ExecFileReader.class);
+    private JacocoExecutionFileReader execFileReader = mock(JacocoExecutionFileReader.class);
 
     @BeforeEach
     void setup() throws URISyntaxException {
@@ -64,7 +64,7 @@ public final class SkippyBuildApiTest {
     @Test
     void testEmptySkippyFolderWithoutExecFiles(){
         buildApi.buildStarted();
-        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList());
+        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList());
         buildApi.buildFinished();
 
         var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
@@ -98,10 +98,10 @@ public final class SkippyBuildApiTest {
         var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
         var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
 
-        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
-        when(execFileReader.read(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getJacocoExecutionData(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
 
-        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(
+        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(
                 fooTestExecFile,
                 barTestExecFile
         ));
@@ -140,13 +140,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "executionDataRef": "D358B7BF254A49F3EE2527EEE951B5BA"
+                        "jacocoRef": "D358B7BF254A49F3EE2527EEE951B5BA"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                        "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                     }
                 ]
             }
@@ -160,10 +160,10 @@ public final class SkippyBuildApiTest {
         var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
         var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
 
-        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
-        when(execFileReader.read(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getJacocoExecutionData(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
 
-        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(
+        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(
                 fooTestExecFile,
                 barTestExecFile
         ));
@@ -202,13 +202,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "executionDataRef": "D358B7BF254A49F3EE2527EEE951B5BA"
+                        "jacocoRef": "D358B7BF254A49F3EE2527EEE951B5BA"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                        "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                     }
                 ]
             }
@@ -222,10 +222,10 @@ public final class SkippyBuildApiTest {
         var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
         var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
 
-        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
-        when(execFileReader.read(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getJacocoExecutionData(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
 
-        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(
+        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(
                 fooTestExecFile,
                 barTestExecFile
         ));
@@ -264,13 +264,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0"],
-                        "executionDataRef": "D358B7BF254A49F3EE2527EEE951B5BA"
+                        "jacocoRef": "D358B7BF254A49F3EE2527EEE951B5BA"
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
                         "coveredClasses": ["2"],
-                        "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                        "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                     }
                 ]
             }
@@ -336,7 +336,8 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -346,9 +347,9 @@ public final class SkippyBuildApiTest {
 
         var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
 
-        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
 
-        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(
+        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(
                 fooTestExecFile
         ));
 
@@ -381,7 +382,7 @@ public final class SkippyBuildApiTest {
                     "class": "3",
                     "result": "PASSED",
                     "coveredClasses": ["2","3"],
-                    "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                    "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                 }
              ]
          }
@@ -423,13 +424,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "executionDataRef": "11111111111111111111111111111111"
+                        "jacocoRef": "11111111111111111111111111111111"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "executionDataRef": "22222222222222222222222222222222"
+                        "jacocoRef": "22222222222222222222222222222222"
                     }
                 ]
             }
@@ -439,8 +440,8 @@ public final class SkippyBuildApiTest {
 
         var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
 
-        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(fooTestExecFile));
-        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(fooTestExecFile));
+        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
         when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
                 "com.example.Foo",
                 "com.example.FooTest"
@@ -472,13 +473,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "executionDataRef": "11111111111111111111111111111111"
+                        "jacocoRef": "11111111111111111111111111111111"
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
                         "coveredClasses": ["2","3"],
-                        "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                        "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                     }
                 ]
             }

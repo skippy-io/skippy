@@ -2,6 +2,8 @@ package io.skippy.common.repository;
 
 import io.skippy.common.model.TestImpactAnalysis;
 
+import java.nio.file.Path;
+
 public interface SkippyRepository {
 
     /**
@@ -19,4 +21,8 @@ public interface SkippyRepository {
      * @return a 32-digit hex string that uniquely identifies the JaCoCo execution data
      */
     String saveJaCoCoExecutionData(byte[] jacocoExecutionData);
+
+    static SkippyRepository getInstance(Path projectDir) {
+        return new DefaultSkippyRepository(projectDir);
+    }
 }

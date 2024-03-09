@@ -30,29 +30,22 @@ import static java.util.stream.Collectors.joining;
  * {
  *      "class": "0",
  *      "result": "PASSED",
- *      "coveredClasses": ["0", "1"]
+ *      "coveredClasses": ["0", "1"],
+ *      "jacocoRef": "C57F877F6F9BF164"
  * }
  * </pre>
  *
  * @author Florian McKee
  */
-public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, Optional<String> jacocoExecutionDataRef) implements Comparable<AnalyzedTest> {
-
-    AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, String jacocoExecutionDataRef) {
-        this(testClassId, result, coveredClassesIds, Optional.of(jacocoExecutionDataRef));
-    }
-
-    AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds) {
-        this(testClassId, result, coveredClassesIds, Optional.empty());
-    }
+public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, String jacocoExecutionDataRef) implements Comparable<AnalyzedTest> {
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
         String clazz = null;
         List<String> coveredClasses = null;
         TestResult testResult = null;
-        Optional<String> executionDataRef = Optional.empty();
-        while (clazz == null || coveredClasses == null || testResult == null || executionDataRef.isEmpty()) {
+        String jacocoRef = null;
+        while (clazz == null || coveredClasses == null || testResult == null || jacocoRef == null) {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
@@ -65,19 +58,16 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
                 case "result":
                     testResult = TestResult.valueOf(tokenizer.next());
                     break;
-                case "executionDataRef":
-                    executionDataRef = Optional.of(tokenizer.next());
+                case "jacocoRef":
+                    jacocoRef = tokenizer.next();
                     break;
             }
-            if (clazz == null || coveredClasses == null || testResult == null || executionDataRef.isEmpty()) {
-                tokenizer.skipIfNext(',');
-            }
-            if (tokenizer.peek('}')) {
-                break;
+            if (clazz == null || coveredClasses == null || testResult == null || jacocoRef == null) {
+                tokenizer.skip(',');
             }
         }
         tokenizer.skip('}');
-        return new AnalyzedTest(clazz, testResult, coveredClasses, executionDataRef);
+        return new AnalyzedTest(clazz, testResult, coveredClasses, jacocoRef);
     }
 
     static List<AnalyzedTest> parseList(Tokenizer tokenizer) {
@@ -114,18 +104,14 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
                 .map(Integer::valueOf)
                 .sorted()
                 .map(id -> "\"%s\"".formatted(id)).collect(joining(","));
-        var result = new StringBuffer();
-        result.append("\t\t{" + System.lineSeparator());
-        result.append("\t\t\t\"class\": \"%s\",".formatted(testClassId) + System.lineSeparator());
-        result.append("\t\t\t\"result\": \"%s\",".formatted(this.result) + System.lineSeparator());
-        if (jacocoExecutionDataRef.isPresent()) {
-            result.append("\t\t\t\"coveredClasses\": [%s],".formatted(coveredClassIdList) + System.lineSeparator());
-            result.append("\t\t\t\"executionDataRef\": \"%s\"".formatted(this.jacocoExecutionDataRef.get()) + System.lineSeparator());
-        } else {
-            result.append("\t\t\t\"coveredClasses\": [%s]".formatted(coveredClassIdList) + System.lineSeparator());
-        }
-        result.append("\t\t}");
-        return result.toString();
+        var json = new StringBuffer();
+        json.append("\t\t{" + System.lineSeparator());
+        json.append("\t\t\t\"class\": \"%s\",".formatted(testClassId) + System.lineSeparator());
+        json.append("\t\t\t\"result\": \"%s\",".formatted(result) + System.lineSeparator());
+        json.append("\t\t\t\"coveredClasses\": [%s],".formatted(coveredClassIdList) + System.lineSeparator());
+        json.append("\t\t\t\"jacocoRef\": \"%s\"".formatted(jacocoExecutionDataRef) + System.lineSeparator());
+        json.append("\t\t}");
+        return json.toString();
     }
 
     @Override

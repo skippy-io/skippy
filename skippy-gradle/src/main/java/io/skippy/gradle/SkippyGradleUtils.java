@@ -17,7 +17,7 @@
 package io.skippy.gradle;
 
 import io.skippy.build.SkippyBuildApi;
-import io.skippy.common.repository.SkippyRepositoryFactory;
+import io.skippy.common.repository.SkippyRepository;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
 
@@ -34,7 +34,7 @@ final class SkippyGradleUtils {
         return new SkippyBuildApi(
                 projectDir,
                 new GradleClassFileCollector(projectDir, sourceSetContainer),
-                SkippyRepositoryFactory.getSkippyRepository(projectDir)
+                SkippyRepository.getInstance(projectDir)
         );
     }
 

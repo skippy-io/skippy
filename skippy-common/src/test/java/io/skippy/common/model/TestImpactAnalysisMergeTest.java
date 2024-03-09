@@ -59,7 +59,8 @@ public class TestImpactAnalysisMergeTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -79,7 +80,8 @@ public class TestImpactAnalysisMergeTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -102,7 +104,8 @@ public class TestImpactAnalysisMergeTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -121,7 +124,8 @@ public class TestImpactAnalysisMergeTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "11111111111111111111111111111111"
                     }
                 ]
             }
@@ -147,12 +151,14 @@ public class TestImpactAnalysisMergeTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "11111111111111111111111111111111"
                     },
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["1"]
+                        "coveredClasses": ["1"],
+                        "jacocoRef": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -175,7 +181,8 @@ public class TestImpactAnalysisMergeTest {
                     {
                         "class": "0",
                         "result": "FAILED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -194,7 +201,8 @@ public class TestImpactAnalysisMergeTest {
                     {
                         "class": "0",
                         "result": "FAILED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "11111111111111111111111111111111"
                     }
                 ]
             }
@@ -214,7 +222,8 @@ public class TestImpactAnalysisMergeTest {
                     {
                         "class": "0",
                         "result": "FAILED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "jacocoRef": "11111111111111111111111111111111"
                     }
                 ]
             }
