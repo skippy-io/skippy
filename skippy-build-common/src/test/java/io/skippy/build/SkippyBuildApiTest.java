@@ -157,23 +157,26 @@ public final class SkippyBuildApiTest {
     void testEmptySkippyFolderWithTwoCovFilesAndTwoExecFiles() throws IOException {
         buildApi.buildStarted();
 
-        Files.writeString(skippyFolder.resolve("com.example.FooTest.cov"), """
-            com.example.Foo
-            com.example.FooTest
-        """, StandardCharsets.UTF_8);
+        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
+        var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
 
-        Files.writeString(skippyFolder.resolve("com.example.BarTest.cov"), """
-            com.example.Bar
-            com.example.BarTest
-        """, StandardCharsets.UTF_8);
+        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.read(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
 
-        Files.writeString(skippyFolder.resolve("com.example.FooTest.exec"), """
-            AAAAAAAAAA
-        """, StandardCharsets.UTF_8);
+        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(
+                fooTestExecFile,
+                barTestExecFile
+        ));
 
-        Files.writeString(skippyFolder.resolve("com.example.BarTest.exec"), """
-            BBBBBBBBBB
-        """, StandardCharsets.UTF_8);
+        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
+                "com.example.Foo",
+                "com.example.FooTest"
+        ));
+
+        when(execFileReader.getCoveredClasses(skippyFolder.resolve(barTestExecFile))).thenReturn(asList(
+                "com.example.Bar",
+                "com.example.BarTest"
+        ));
 
         buildApi.buildFinished();
 
@@ -199,13 +202,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "executionDataRef": "1E879EAB8A2218642C8FABF2F51740AF"
+                        "executionDataRef": "D358B7BF254A49F3EE2527EEE951B5BA"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "executionDataRef": "083AAD6F53062D78C57F877F6F9BF164"
+                        "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                     }
                 ]
             }
@@ -213,16 +216,27 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testEmptySkippyFolderWithTwoCovFilesOneFailedTests() throws IOException {
+    void testEmptySkippyFolderWithTwoCovFilesOneFailedTests()  {
         buildApi.buildStarted();
 
-        Files.writeString(skippyFolder.resolve("com.example.FooTest.cov"), """
-            com.example.Foo
-        """, StandardCharsets.UTF_8);
+        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
+        var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
 
-        Files.writeString(skippyFolder.resolve("com.example.BarTest.cov"), """
-            com.example.Bar
-        """, StandardCharsets.UTF_8);
+        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.read(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
+
+        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(
+                fooTestExecFile,
+                barTestExecFile
+        ));
+
+        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
+                "com.example.Foo"
+        ));
+
+        when(execFileReader.getCoveredClasses(skippyFolder.resolve(barTestExecFile))).thenReturn(asList(
+                "com.example.Bar"
+        ));
 
         buildApi.testFailed("com.example.FooTest");
 
@@ -249,12 +263,14 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": ["0"],
+                        "executionDataRef": "D358B7BF254A49F3EE2527EEE951B5BA"
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
-                        "coveredClasses": ["2"]
+                        "coveredClasses": ["2"],
+                        "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                     }
                 ]
             }
@@ -328,10 +344,18 @@ public final class SkippyBuildApiTest {
 
         buildApi.buildStarted();
 
-        Files.writeString(skippyFolder.resolve("com.example.FooTest.cov"), """
-            com.example.Foo
-            com.example.FooTest
-        """, StandardCharsets.UTF_8);
+        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
+
+        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+
+        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(
+                fooTestExecFile
+        ));
+
+        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
+                "com.example.Foo",
+                "com.example.FooTest"
+        ));
 
         buildApi.buildFinished();
 
@@ -356,7 +380,8 @@ public final class SkippyBuildApiTest {
                 {
                     "class": "3",
                     "result": "PASSED",
-                    "coveredClasses": ["2","3"]
+                    "coveredClasses": ["2","3"],
+                    "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                 }
              ]
          }
@@ -453,7 +478,7 @@ public final class SkippyBuildApiTest {
                         "class": "3",
                         "result": "FAILED",
                         "coveredClasses": ["2","3"],
-			            "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"                        
+                        "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                     }
                 ]
             }
