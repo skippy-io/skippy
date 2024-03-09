@@ -28,7 +28,13 @@ import java.util.*;
 import static io.skippy.common.SkippyConstants.*;
 
 /**
- * API that is used by Skippy's Gradle and Maven plugins.
+ * API that is used by Skippy's Gradle and Maven plugins to remoev the Skippy folder and to inform Skippy about events
+ * like
+ * <ul>
+ *     <li>the start of a build,</li>
+ *     <li>the end of a build and</li>
+ *     <li>failed test cases.</li>
+ * </ul>
  *
  * @author Florian McKee
  */
@@ -132,7 +138,7 @@ public final class SkippyBuildApi {
     }
 
     private String getExecutionDataRef(Path execFile) {
-        return skippyRepository.saveJaCoCoExecutionData(execFileReader.getJacocoExecutionData(execFile));
+        return skippyRepository.saveJacocoExecutionData(execFileReader.getJacocoExecutionData(execFile));
     }
 
     private List<String> getCoveredClassesIds(Path execFile, ClassFileContainer classFileContainer) {

@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.skippy.common.SkippyConstants.PREDICTIONS_LOG_FILE;
-import static io.skippy.junit.JaCoCoExceptionHandler.swallowJaCoCoExceptions;
+import static io.skippy.junit.JacocoExceptionHandler.swallowJacocoExceptions;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.StandardOpenOption.*;
 
@@ -104,7 +104,7 @@ public final class SkippyTestApi {
      */
     public static void prepareExecFileGeneration(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareCoverageDataCaptureFor", () -> {
-            swallowJaCoCoExceptions(() -> {
+            swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 agent.reset();
             });
@@ -119,7 +119,7 @@ public final class SkippyTestApi {
      */
     public static void writeExecFile(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#writeExecFile", () -> {
-            swallowJaCoCoExceptions(() -> {
+            swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 byte[] executionData = agent.getExecutionData(true);
                 try {

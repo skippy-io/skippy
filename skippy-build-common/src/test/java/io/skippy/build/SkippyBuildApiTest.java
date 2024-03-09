@@ -17,9 +17,9 @@
 package io.skippy.build;
 
 import io.skippy.common.SkippyFolder;
-import io.skippy.common.repository.DefaultSkippyRepository;
 import io.skippy.common.model.JsonProperty;
 import io.skippy.common.model.TestImpactAnalysis;
+import io.skippy.common.repository.SkippyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +55,7 @@ public final class SkippyBuildApiTest {
 
         projectDir = Paths.get(getClass().getResource("project").toURI());
         skippyFolder = SkippyFolder.get(projectDir);
-        buildApi = new SkippyBuildApi(projectDir, classFileCollector, new DefaultSkippyRepository(projectDir), execFileReader);
+        buildApi = new SkippyBuildApi(projectDir, classFileCollector, SkippyRepository.getInstance(projectDir), execFileReader);
         for (var file : skippyFolder.toFile().listFiles()) {
             file.delete();
         }

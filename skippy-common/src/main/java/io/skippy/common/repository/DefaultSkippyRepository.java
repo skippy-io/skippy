@@ -34,11 +34,11 @@ import static io.skippy.common.util.HashUtil.hashWith32Digits;
 /**
  * {@link SkippyRepository} that stores and retrieves all data in / from the .skippy folder.
  */
-public class DefaultSkippyRepository implements SkippyRepository {
+class DefaultSkippyRepository implements SkippyRepository {
 
     private final Path projectDir;
 
-    public DefaultSkippyRepository(Path projectDir) {
+    DefaultSkippyRepository(Path projectDir) {
         this.projectDir = projectDir;
     }
 
@@ -53,10 +53,10 @@ public class DefaultSkippyRepository implements SkippyRepository {
     }
 
     @Override
-    public String saveJaCoCoExecutionData(byte[] jacocoExecutionData) {
+    public String saveJacocoExecutionData(byte[] jacocoExecutionData) {
         try {
             var hash = hashWith32Digits(jacocoExecutionData);
-            Files.write(SkippyFolder.get(projectDir).resolve("%s.bin".formatted(hash)), compress(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(hash)), compress(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             return hash;
         } catch (IOException e) {
             throw new UncheckedIOException(e);

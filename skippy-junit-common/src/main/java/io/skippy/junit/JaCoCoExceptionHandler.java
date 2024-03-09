@@ -19,28 +19,28 @@ package io.skippy.junit;
 import java.util.logging.Logger;
 
 /**
- * Swallows certain JaCoCo related exceptions to prevent builds being broken by Skippy.
+ * Swallows certain Jacoco related exceptions to prevent builds being broken by Skippy.
  *
  * @author Florian McKee
  */
-class JaCoCoExceptionHandler {
+class JacocoExceptionHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(JaCoCoExceptionHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JacocoExceptionHandler.class.getName());
 
     /**
-     * Executes the {@code runnable} and swallows certain JaCoCo related exceptions to prevent builds being broken by
+     * Executes the {@code runnable} and swallows certain Jacoco related exceptions to prevent builds being broken by
      * Skippy.
      *
      * @param runnable a {@link Runnable}
      */
-    static void swallowJaCoCoExceptions(Runnable runnable) {
+    static void swallowJacocoExceptions(Runnable runnable) {
         try {
             runnable.run();
         } catch (NoClassDefFoundError e) {
             if (e.getMessage().startsWith("org/jacoco")) {
-                LOGGER.severe("Unable to load JaCoCo class %s".formatted(e.getMessage()));
+                LOGGER.severe("Unable to load Jacoco class %s".formatted(e.getMessage()));
                 LOGGER.severe("");
-                LOGGER.severe("Did you forget to add the JaCoCo plugin to your pom.xml?");
+                LOGGER.severe("Did you forget to add the Jacoco plugin to your pom.xml?");
 
                 // suppress exception to continue the build
 
@@ -48,10 +48,10 @@ class JaCoCoExceptionHandler {
                 throw e;
             }
         } catch (IllegalStateException e) {
-            if (e.getMessage().equals("JaCoCo agent not started.")) {
-                LOGGER.severe("JaCoCo agent unavailable: %s".formatted(e.getMessage()));
+            if (e.getMessage().equals("Jacoco agent not started.")) {
+                LOGGER.severe("Jacoco agent unavailable: %s".formatted(e.getMessage()));
                 LOGGER.severe("");
-                LOGGER.severe("Did you forget to add the JaCoCo plugin to your pom.xml?");
+                LOGGER.severe("Did you forget to add the Jacoco plugin to your pom.xml?");
 
                 // suppress exception to continue the build
 
