@@ -34,12 +34,15 @@ import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
 import static io.skippy.common.model.ClassFile.fromParsedJson;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public final class SkippyBuildApiTest {
 
     private Path projectDir;
     private Path skippyFolder;
     private SkippyBuildApi buildApi;
+    private ExecFileReader execFileReader = mock(ExecFileReader.class);
 
     @BeforeEach
     void setup() throws URISyntaxException {
@@ -52,16 +55,18 @@ public final class SkippyBuildApiTest {
 
         projectDir = Paths.get(getClass().getResource("project").toURI());
         skippyFolder = SkippyFolder.get(projectDir);
-        buildApi = new SkippyBuildApi(projectDir, classFileCollector, new DefaultSkippyRepository(projectDir));
+        buildApi = new SkippyBuildApi(projectDir, classFileCollector, new DefaultSkippyRepository(projectDir), execFileReader);
         for (var file : skippyFolder.toFile().listFiles()) {
             file.delete();
         }
     }
 
     @Test
-    void testEmptySkippyFolderWithoutCovFiles(){
+    void testEmptySkippyFolderWithoutExecFiles(){
         buildApi.buildStarted();
+        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList());
         buildApi.buildFinished();
+
         var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
         assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
             {
@@ -87,18 +92,29 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testEmptySkippyFolderWithTwoCovFiles() throws IOException {
+    void testEmptySkippyFolderWithTwoCovFiles() {
         buildApi.buildStarted();
 
-        Files.writeString(skippyFolder.resolve("com.example.FooTest.cov"), """
-            com.example.Foo
-            com.example.FooTest
-        """, StandardCharsets.UTF_8);
+        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
+        var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
 
-        Files.writeString(skippyFolder.resolve("com.example.BarTest.cov"), """
-            com.example.Bar
-            com.example.BarTest
-        """, StandardCharsets.UTF_8);
+        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.read(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
+
+        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(
+                fooTestExecFile,
+                barTestExecFile
+        ));
+
+        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
+                "com.example.Foo",
+                "com.example.FooTest"
+        ));
+
+        when(execFileReader.getCoveredClasses(skippyFolder.resolve(barTestExecFile))).thenReturn(asList(
+                "com.example.Bar",
+                "com.example.BarTest"
+        ));
 
         buildApi.buildFinished();
 
@@ -123,12 +139,14 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": ["0","1"],
+                        "executionDataRef": "D358B7BF254A49F3EE2527EEE951B5BA"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": ["2","3"],
+                        "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
                     }
                 ]
             }
@@ -244,7 +262,7 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testExistingJsonFileNoCovFile() throws IOException {
+    void testExistingJsonFileNoExecFile() throws IOException {
         Files.writeString(skippyFolder.resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), """
             {
                 "classes": {
@@ -379,12 +397,14 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": ["0","1"],
+                        "executionDataRef": "11111111111111111111111111111111"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": ["2","3"],
+                        "executionDataRef": "22222222222222222222222222222222"
                     }
                 ]
             }
@@ -392,10 +412,15 @@ public final class SkippyBuildApiTest {
 
         buildApi.buildStarted();
 
-        Files.writeString(skippyFolder.resolve("com.example.FooTest.cov"), """
-            com.example.Foo
-            com.example.FooTest
-        """, StandardCharsets.UTF_8);
+        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
+
+        when(execFileReader.getExecutionDataFiles(projectDir)).thenReturn(asList(fooTestExecFile));
+        when(execFileReader.read(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
+        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
+                "com.example.Foo",
+                "com.example.FooTest"
+        ));
+
         buildApi.testFailed("com.example.FooTest");
 
         buildApi.buildFinished();
@@ -421,12 +446,14 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": ["0","1"],
+                        "executionDataRef": "11111111111111111111111111111111"
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": ["2","3"],
+			            "executionDataRef": "C7A520851517A2B4F0677AE3CD9D8AFF"                        
                     }
                 ]
             }
