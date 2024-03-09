@@ -38,9 +38,9 @@ class JacocoExceptionHandler {
             runnable.run();
         } catch (NoClassDefFoundError e) {
             if (e.getMessage().startsWith("org/jacoco")) {
-                LOGGER.severe("Unable to load Jacoco class %s".formatted(e.getMessage()));
+                LOGGER.severe("Unable to load JaCoCo class %s".formatted(e.getMessage()));
                 LOGGER.severe("");
-                LOGGER.severe("Did you forget to add the Jacoco plugin to your pom.xml?");
+                LOGGER.severe("Did you forget to add the Jacoco plugin to your build file?");
 
                 // suppress exception to continue the build
 
@@ -48,10 +48,10 @@ class JacocoExceptionHandler {
                 throw e;
             }
         } catch (IllegalStateException e) {
-            if (e.getMessage().equals("Jacoco agent not started.")) {
+            if (e.getMessage().equals("JaCoCo agent not started.")) {
                 LOGGER.severe("Jacoco agent unavailable: %s".formatted(e.getMessage()));
                 LOGGER.severe("");
-                LOGGER.severe("Did you forget to add the Jacoco plugin to your pom.xml?");
+                LOGGER.severe("Did you forget to add the Jacoco plugin to your build file?");
 
                 // suppress exception to continue the build
 
