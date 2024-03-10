@@ -19,10 +19,8 @@ package io.skippy.common.repository;
 import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
 import io.skippy.common.model.TestImpactAnalysis;
-import org.jacoco.core.data.ExecutionDataReader;
-import org.jacoco.core.data.SessionInfoStore;
+import io.skippy.common.util.JacocoExecutionDataUtil;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -33,11 +31,9 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.zip.Deflater;
 
-import static io.skippy.common.util.HashUtil.hashWith32Digits;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.util.Arrays.asList;
-
 
 /**
  * {@link SkippyRepository} that stores and retrieves all data in / from the .skippy folder.
@@ -58,7 +54,7 @@ class DefaultSkippyRepository implements SkippyRepository {
         var testName = executionDataFile.toFile().getName().substring(0, executionDataFile.toFile().getName().indexOf(".exec"));
             try {
                 var bytes = Files.readAllBytes(executionDataFile);
-                result.add(new TestWithJacocoExecutionDataAndCoveredClasses(testName, bytes, getCoveredClasses(bytes)));
+                result.add(new TestWithJacocoExecutionDataAndCoveredClasses(testName, bytes, JacocoExecutionDataUtil.getCoveredClasses(bytes)));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -74,7 +70,7 @@ class DefaultSkippyRepository implements SkippyRepository {
         }
         try {
             var id = Files.readString(idFile, StandardCharsets.UTF_8);
-            var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("%s.json".formatted(id)));
+            var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("tia_%s.json".formatted(id)));
             if (false == jsonFile.toFile().exists()) {
                 return TestImpactAnalysis.NOT_FOUND;
             }
@@ -88,12 +84,12 @@ class DefaultSkippyRepository implements SkippyRepository {
     public void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
         try {
             var id = testImpactAnalysis.getId();
-            var path = SkippyFolder.get(projectDir).resolve(Path.of("%s.json".formatted(id)));
+            var path = SkippyFolder.get(projectDir).resolve(Path.of("tia_%s.json".formatted(id)));
             Files.writeString(path, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
             Files.writeString(idFile, id, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            deleteTemporaryExecutionDataFilesForCurrentBuild();
-            deleteObsoleteExecutionDataFiles(testImpactAnalysis);
+            // deleteTemporaryExecutionDataFilesForCurrentBuild();
+//            deleteObsoleteExecutionDataFiles(testImpactAnalysis);
             deleteObsoleteTestImpactAnalysisFiles(testImpactAnalysis);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -103,9 +99,9 @@ class DefaultSkippyRepository implements SkippyRepository {
     @Override
     public String saveJacocoExecutionData(byte[] jacocoExecutionData) {
         try {
-            var hash = hashWith32Digits(jacocoExecutionData);
-            Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(hash)), compress(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            return hash;
+            var executionId = JacocoExecutionDataUtil.getExecutionId(jacocoExecutionData);
+            Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(executionId)), compress(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return executionId;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -147,19 +143,6 @@ class DefaultSkippyRepository implements SkippyRepository {
         return outputStream;
     }
 
-    private List<String> getCoveredClasses(byte[] jacocoExecutionData) {
-        try {
-            var coveredClasses = new LinkedList<String>();
-            ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(jacocoExecutionData));
-            executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
-            executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName().replace("/", ".").trim()));
-            executionDataReader.read();
-            return coveredClasses;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void deleteTemporaryExecutionDataFilesForCurrentBuild() {
         for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
             executionDataFile.toFile().delete();
@@ -183,7 +166,8 @@ class DefaultSkippyRepository implements SkippyRepository {
                 .stream()
                 .map(File::toPath).toList();
         for (var jsonFile : jsonFiles) {
-            if (false == testImpactAnalysis.getId().equals(jsonFile.toFile().getName().replaceAll("\\.json", ""))) {
+            var jsonFileId = jsonFile.toFile().getName().substring(4, 4 + 32);
+            if (false == testImpactAnalysis.getId().equals(jsonFileId)) {
                 jsonFile.toFile().delete();
             }
         }

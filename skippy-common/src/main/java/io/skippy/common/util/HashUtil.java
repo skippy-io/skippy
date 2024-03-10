@@ -29,7 +29,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * Hash functions for non-security purposes.
+ * Hash functions used throughout Skippy.
+ *
+ * Note: None of the methods in this class are intended for security-related purposes.
+ *
+ * @author Florian McKee
  */
 public final class HashUtil {
 

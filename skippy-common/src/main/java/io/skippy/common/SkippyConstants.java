@@ -31,12 +31,6 @@ public final class SkippyConstants {
     static final Path SKIPPY_DIRECTORY = Path.of(".skippy");
 
     /**
-     * JSON file that stores the result of Skippy's Test Impact Analysis.
-     */
-    public static final Path TEST_IMPACT_ANALYSIS_JSON_FILE = Path.of("test-impact-analysis.json");
-
-
-    /**
      * Log file for skip-or-execute predictions.
      */
     public static final Path PREDICTIONS_LOG_FILE = Path.of("predictions.log");

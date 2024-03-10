@@ -1,6 +1,5 @@
 package io.skippy.common.model;
 
-import io.skippy.common.SkippyConstants;
 import io.skippy.common.util.Profiler;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +13,7 @@ public class TestImpactAnalysisParsePerformanceTest {
 
     @Test
     void testParse() throws URISyntaxException, IOException {
-        var jsonFile = Paths.get(getClass().getResource(SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE.toString()).toURI());
+        var jsonFile = Paths.get(getClass().getResource("test-impact-analysis.json").toURI());
         TestImpactAnalysis.parse(Files.readString(jsonFile, StandardCharsets.UTF_8));
         Profiler.printResults();
     }
