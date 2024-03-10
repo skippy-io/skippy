@@ -104,7 +104,7 @@ public final class SkippyBuildApi {
 
     private void upsert(Set<String> failedTests) {
         try {
-            var existingAnalysis = TestImpactAnalysis.readFromFile(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+            var existingAnalysis = skippyRepository.readTestImpactAnalysis();
             var newAnalysis = getTestImpactAnalysis(failedTests);
             var mergedAnalysis = existingAnalysis.merge(newAnalysis);
             skippyRepository.saveTestImpactAnalysis(mergedAnalysis);

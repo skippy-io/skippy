@@ -68,6 +68,11 @@ class DefaultSkippyRepository implements SkippyRepository {
     }
 
     @Override
+    public TestImpactAnalysis readTestImpactAnalysis() {
+        return TestImpactAnalysis.readFromFile(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+    }
+
+    @Override
     public String saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
         try {
             Files.writeString(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);

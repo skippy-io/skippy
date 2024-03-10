@@ -16,7 +16,6 @@
 
 package io.skippy.build;
 
-import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
 import io.skippy.common.model.JsonProperty;
 import io.skippy.common.model.TestImpactAnalysis;
@@ -25,14 +24,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
 import static io.skippy.common.model.ClassFile.fromParsedJson;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -41,7 +37,6 @@ import static org.mockito.Mockito.*;
 public final class SkippyBuildApiTest {
 
     private Path projectDir;
-    private Path skippyFolder;
     private SkippyBuildApi buildApi;
     private SkippyRepository skippyRepository = mock(SkippyRepository.class);
 
@@ -55,15 +50,12 @@ public final class SkippyBuildApiTest {
         );
 
         projectDir = Paths.get(getClass().getResource("project").toURI());
-        skippyFolder = SkippyFolder.get(projectDir);
         buildApi = new SkippyBuildApi(projectDir, classFileCollector, skippyRepository);
-        for (var file : skippyFolder.toFile().listFiles()) {
-            file.delete();
-        }
     }
 
     @Test
-    void testEmptySkippyFolderWithoutExecFiles(){
+    void testEmptySkippyFolderWithoutExecFiles() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
         when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList());
 
@@ -97,6 +89,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoCovFiles() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
         when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
@@ -155,7 +148,8 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testEmptySkippyFolderWithTwoCovFilesAndTwoExecFiles() throws IOException {
+    void testEmptySkippyFolderWithTwoCovFilesAndTwoExecFiles() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
         when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
@@ -215,6 +209,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoCovFilesOneFailedTests()  {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
         when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
@@ -275,8 +270,8 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testExistingJsonFileNoExecFile() throws IOException {
-        Files.writeString(skippyFolder.resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), """
+    void testExistingJsonFileNoExecFile() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -289,7 +284,7 @@ public final class SkippyBuildApiTest {
                 "tests": [
                 ]
             }
-        """, StandardCharsets.UTF_8);
+        """));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -319,8 +314,8 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testExistingJsonFileUpdatedCovFile() throws IOException {
-        Files.writeString(skippyFolder.resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), """
+    void testExistingJsonFileUpdatedCovFile() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -339,7 +334,7 @@ public final class SkippyBuildApiTest {
                     }
                 ]
             }
-        """, StandardCharsets.UTF_8);
+        """));
 
         buildApi.buildStarted();
 
@@ -387,8 +382,8 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testExistingJsonFileNewTestFailure() throws IOException {
-        Files.writeString(skippyFolder.resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), """
+    void testExistingJsonFileNewTestFailure() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -431,7 +426,7 @@ public final class SkippyBuildApiTest {
                     }
                 ]
             }
-        """, StandardCharsets.UTF_8);
+        """));
 
         buildApi.buildStarted();
 

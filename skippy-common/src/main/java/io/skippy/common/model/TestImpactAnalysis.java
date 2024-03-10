@@ -38,6 +38,7 @@ import static java.util.stream.Collectors.joining;
  */
 public final class TestImpactAnalysis {
 
+    public static final TestImpactAnalysis NOT_FOUND = new TestImpactAnalysis(ClassFileContainer.from(emptyList()), emptyList());
     private final ClassFileContainer classFileContainer;
     private final List<AnalyzedTest> analyzedTests;
 
@@ -60,7 +61,7 @@ public final class TestImpactAnalysis {
      */
     public static TestImpactAnalysis readFromFile(Path testImpactAnalysisJsonFile) {
         if ( ! testImpactAnalysisJsonFile.toFile().exists()) {
-            return new TestImpactAnalysis(ClassFileContainer.from(emptyList()), emptyList());
+            return NOT_FOUND;
         }
         try {
             return parse(Files.readString(testImpactAnalysisJsonFile, StandardCharsets.UTF_8));
@@ -137,7 +138,7 @@ public final class TestImpactAnalysis {
         return classFileContainer;
     }
 
-    static TestImpactAnalysis parse(String string) {
+    public static TestImpactAnalysis parse(String string) {
         return Profiler.profile("TestImpactAnalysis#parse", () -> parse(new Tokenizer(string)));
     }
 

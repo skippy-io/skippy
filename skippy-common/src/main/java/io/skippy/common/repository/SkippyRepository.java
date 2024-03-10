@@ -24,6 +24,12 @@ public interface SkippyRepository {
     }
 
     /**
+     *
+     * @return
+     */
+    TestImpactAnalysis readTestImpactAnalysis();
+
+    /**
      * Saves the {@link TestImpactAnalysis}.
      *
      * @param testImpactAnalysis a {@link TestImpactAnalysis}
@@ -42,4 +48,5 @@ public interface SkippyRepository {
     List<TestWithJacocoExecutionDataAndCoveredClasses> getTemporaryTestExecutionDataForCurrentBuild();
 
     void saveTemporaryTestExecutionDataForCurrentBuild(String test, byte[] jacocoExecutionData);
+
 }
