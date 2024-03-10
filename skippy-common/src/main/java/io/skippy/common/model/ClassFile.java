@@ -20,8 +20,8 @@ import io.skippy.common.util.ClassNameExtractor;
 import io.skippy.common.util.Profiler;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import static io.skippy.common.util.HashUtil.debugAgnosticHash;
@@ -119,38 +119,20 @@ public final class ClassFile implements Comparable<ClassFile> {
      * @return the instance as JSON string
      */
     public String toJson() {
-        return toJson(JsonProperty.values());
+        return toJson(JsonConfiguration.Classes.all());
     }
 
-    /**
-     * Renders this instance as JSON string. The only difference compared to
-     * {@link ClassFile#toTestClassJson(JsonProperty...)} is indentation.
-     *
-     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
-     * @return this instance as JSON string
-     */
-    public String toJson(JsonProperty... propertiesToRender) {
-        var result = new StringBuilder();
-        result.append("\t\t\t{" + System.lineSeparator());
-        var properties = Arrays.stream(propertiesToRender)
-                .map(jsonProperty -> "\t\t\t\t\"%s\": \"%s\"".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
-                .collect(joining("," + System.lineSeparator()));
-        result.append(properties + System.lineSeparator());
-        result.append("\t\t\t}");
-        return result.toString();
-    }
 
     /**
-     * Renders this instance as JSON string. The only difference compared to {@link ClassFile#toJson(JsonProperty...)}
-     * is indentation.
+     * Renders this instance as JSON string.
      *
      * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
      * @return the instance as JSON string
      */
-    String toTestClassJson(JsonProperty... propertiesToRender) {
+    String toJson(List<JsonConfiguration.Classes> propertiesToRender) {
         var result = new StringBuilder();
         result.append("{" + System.lineSeparator());
-        var properties = Arrays.stream(propertiesToRender)
+        var properties = propertiesToRender.stream()
                 .map(jsonProperty -> "\t\t\t\"%s\": \"%s\"".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
                 .collect(joining("," + System.lineSeparator()));
         result.append(properties + System.lineSeparator());

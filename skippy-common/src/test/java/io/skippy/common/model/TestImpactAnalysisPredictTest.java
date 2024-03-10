@@ -132,7 +132,7 @@ public class TestImpactAnalysisPredictTest {
                         "coveredClasses": ["0", "1"],
                         "execution": "00000000000000000000000000000000"
                     }
-                ]                  
+                ]
             }
         """);
         var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
@@ -150,13 +150,13 @@ public class TestImpactAnalysisPredictTest {
                         "name": "com.example.LeftPadder",
                         "path": "io/skippy/common/model/LeftPadder.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "9U3+WYit7uiiNqA9jplN2A=="                       
+                        "hash": "9U3+WYit7uiiNqA9jplN2A=="
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
                         "path": "io/skippy/common/model/LeftPadderTest.class",
                         "outputFolder": "src/test/resources",
-                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="                        
+                        "hash": "sGLJTZJw4beE9m2Kg6chUg=="
                     }
                 },
                 "tests": [
@@ -164,7 +164,7 @@ public class TestImpactAnalysisPredictTest {
                         "class": "1",
                         "result": "FAILED",
                         "coveredClasses": ["0", "1"],
-                        "execution": "00000000000000000000000000000000"                        
+                        "execution": "00000000000000000000000000000000"
                     }
                 ]                      
             }

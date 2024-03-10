@@ -23,9 +23,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
-import static java.util.Collections.emptyMap;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -58,29 +57,13 @@ public class ClassFileTest {
                 "ZT0GoiWG8Az5TevH9/JwBg=="
         );
 
-        assertThat(classFile.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
+        assertThat(classFile.toJson(asList(JsonConfiguration.Classes.NAME))).isEqualToIgnoringWhitespace(
                 """
                     {
                         "name": "com.example.RightPadder"
                     }
                     """);
     }
-    @Test
-    void testToTestClassJsonSingleProperty() {
-        var classFile = ClassFile.fromParsedJson(
-                "com.example.RightPadder",
-                Path.of("build/classes/java/main"), Path.of("com/example/RightPadder.class"),
-                "ZT0GoiWG8Az5TevH9/JwBg=="
-        );
-
-        assertThat(classFile.toTestClassJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace(
-                """
-                    {
-                        "name": "com.example.RightPadder"
-                    }
-                    """);
-    }
-
 
     @Test
     void testParse() {

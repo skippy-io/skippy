@@ -86,16 +86,16 @@ public class ClassFileContainer {
     }
 
     String toJson() {
-        return toJson(JsonProperty.values());
+        return toJson(JsonConfiguration.Classes.all());
     }
 
-    String toJson(JsonProperty... propertiesToRender) {
+    String toJson(List<JsonConfiguration.Classes> propertiesToRender) {
         StringBuilder result = new StringBuilder();
         var classFilesAsList = new ArrayList<>(classFiles);
         result.append("{" + lineSeparator());
         for (int i = 0; i < classFiles.size(); i++) {
             result.append("\t\t\"%s\": ".formatted(idsByClassFile.get(classFilesAsList.get(i))));
-            result.append(classFilesAsList.get(i).toTestClassJson(propertiesToRender));
+            result.append(classFilesAsList.get(i).toJson(propertiesToRender));
             if (i < classFiles.size() - 1) {
                 result.append("," + lineSeparator());
             }

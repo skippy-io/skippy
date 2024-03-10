@@ -17,7 +17,7 @@
 package io.skippy.build;
 
 import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
-import io.skippy.common.model.JsonProperty;
+import io.skippy.common.model.JsonConfiguration;
 import io.skippy.common.model.TestImpactAnalysis;
 import io.skippy.common.repository.SkippyRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +64,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(asList(JsonConfiguration.Classes.NAME), JsonConfiguration.Tests.all())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -113,7 +113,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(asList(JsonConfiguration.Classes.NAME), JsonConfiguration.Tests.all())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -173,7 +173,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(asList(JsonConfiguration.Classes.NAME), JsonConfiguration.Tests.all())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -235,7 +235,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(asList(JsonConfiguration.Classes.NAME), JsonConfiguration.Tests.all())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -291,7 +291,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(asList(JsonConfiguration.Classes.NAME), JsonConfiguration.Tests.all())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -353,7 +353,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(asList(JsonConfiguration.Classes.NAME), JsonConfiguration.Tests.all())).isEqualToIgnoringWhitespace("""
         {
              "classes": {
                 "0": {
@@ -448,7 +448,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(asList(JsonConfiguration.Classes.NAME), JsonConfiguration.Tests.all())).isEqualToIgnoringWhitespace("""
            {
                 "classes": {
                     "0": {

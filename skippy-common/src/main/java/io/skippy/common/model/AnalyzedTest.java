@@ -100,18 +100,24 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
      * @return the instance as JSON string
      */
     String toJson() {
-        var coveredClassIdList = coveredClassesIds.stream()
-                .map(Integer::valueOf)
-                .sorted()
-                .map(id -> "\"%s\"".formatted(id)).collect(joining(","));
-        var json = new StringBuffer();
-        json.append("\t\t{" + System.lineSeparator());
-        json.append("\t\t\t\"class\": \"%s\",".formatted(testClassId) + System.lineSeparator());
-        json.append("\t\t\t\"result\": \"%s\",".formatted(result) + System.lineSeparator());
-        json.append("\t\t\t\"coveredClasses\": [%s],".formatted(coveredClassIdList) + System.lineSeparator());
-        json.append("\t\t\t\"execution\": \"%s\"".formatted(execution) + System.lineSeparator());
-        json.append("\t\t}");
-        return json.toString();
+        return toJson(JsonConfiguration.Tests.all());
+    }
+
+    /**
+     * Renders this instance as JSON string.
+     *
+     * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
+     * @return the instance as JSON string
+     */
+    String toJson(List<JsonConfiguration.Tests> propertiesToRender) {
+        var result = new StringBuilder();
+        result.append("{" + System.lineSeparator());
+        var properties = propertiesToRender.stream()
+                .map(jsonProperty -> "\t\t\t\"%s\": %s".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
+                .collect(joining("," + System.lineSeparator()));
+        result.append(properties + System.lineSeparator());
+        result.append("\t\t}");
+        return result.toString();
     }
 
     @Override
