@@ -22,6 +22,8 @@ package io.skippy.common.model;
  *
  * @param prediction a {@link Prediction}
  * @param reason the reason the {@link Prediction} was made
+ *
+ * @author Florian McKee
  */
 public record PredictionWithReason(Prediction prediction, Reason reason) {
     static PredictionWithReason execute(Reason reason) {

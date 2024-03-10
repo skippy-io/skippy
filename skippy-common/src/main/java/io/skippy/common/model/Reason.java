@@ -20,6 +20,8 @@ import java.util.Optional;
 
 /**
  * The reason for a {@link Prediction}.
+ *
+ * @author Florian McKee
  */
 public record Reason(Category category, Optional<String> details) {
 
