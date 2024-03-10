@@ -36,7 +36,19 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.util.Arrays.asList;
 
 /**
- * {@link SkippyRepository} that stores and retrieves all data in / from the .skippy folder.
+ * {@link SkippyRepository} that stores and retrieves all data in / from the .skippy folder. This implementation only
+ * retains the latest {@link TestImpactAnalysis} and the JaCoCo execution data files that are referenced by it.
+ *
+ * It is useful for small projects that do not care about code coverage reports and thus not need to store JaCoCo
+ * execution data files. However, it supports storage of {@link TestImpactAnalysis} instances and JaCoCo execution data
+ * files of any size. This is useful for experimentation. It is not recommended to be used for large projects and/or
+ * projects that want to store JaCoCo execution data files since it might significantly increase the size of your Git
+ * repository.
+ *
+ * Large projects that want to store and retain {@link TestImpactAnalysis}s instances and JaCoCo execution data files
+ * should provide a custom implementation to stores those artefacts outside the project's repository.
+ *
+ * @author Florian McKee
  */
 class DefaultSkippyRepository implements SkippyRepository {
 
@@ -88,8 +100,8 @@ class DefaultSkippyRepository implements SkippyRepository {
             Files.writeString(path, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
             Files.writeString(idFile, id, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            // deleteTemporaryExecutionDataFilesForCurrentBuild();
-//            deleteObsoleteExecutionDataFiles(testImpactAnalysis);
+             deleteTemporaryExecutionDataFilesForCurrentBuild();
+            deleteObsoleteExecutionDataFiles(testImpactAnalysis);
             deleteObsoleteTestImpactAnalysisFiles(testImpactAnalysis);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

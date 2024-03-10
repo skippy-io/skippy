@@ -17,6 +17,8 @@ import java.util.Optional;
  * The default implementation stores both {@link TestImpactAnalysis} instances and Jacoco execution data in the
  * Skippy folder on the filesystem. In the future, users will be able to register custom implementations that use
  * alternative storage systems like databases or blob storage systems like AWS S3.
+ *
+ * @author Florian McKee
  */
 public interface SkippyRepository {
 
