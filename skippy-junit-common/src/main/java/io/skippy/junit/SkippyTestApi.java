@@ -19,6 +19,7 @@ package io.skippy.junit;
 import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.Prediction;
 import io.skippy.common.model.TestImpactAnalysis;
+import io.skippy.common.repository.SkippyRepository;
 import io.skippy.common.util.Profiler;
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
@@ -122,11 +123,7 @@ public final class SkippyTestApi {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 byte[] executionData = agent.getExecutionData(true);
-                try {
-                    Files.write(SkippyFolder.get().resolve("%s.exec".formatted(testClass.getName())), executionData, CREATE, TRUNCATE_EXISTING);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
+                SkippyRepository.getInstance().saveTemporaryTestExecutionDataForCurrentBuild(testClass.getName(), executionData);
             });
         });
     }

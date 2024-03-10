@@ -17,11 +17,13 @@
 package io.skippy.build;
 
 import io.skippy.common.SkippyFolder;
+import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
 import io.skippy.common.model.JsonProperty;
 import io.skippy.common.model.TestImpactAnalysis;
 import io.skippy.common.repository.SkippyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -34,15 +36,14 @@ import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
 import static io.skippy.common.model.ClassFile.fromParsedJson;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public final class SkippyBuildApiTest {
 
     private Path projectDir;
     private Path skippyFolder;
     private SkippyBuildApi buildApi;
-    private JacocoExecutionFileReader execFileReader = mock(JacocoExecutionFileReader.class);
+    private SkippyRepository skippyRepository = mock(SkippyRepository.class);
 
     @BeforeEach
     void setup() throws URISyntaxException {
@@ -55,7 +56,7 @@ public final class SkippyBuildApiTest {
 
         projectDir = Paths.get(getClass().getResource("project").toURI());
         skippyFolder = SkippyFolder.get(projectDir);
-        buildApi = new SkippyBuildApi(projectDir, classFileCollector, SkippyRepository.getInstance(projectDir), execFileReader);
+        buildApi = new SkippyBuildApi(projectDir, classFileCollector, skippyRepository);
         for (var file : skippyFolder.toFile().listFiles()) {
             file.delete();
         }
@@ -64,10 +65,13 @@ public final class SkippyBuildApiTest {
     @Test
     void testEmptySkippyFolderWithoutExecFiles(){
         buildApi.buildStarted();
-        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList());
-        buildApi.buildFinished();
+        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList());
 
-        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
+        buildApi.buildFinished();
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
+
+        var tia = tiaCaptor.getValue();
         assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
@@ -95,30 +99,27 @@ public final class SkippyBuildApiTest {
     void testEmptySkippyFolderWithTwoCovFiles() {
         buildApi.buildStarted();
 
-        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
-        var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
-
-        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
-        when(execFileReader.getJacocoExecutionData(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
-
-        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(
-                fooTestExecFile,
-                barTestExecFile
+        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+            new TestWithJacocoExecutionDataAndCoveredClasses(
+                "com.example.FooTest",
+                "0xFOO".getBytes(StandardCharsets.UTF_8),
+                asList("com.example.Foo", "com.example.FooTest")
+            ),
+            new TestWithJacocoExecutionDataAndCoveredClasses(
+                "com.example.BarTest",
+                "0xBAR".getBytes(StandardCharsets.UTF_8),
+                asList("com.example.Bar", "com.example.BarTest")
+            )
         ));
 
-        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
-                "com.example.Foo",
-                "com.example.FooTest"
-        ));
+        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
+        when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("0xBAR");
 
-        when(execFileReader.getCoveredClasses(skippyFolder.resolve(barTestExecFile))).thenReturn(asList(
-                "com.example.Bar",
-                "com.example.BarTest"
-        ));
-
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
-        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        var tia = tiaCaptor.getValue();
         assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
@@ -140,13 +141,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "jacocoRef": "D358B7BF254A49F3EE2527EEE951B5BA"
+                        "jacocoRef": "0xBAR"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                        "jacocoRef": "0xFOO"
                     }
                 ]
             }
@@ -157,30 +158,27 @@ public final class SkippyBuildApiTest {
     void testEmptySkippyFolderWithTwoCovFilesAndTwoExecFiles() throws IOException {
         buildApi.buildStarted();
 
-        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
-        var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
-
-        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
-        when(execFileReader.getJacocoExecutionData(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
-
-        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(
-                fooTestExecFile,
-                barTestExecFile
+        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.FooTest",
+                        "0xFOO".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Foo", "com.example.FooTest")
+                ),
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.BarTest",
+                        "0xBAR".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Bar", "com.example.BarTest")
+                )
         ));
 
-        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
-                "com.example.Foo",
-                "com.example.FooTest"
-        ));
+        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
+        when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("0xBAR");
 
-        when(execFileReader.getCoveredClasses(skippyFolder.resolve(barTestExecFile))).thenReturn(asList(
-                "com.example.Bar",
-                "com.example.BarTest"
-        ));
-
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
-        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        var tia = tiaCaptor.getValue();
         assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
@@ -202,13 +200,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "jacocoRef": "D358B7BF254A49F3EE2527EEE951B5BA"
+                        "jacocoRef": "0xBAR"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                        "jacocoRef": "0xFOO"
                     }
                 ]
             }
@@ -219,30 +217,29 @@ public final class SkippyBuildApiTest {
     void testEmptySkippyFolderWithTwoCovFilesOneFailedTests()  {
         buildApi.buildStarted();
 
-        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
-        var barTestExecFile = skippyFolder.resolve("com.example.BarTest.exec");
-
-        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
-        when(execFileReader.getJacocoExecutionData(barTestExecFile)).thenReturn("0xBAR".getBytes(StandardCharsets.UTF_8));
-
-        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(
-                fooTestExecFile,
-                barTestExecFile
-        ));
-
-        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
-                "com.example.Foo"
-        ));
-
-        when(execFileReader.getCoveredClasses(skippyFolder.resolve(barTestExecFile))).thenReturn(asList(
-                "com.example.Bar"
+        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.FooTest",
+                        "0xFOO".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Foo")
+                ),
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.BarTest",
+                        "0xBAR".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Bar")
+                )
         ));
 
         buildApi.testFailed("com.example.FooTest");
 
-        buildApi.buildFinished();
+        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
+        when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("0xBAR");
 
-        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
+        buildApi.buildFinished();
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
+
+        var tia = tiaCaptor.getValue();
         assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
@@ -264,13 +261,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0"],
-                        "jacocoRef": "D358B7BF254A49F3EE2527EEE951B5BA"
+                        "jacocoRef": "0xBAR"
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
                         "coveredClasses": ["2"],
-                        "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                        "jacocoRef": "0xFOO"
                     }
                 ]
             }
@@ -294,10 +291,11 @@ public final class SkippyBuildApiTest {
             }
         """, StandardCharsets.UTF_8);
 
-        buildApi.buildStarted();
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
-        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        var tia = tiaCaptor.getValue();
         assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
@@ -345,22 +343,21 @@ public final class SkippyBuildApiTest {
 
         buildApi.buildStarted();
 
-        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
-
-        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
-
-        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(
-                fooTestExecFile
+        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.FooTest",
+                        "0xFOO".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Foo", "com.example.FooTest")
+                )
         ));
 
-        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
-                "com.example.Foo",
-                "com.example.FooTest"
-        ));
+        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
 
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
-        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        var tia = tiaCaptor.getValue();
         assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
         {
              "classes": {
@@ -382,7 +379,7 @@ public final class SkippyBuildApiTest {
                     "class": "3",
                     "result": "PASSED",
                     "coveredClasses": ["2","3"],
-                    "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                    "jacocoRef": "0xFOO"
                 }
              ]
          }
@@ -438,20 +435,24 @@ public final class SkippyBuildApiTest {
 
         buildApi.buildStarted();
 
-        var fooTestExecFile = skippyFolder.resolve("com.example.FooTest.exec");
 
-        when(execFileReader.getJacocoExecutionDataFiles(projectDir)).thenReturn(asList(fooTestExecFile));
-        when(execFileReader.getJacocoExecutionData(fooTestExecFile)).thenReturn("0xFOO".getBytes(StandardCharsets.UTF_8));
-        when(execFileReader.getCoveredClasses(skippyFolder.resolve(fooTestExecFile))).thenReturn(asList(
-                "com.example.Foo",
-                "com.example.FooTest"
+        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.FooTest",
+                        "0xFOO".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Foo", "com.example.FooTest")
+                )
         ));
+        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
+
 
         buildApi.testFailed("com.example.FooTest");
 
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
-        var tia = TestImpactAnalysis.readFromFile(projectDir.resolve(".skippy").resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        var tia = tiaCaptor.getValue();
         assertThat(tia.toJson(JsonProperty.CLASS_NAME)).isEqualToIgnoringWhitespace("""
            {
                 "classes": {
@@ -479,7 +480,7 @@ public final class SkippyBuildApiTest {
                         "class": "3",
                         "result": "FAILED",
                         "coveredClasses": ["2","3"],
-                        "jacocoRef": "C7A520851517A2B4F0677AE3CD9D8AFF"
+                        "jacocoRef": "0xFOO"
                     }
                 ]
             }

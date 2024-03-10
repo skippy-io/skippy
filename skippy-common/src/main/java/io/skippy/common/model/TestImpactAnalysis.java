@@ -120,6 +120,15 @@ public final class TestImpactAnalysis {
         });
     }
 
+    /**
+     * Returns the Jacoco execution data references from the {@link AnalyzedTest}s.
+     *
+     * @return the Jacoco execution data references from the {@link AnalyzedTest}s
+     */
+    public List<String> getJacocoExecutionDataRefs() {
+        return analyzedTests.stream().map(AnalyzedTest::jacocoExecutionDataRef).toList();
+    }
+
     List<AnalyzedTest> getAnalyzedTests() {
         return analyzedTests;
     }

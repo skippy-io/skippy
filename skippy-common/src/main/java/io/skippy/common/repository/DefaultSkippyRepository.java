@@ -17,18 +17,27 @@
 package io.skippy.common.repository;
 
 import io.skippy.common.SkippyFolder;
+import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
 import io.skippy.common.model.TestImpactAnalysis;
+import org.jacoco.core.data.ExecutionDataReader;
+import org.jacoco.core.data.SessionInfoStore;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.*;
 import java.util.zip.Deflater;
 
 import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
 import static io.skippy.common.util.HashUtil.hashWith32Digits;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.util.Arrays.asList;
 
 
 /**
@@ -43,9 +52,26 @@ class DefaultSkippyRepository implements SkippyRepository {
     }
 
     @Override
+    public List<TestWithJacocoExecutionDataAndCoveredClasses> getTemporaryTestExecutionDataForCurrentBuild() {
+        var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
+        List<Path> executionDataFiles = getExecutionDataFilesForCurrentBuild();
+        for (var executionDataFile : executionDataFiles) {
+        var testName = executionDataFile.toFile().getName().substring(0, executionDataFile.toFile().getName().indexOf(".exec"));
+            try {
+                var bytes = Files.readAllBytes(executionDataFile);
+                result.add(new TestWithJacocoExecutionDataAndCoveredClasses(testName, bytes, getCoveredClasses(bytes)));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public String saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
         try {
             Files.writeString(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            deleteTestToJacocoExecutionDataMappingForCurrentBuild();
             return hashWith32Digits(testImpactAnalysis.toJson().getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -61,6 +87,23 @@ class DefaultSkippyRepository implements SkippyRepository {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Override
+    public void saveTemporaryTestExecutionDataForCurrentBuild(String testClass, byte[] executionData) {
+        try {
+            Files.write(SkippyFolder.get().resolve("%s.exec".formatted(testClass)), executionData, CREATE, TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private List<Path> getExecutionDataFilesForCurrentBuild() {
+        var executionDataFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec")))
+                .stream()
+                .filter(file -> ! file.getName().matches("[A-Z0-9]{32}\\.exec"))
+                .map(File::toPath).toList();
+        return executionDataFiles;
     }
 
     private static byte[] compress(byte[] data) {
@@ -81,6 +124,25 @@ class DefaultSkippyRepository implements SkippyRepository {
 
         deflater.end();
         return outputStream;
+    }
+
+    private List<String> getCoveredClasses(byte[] jacocoExecutionData) {
+        try {
+            var coveredClasses = new LinkedList<String>();
+            ExecutionDataReader executionDataReader = new ExecutionDataReader(new ByteArrayInputStream(jacocoExecutionData));
+            executionDataReader.setSessionInfoVisitor(new SessionInfoStore());
+            executionDataReader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName().replace("/", ".").trim()));
+            executionDataReader.read();
+            return coveredClasses;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteTestToJacocoExecutionDataMappingForCurrentBuild() {
+        for (var executionDataFile : getExecutionDataFilesForCurrentBuild()) {
+            executionDataFile.toFile().delete();
+        }
     }
 
 }

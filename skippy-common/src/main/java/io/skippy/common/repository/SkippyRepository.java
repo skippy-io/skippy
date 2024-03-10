@@ -1,8 +1,10 @@
 package io.skippy.common.repository;
 
+import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
 import io.skippy.common.model.TestImpactAnalysis;
 
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Repository for storage and retrieval of {@link TestImpactAnalysis} instances and Jacoco execution data.
@@ -17,8 +19,12 @@ public interface SkippyRepository {
         return new DefaultSkippyRepository(projectDir);
     }
 
+    static SkippyRepository getInstance() {
+        return new DefaultSkippyRepository(Path.of("."));
+    }
+
     /**
-     * Saves the {@link TestImpactAnalysis}
+     * Saves the {@link TestImpactAnalysis}.
      *
      * @param testImpactAnalysis a {@link TestImpactAnalysis}
      * @return a 32-digit hex string that uniquely identifies the {@link TestImpactAnalysis}
@@ -33,4 +39,7 @@ public interface SkippyRepository {
      */
     String saveJacocoExecutionData(byte[] jacocoExecutionData);
 
+    List<TestWithJacocoExecutionDataAndCoveredClasses> getTemporaryTestExecutionDataForCurrentBuild();
+
+    void saveTemporaryTestExecutionDataForCurrentBuild(String test, byte[] jacocoExecutionData);
 }

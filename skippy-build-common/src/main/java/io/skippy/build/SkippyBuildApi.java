@@ -19,7 +19,6 @@ package io.skippy.build;
 import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.*;
 import io.skippy.common.repository.SkippyRepository;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
@@ -43,26 +42,20 @@ public final class SkippyBuildApi {
     private final Path projectDir;
     private final ClassFileCollector classFileCollector;
     private final SkippyRepository skippyRepository;
-    private final JacocoExecutionFileReader execFileReader;
     private final Set<String> failedTests = new HashSet<>();
 
 
     /**
      * C'tor.
      *
-     * @param projectDir the project folder
+     * @param projectDir         the project folder
      * @param classFileCollector the {@link ClassFileCollector}
-     * @param skippyRepository the {@link SkippyRepository}
+     * @param skippyRepository   the {@link SkippyRepository}
      */
     public SkippyBuildApi(Path projectDir, ClassFileCollector classFileCollector, SkippyRepository skippyRepository) {
-        this(projectDir, classFileCollector, skippyRepository, new JacocoExecutionFileReader());
-    }
-
-    SkippyBuildApi(Path projectDir, ClassFileCollector classFileCollector, SkippyRepository skippyRepository, JacocoExecutionFileReader execFileReader) {
         this.projectDir = projectDir;
         this.classFileCollector = classFileCollector;
         this.skippyRepository = skippyRepository;
-        this.execFileReader = execFileReader;
     }
 
     /**
@@ -111,38 +104,31 @@ public final class SkippyBuildApi {
 
     private void upsert(Set<String> failedTests) {
         try {
-            var execFiles = execFileReader.getJacocoExecutionDataFiles(projectDir);
             var existingAnalysis = TestImpactAnalysis.readFromFile(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
-            var newAnalysis = getTestImpactAnalysis(failedTests, execFiles);
+            var newAnalysis = getTestImpactAnalysis(failedTests);
             var mergedAnalysis = existingAnalysis.merge(newAnalysis);
             skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
-            execFiles.stream().forEach(path -> path.toFile().delete());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, List<Path> execFiles) throws IOException {
+    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests) throws IOException {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
-        var analyzedTests = execFiles.stream().flatMap(execFile -> getAnalyzedTests(failedTests, execFile, classFileContainer).stream()).toList();
+        var executionDataForCurrentBuild = skippyRepository.getTemporaryTestExecutionDataForCurrentBuild();
+        var analyzedTests = executionDataForCurrentBuild.stream().flatMap(testWithExecutionData -> getAnalyzedTests(failedTests, testWithExecutionData, classFileContainer).stream()).toList();
         return new TestImpactAnalysis(classFileContainer, analyzedTests);
     }
 
-    private List<AnalyzedTest> getAnalyzedTests(Set<String> failedTests, Path jacocoExecutionDataFile, ClassFileContainer classFileContainer) {
-        var jacocoRef = getExecutionDataRef(jacocoExecutionDataFile);
-        var testName = jacocoExecutionDataFile.toFile().getName().substring(0, jacocoExecutionDataFile.toFile().getName().indexOf(".exec"));
-        var testResult = failedTests.contains(testName) ? TestResult.FAILED : TestResult.PASSED;
-        return classFileContainer.getIdsByClassName(testName).stream()
-                .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(jacocoExecutionDataFile, classFileContainer), jacocoRef))
+    private List<AnalyzedTest> getAnalyzedTests(Set<String> failedTests, TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData, ClassFileContainer classFileContainer) {
+        var jacocoRef = skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData());
+        var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
+        return classFileContainer.getIdsByClassName(testWithExecutionData.testClassName()).stream()
+                .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), jacocoRef))
                 .toList();
     }
 
-    private String getExecutionDataRef(Path execFile) {
-        return skippyRepository.saveJacocoExecutionData(execFileReader.getJacocoExecutionData(execFile));
-    }
-
-    private List<String> getCoveredClassesIds(Path execFile, ClassFileContainer classFileContainer) {
-        var coveredClasses = execFileReader.getCoveredClasses(execFile);
+    private List<String> getCoveredClassesIds(List<String> coveredClasses, ClassFileContainer classFileContainer) {
         var coveredClassIds = new LinkedList<String>();
         for (String clazz : coveredClasses) {
             coveredClassIds.addAll(classFileContainer.getIdsByClassName(clazz));
