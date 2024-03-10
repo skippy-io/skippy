@@ -31,21 +31,21 @@ import static java.util.stream.Collectors.joining;
  *      "class": "0",
  *      "result": "PASSED",
  *      "coveredClasses": ["0", "1"],
- *      "jacocoId": "C57F877F6F9BF164"
+ *      "execution": "C57F877F6F9BF164"
  * }
  * </pre>
  *
  * @author Florian McKee
  */
-public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, String jacocoId) implements Comparable<AnalyzedTest> {
+public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, String execution) implements Comparable<AnalyzedTest> {
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
         String clazz = null;
         List<String> coveredClasses = null;
         TestResult testResult = null;
-        String jacocoId = null;
-        while (clazz == null || coveredClasses == null || testResult == null || jacocoId == null) {
+        String execution = null;
+        while (clazz == null || coveredClasses == null || testResult == null || execution == null) {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
@@ -58,16 +58,16 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
                 case "result":
                     testResult = TestResult.valueOf(tokenizer.next());
                     break;
-                case "jacocoId":
-                    jacocoId = tokenizer.next();
+                case "execution":
+                    execution = tokenizer.next();
                     break;
             }
-            if (clazz == null || coveredClasses == null || testResult == null || jacocoId == null) {
+            if (clazz == null || coveredClasses == null || testResult == null || execution == null) {
                 tokenizer.skip(',');
             }
         }
         tokenizer.skip('}');
-        return new AnalyzedTest(clazz, testResult, coveredClasses, jacocoId);
+        return new AnalyzedTest(clazz, testResult, coveredClasses, execution);
     }
 
     static List<AnalyzedTest> parseList(Tokenizer tokenizer) {
@@ -109,7 +109,7 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
         json.append("\t\t\t\"class\": \"%s\",".formatted(testClassId) + System.lineSeparator());
         json.append("\t\t\t\"result\": \"%s\",".formatted(result) + System.lineSeparator());
         json.append("\t\t\t\"coveredClasses\": [%s],".formatted(coveredClassIdList) + System.lineSeparator());
-        json.append("\t\t\t\"jacocoId\": \"%s\"".formatted(jacocoId) + System.lineSeparator());
+        json.append("\t\t\t\"execution\": \"%s\"".formatted(execution) + System.lineSeparator());
         json.append("\t\t}");
         return json.toString();
     }

@@ -134,13 +134,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "jacocoId": "0xBAR"
+                        "execution": "0xBAR"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "jacocoId": "0xFOO"
+                        "execution": "0xFOO"
                     }
                 ]
             }
@@ -194,13 +194,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "jacocoId": "0xBAR"
+                        "execution": "0xBAR"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "jacocoId": "0xFOO"
+                        "execution": "0xFOO"
                     }
                 ]
             }
@@ -256,13 +256,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0"],
-                        "jacocoId": "0xBAR"
+                        "execution": "0xBAR"
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
                         "coveredClasses": ["2"],
-                        "jacocoId": "0xFOO"
+                        "execution": "0xFOO"
                     }
                 ]
             }
@@ -330,7 +330,7 @@ public final class SkippyBuildApiTest {
                         "class": "0",
                         "result": "PASSED",
                         "coveredClasses": ["0"],
-                        "jacocoId": "00000000000000000000000000000000"
+                        "execution": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -374,7 +374,7 @@ public final class SkippyBuildApiTest {
                     "class": "3",
                     "result": "PASSED",
                     "coveredClasses": ["2","3"],
-                    "jacocoId": "0xFOO"
+                    "execution": "0xFOO"
                 }
              ]
          }
@@ -416,13 +416,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "jacocoId": "11111111111111111111111111111111"
+                        "execution": "11111111111111111111111111111111"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "jacocoId": "22222222222222222222222222222222"
+                        "execution": "22222222222222222222222222222222"
                     }
                 ]
             }
@@ -469,13 +469,13 @@ public final class SkippyBuildApiTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "jacocoId": "11111111111111111111111111111111"
+                        "execution": "11111111111111111111111111111111"
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
                         "coveredClasses": ["2","3"],
-                        "jacocoId": "0xFOO"
+                        "execution": "0xFOO"
                     }
                 ]
             }

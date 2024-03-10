@@ -16,16 +16,11 @@
 
 package io.skippy.common.model;
 
-import io.skippy.common.SkippyFolder;
 import io.skippy.common.util.Profiler;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 
-import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
 import static io.skippy.common.model.Reason.Category.*;
 import static io.skippy.common.util.HashUtil.hashWith32Digits;
 import static java.lang.System.lineSeparator;
@@ -105,12 +100,12 @@ public final class TestImpactAnalysis {
     }
 
     /**
-     * Returns the Jacoco execution data references from the {@link AnalyzedTest}s.
+     * Returns the Jacoco ids from the {@link AnalyzedTest}s.
      *
-     * @return the Jacoco execution data references from the {@link AnalyzedTest}s
+     * @return the Jacoco data ids from the {@link AnalyzedTest}s
      */
-    public List<String> getJacocoExecutionDataRefs() {
-        return analyzedTests.stream().map(AnalyzedTest::jacocoId).toList();
+    public List<String> getJacocoIds() {
+        return analyzedTests.stream().map(AnalyzedTest::execution).toList();
     }
 
     List<AnalyzedTest> getAnalyzedTests() {
@@ -206,7 +201,7 @@ public final class TestImpactAnalysis {
                 remap(analyzedTest.testClassId(), original, merged),
                 analyzedTest.result(),
                 analyzedTest.coveredClassesIds().stream().map(id -> remap(id, original, merged)).toList(),
-                analyzedTest.jacocoId());
+                analyzedTest.execution());
     }
 
     private String remap(String id, ClassFileContainer original, ClassFileContainer merged) {

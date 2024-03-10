@@ -53,7 +53,7 @@ class DefaultSkippyRepository implements SkippyRepository {
     @Override
     public List<TestWithJacocoExecutionDataAndCoveredClasses> getTemporaryTestExecutionDataForCurrentBuild() {
         var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
-        List<Path> executionDataFiles = getExecutionDataFilesForCurrentBuild();
+        List<Path> executionDataFiles = getTemporaryExecutionDataFilesForCurrentBuild();
         for (var executionDataFile : executionDataFiles) {
         var testName = executionDataFile.toFile().getName().substring(0, executionDataFile.toFile().getName().indexOf(".exec"));
             try {
@@ -92,7 +92,9 @@ class DefaultSkippyRepository implements SkippyRepository {
             Files.writeString(path, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
             Files.writeString(idFile, id, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            deleteTestToJacocoExecutionDataMappingForCurrentBuild();
+            deleteTemporaryExecutionDataFilesForCurrentBuild();
+            deleteObsoleteExecutionDataFiles(testImpactAnalysis);
+            deleteObsoleteTestImpactAnalysisFiles(testImpactAnalysis);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -118,12 +120,12 @@ class DefaultSkippyRepository implements SkippyRepository {
         }
     }
 
-    private List<Path> getExecutionDataFilesForCurrentBuild() {
-        var executionDataFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec")))
+    private List<Path> getTemporaryExecutionDataFilesForCurrentBuild() {
+        var temporaryExecutionDataFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec")))
                 .stream()
                 .filter(file -> ! file.getName().matches("[A-Z0-9]{32}\\.exec"))
                 .map(File::toPath).toList();
-        return executionDataFiles;
+        return temporaryExecutionDataFiles;
     }
 
     private static byte[] compress(byte[] data) {
@@ -141,7 +143,6 @@ class DefaultSkippyRepository implements SkippyRepository {
             System.arraycopy(buffer, 0, newOutputStream, outputStream.length, count);
             outputStream = newOutputStream;
         }
-
         deflater.end();
         return outputStream;
     }
@@ -159,9 +160,32 @@ class DefaultSkippyRepository implements SkippyRepository {
         }
     }
 
-    private void deleteTestToJacocoExecutionDataMappingForCurrentBuild() {
-        for (var executionDataFile : getExecutionDataFilesForCurrentBuild()) {
+    private void deleteTemporaryExecutionDataFilesForCurrentBuild() {
+        for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
             executionDataFile.toFile().delete();
+        }
+    }
+
+    private void deleteObsoleteExecutionDataFiles(TestImpactAnalysis testImpactAnalysis) {
+        var executions = testImpactAnalysis.getJacocoIds();
+        var permanentExecutionDataFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec")))
+                .stream()
+                .map(File::toPath).toList();
+        for (var executionDataFile : permanentExecutionDataFiles) {
+            if (false == executions.contains(executionDataFile.toFile().getName().replaceAll("\\.exec", ""))) {
+                executionDataFile.toFile().delete();
+            }
+        }
+    }
+
+    private void deleteObsoleteTestImpactAnalysisFiles(TestImpactAnalysis testImpactAnalysis) {
+        var jsonFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".json")))
+                .stream()
+                .map(File::toPath).toList();
+        for (var jsonFile : jsonFiles) {
+            if (false == testImpactAnalysis.getId().equals(jsonFile.toFile().getName().replaceAll("\\.json", ""))) {
+                jsonFile.toFile().delete();
+            }
         }
     }
 

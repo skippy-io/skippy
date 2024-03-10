@@ -17,7 +17,7 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "PASSED",
                 "coveredClasses": [],
-                "jacocoId": "00000000000000000000000000000000"
+                "execution": "00000000000000000000000000000000"
             }
         """);
     }
@@ -31,7 +31,7 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "PASSED",
                 "coveredClasses": [],
-                "jacocoId": "C57F877F6F9BF164"
+                "execution": "C57F877F6F9BF164"
             }
         """);
     }
@@ -45,7 +45,7 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "PASSED",
                 "coveredClasses": ["0"],
-                "jacocoId": "00000000000000000000000000000000"
+                "execution": "00000000000000000000000000000000"
             }
         """);
     }
@@ -58,7 +58,7 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "PASSED",
                 "coveredClasses": ["0", "1"],
-                "jacocoId": "00000000000000000000000000000000"
+                "execution": "00000000000000000000000000000000"
             }
         """);
     }
@@ -72,7 +72,7 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "FAILED",
                 "coveredClasses": [],
-                "jacocoId": "00000000000000000000000000000000"
+                "execution": "00000000000000000000000000000000"
             }
         """);
     }
@@ -84,14 +84,14 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "PASSED",
                 "coveredClasses": [],
-                "jacocoId": "B062C94D9270E1B784F66D8A83A72152"
+                "execution": "B062C94D9270E1B784F66D8A83A72152"
             }
         """));
 
         assertEquals("0", analyzedTest.testClassId());
         assertEquals(TestResult.PASSED, analyzedTest.result());
         assertEquals(asList(), analyzedTest.coveredClassesIds());
-        assertEquals("B062C94D9270E1B784F66D8A83A72152", analyzedTest.jacocoId());
+        assertEquals("B062C94D9270E1B784F66D8A83A72152", analyzedTest.execution());
     }
 
     @Test
@@ -101,7 +101,7 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "PASSED",
                 "coveredClasses": ["0"],
-                "jacocoId": "B062C94D9270E1B784F66D8A83A72152"
+                "execution": "B062C94D9270E1B784F66D8A83A72152"
             }
         """));
         assertEquals(asList("0"), analyzedTest.coveredClassesIds());
@@ -114,7 +114,7 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "PASSED",
                 "coveredClasses": ["0", "1"],
-                "jacocoId": "B062C94D9270E1B784F66D8A83A72152"
+                "execution": "B062C94D9270E1B784F66D8A83A72152"
             }
         """));
         assertEquals(asList("0", "1"), analyzedTest.coveredClassesIds());
@@ -127,7 +127,7 @@ public class AnalyzedTestTest {
                 "class": "0",
                 "result": "FAILED",
                 "coveredClasses": [],
-                "jacocoId": "B062C94D9270E1B784F66D8A83A72152"
+                "execution": "B062C94D9270E1B784F66D8A83A72152"
             }
         """));
         assertEquals(TestResult.FAILED, analyzedTest.result());

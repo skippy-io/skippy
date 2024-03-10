@@ -53,7 +53,7 @@ public class TestImpactAnalysisTest {
                         "class": "0",
                         "result": "PASSED",
                         "coveredClasses": ["0"],
-                        "jacocoId": "00000000000000000000000000000000"
+                        "execution": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -126,13 +126,13 @@ public class TestImpactAnalysisTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "jacocoId": "00000000000000000000000000000000"
+                        "execution": "00000000000000000000000000000000"
                     },
                     {
                         "class": "2",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "jacocoId": "11111111111111111111111111111111"
+                        "execution": "11111111111111111111111111111111"
                     }
                 ]
             }
@@ -171,7 +171,7 @@ public class TestImpactAnalysisTest {
                         "class": "0",
                         "result": "PASSED",
                         "coveredClasses": ["0"],
-                        "jacocoId": "00000000000000000000000000000000"
+                        "execution": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -223,13 +223,13 @@ public class TestImpactAnalysisTest {
                         "class": "2",
                         "result": "PASSED",
                         "coveredClasses": ["0","2"],
-                        "jacocoId": "00000000000000000000000000000000"
+                        "execution": "00000000000000000000000000000000"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["1","3"],
-                        "jacocoId": "11111111111111111111111111111111"
+                        "execution": "11111111111111111111111111111111"
                     }
                 ]
             }
