@@ -17,7 +17,6 @@
 package io.skippy.common.repository;
 
 import io.skippy.common.SkippyFolder;
-import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
 import io.skippy.common.model.TestImpactAnalysis;
 import io.skippy.common.util.JacocoExecutionDataUtil;
 
@@ -28,11 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
 import java.util.zip.Deflater;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.util.Arrays.asList;
 
 /**
@@ -50,28 +46,10 @@ import static java.util.Arrays.asList;
  *
  * @author Florian McKee
  */
-class DefaultSkippyRepository implements SkippyRepository {
-
-    private final Path projectDir;
+class DefaultSkippyRepository extends AbstractSkippyRepository {
 
     DefaultSkippyRepository(Path projectDir) {
-        this.projectDir = projectDir;
-    }
-
-    @Override
-    public List<TestWithJacocoExecutionDataAndCoveredClasses> getTemporaryTestExecutionDataForCurrentBuild() {
-        var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
-        List<Path> executionDataFiles = getTemporaryExecutionDataFilesForCurrentBuild();
-        for (var executionDataFile : executionDataFiles) {
-        var testName = executionDataFile.toFile().getName().substring(0, executionDataFile.toFile().getName().indexOf(".exec"));
-            try {
-                var bytes = Files.readAllBytes(executionDataFile);
-                result.add(new TestWithJacocoExecutionDataAndCoveredClasses(testName, bytes, JacocoExecutionDataUtil.getCoveredClasses(bytes)));
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }
-        return result;
+        super(projectDir);
     }
 
     @Override
@@ -100,7 +78,7 @@ class DefaultSkippyRepository implements SkippyRepository {
             Files.writeString(path, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
             Files.writeString(idFile, id, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-             deleteTemporaryExecutionDataFilesForCurrentBuild();
+            deleteTemporaryExecutionDataFilesForCurrentBuild();
             deleteObsoleteExecutionDataFiles(testImpactAnalysis);
             deleteObsoleteTestImpactAnalysisFiles(testImpactAnalysis);
         } catch (IOException e) {
@@ -117,23 +95,6 @@ class DefaultSkippyRepository implements SkippyRepository {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    @Override
-    public void saveTemporaryTestExecutionDataForCurrentBuild(String testClassName, byte[] executionData) {
-        try {
-            Files.write(SkippyFolder.get().resolve("%s.exec".formatted(testClassName)), executionData, CREATE, TRUNCATE_EXISTING);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private List<Path> getTemporaryExecutionDataFilesForCurrentBuild() {
-        var temporaryExecutionDataFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec")))
-                .stream()
-                .filter(file -> ! file.getName().matches("[A-Z0-9]{32}\\.exec"))
-                .map(File::toPath).toList();
-        return temporaryExecutionDataFiles;
     }
 
     private static byte[] compress(byte[] data) {
@@ -153,12 +114,6 @@ class DefaultSkippyRepository implements SkippyRepository {
         }
         deflater.end();
         return outputStream;
-    }
-
-    private void deleteTemporaryExecutionDataFilesForCurrentBuild() {
-        for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
-            executionDataFile.toFile().delete();
-        }
     }
 
     private void deleteObsoleteExecutionDataFiles(TestImpactAnalysis testImpactAnalysis) {
