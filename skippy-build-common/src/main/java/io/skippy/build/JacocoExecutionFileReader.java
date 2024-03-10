@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.rmi.ServerError;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -49,6 +50,7 @@ final class JacocoExecutionFileReader {
     List<Path> getJacocoExecutionDataFiles(Path projectDir) {
         File[] files = SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec"));
         return asList(files).stream()
+                .filter(file -> ! file.getName().matches("[A-Z0-9]{32}\\.exec"))
                 .map(File::toPath).toList();
     }
 
