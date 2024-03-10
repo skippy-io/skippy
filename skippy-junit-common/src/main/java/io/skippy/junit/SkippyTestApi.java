@@ -46,7 +46,7 @@ public final class SkippyTestApi {
     /**
      * The SkippyTestApi singleton.
      */
-    public static final SkippyTestApi INSTANCE = new SkippyTestApi(TestImpactAnalysis.readFromSkippyFolder());
+    public static final SkippyTestApi INSTANCE = new SkippyTestApi(SkippyRepository.getInstance().readTestImpactAnalysis());
 
     private final TestImpactAnalysis testImpactAnalysis;
     private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();

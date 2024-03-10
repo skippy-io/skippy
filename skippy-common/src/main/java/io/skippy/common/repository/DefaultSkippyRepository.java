@@ -33,7 +33,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.zip.Deflater;
 
-import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
 import static io.skippy.common.util.HashUtil.hashWith32Digits;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -69,15 +68,31 @@ class DefaultSkippyRepository implements SkippyRepository {
 
     @Override
     public TestImpactAnalysis readTestImpactAnalysis() {
-        return TestImpactAnalysis.readFromFile(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE));
+        var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
+        if (false == idFile.toFile().exists()) {
+            return TestImpactAnalysis.NOT_FOUND;
+        }
+        try {
+            var id = Files.readString(idFile, StandardCharsets.UTF_8);
+            var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("%s.json".formatted(id)));
+            if (false == jsonFile.toFile().exists()) {
+                return TestImpactAnalysis.NOT_FOUND;
+            }
+            return TestImpactAnalysis.parse(Files.readString(jsonFile, StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
-    public String saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
+    public void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
         try {
-            Files.writeString(SkippyFolder.get(projectDir).resolve(TEST_IMPACT_ANALYSIS_JSON_FILE), testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            var id = testImpactAnalysis.getId();
+            var path = SkippyFolder.get(projectDir).resolve(Path.of("%s.json".formatted(id)));
+            Files.writeString(path, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
+            Files.writeString(idFile, id, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             deleteTestToJacocoExecutionDataMappingForCurrentBuild();
-            return hashWith32Digits(testImpactAnalysis.toJson().getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -95,9 +110,9 @@ class DefaultSkippyRepository implements SkippyRepository {
     }
 
     @Override
-    public void saveTemporaryTestExecutionDataForCurrentBuild(String testClass, byte[] executionData) {
+    public void saveTemporaryTestExecutionDataForCurrentBuild(String testClassName, byte[] executionData) {
         try {
-            Files.write(SkippyFolder.get().resolve("%s.exec".formatted(testClass)), executionData, CREATE, TRUNCATE_EXISTING);
+            Files.write(SkippyFolder.get().resolve("%s.exec".formatted(testClassName)), executionData, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

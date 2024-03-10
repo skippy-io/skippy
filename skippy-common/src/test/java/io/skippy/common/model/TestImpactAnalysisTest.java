@@ -53,7 +53,7 @@ public class TestImpactAnalysisTest {
                         "class": "0",
                         "result": "PASSED",
                         "coveredClasses": ["0"],
-                        "jacocoRef": "00000000000000000000000000000000"
+                        "jacocoId": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -126,13 +126,13 @@ public class TestImpactAnalysisTest {
                         "class": "1",
                         "result": "PASSED",
                         "coveredClasses": ["0","1"],
-                        "jacocoRef": "00000000000000000000000000000000"
+                        "jacocoId": "00000000000000000000000000000000"
                     },
                     {
                         "class": "2",
                         "result": "PASSED",
                         "coveredClasses": ["2","3"],
-                        "jacocoRef": "11111111111111111111111111111111"
+                        "jacocoId": "11111111111111111111111111111111"
                     }
                 ]
             }
@@ -171,7 +171,7 @@ public class TestImpactAnalysisTest {
                         "class": "0",
                         "result": "PASSED",
                         "coveredClasses": ["0"],
-                        "jacocoRef": "00000000000000000000000000000000"
+                        "jacocoId": "00000000000000000000000000000000"
                     }
                 ]
             }
@@ -223,13 +223,13 @@ public class TestImpactAnalysisTest {
                         "class": "2",
                         "result": "PASSED",
                         "coveredClasses": ["0","2"],
-                        "jacocoRef": "00000000000000000000000000000000"
+                        "jacocoId": "00000000000000000000000000000000"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
                         "coveredClasses": ["1","3"],
-                        "jacocoRef": "11111111111111111111111111111111"
+                        "jacocoId": "11111111111111111111111111111111"
                     }
                 ]
             }

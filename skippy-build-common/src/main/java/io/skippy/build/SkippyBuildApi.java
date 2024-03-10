@@ -121,10 +121,10 @@ public final class SkippyBuildApi {
     }
 
     private List<AnalyzedTest> getAnalyzedTests(Set<String> failedTests, TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData, ClassFileContainer classFileContainer) {
-        var jacocoRef = skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData());
+        var jacocoId = skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData());
         var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
         return classFileContainer.getIdsByClassName(testWithExecutionData.testClassName()).stream()
-                .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), jacocoRef))
+                .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), jacocoId))
                 .toList();
     }
 

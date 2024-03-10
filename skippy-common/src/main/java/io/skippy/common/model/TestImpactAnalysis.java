@@ -27,6 +27,7 @@ import java.util.*;
 
 import static io.skippy.common.SkippyConstants.TEST_IMPACT_ANALYSIS_JSON_FILE;
 import static io.skippy.common.model.Reason.Category.*;
+import static io.skippy.common.util.HashUtil.hashWith32Digits;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
@@ -54,30 +55,12 @@ public final class TestImpactAnalysis {
     }
 
     /**
-     * Creates a new instance based off the {@code testImpactAnalysisJsonFile}.
+     * Returns a unique identifier for this instance.
      *
-     * @param testImpactAnalysisJsonFile JSON file that contains the Test Impact Analysis
-     * @return a new instance based off the {@code testImpactAnalysisJsonFile}
+     * @return a unique identifier for this instance
      */
-    public static TestImpactAnalysis readFromFile(Path testImpactAnalysisJsonFile) {
-        if ( ! testImpactAnalysisJsonFile.toFile().exists()) {
-            return NOT_FOUND;
-        }
-        try {
-            return parse(Files.readString(testImpactAnalysisJsonFile, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Creates a new instance based off the JSON file in the Skippy folder.
-     *
-     * @return a new instance based off the JSON file in the Skippy folder
-     */
-    public static TestImpactAnalysis readFromSkippyFolder() {
-        var testImpactAnalysisJsonFile = SkippyFolder.get().resolve(TEST_IMPACT_ANALYSIS_JSON_FILE);
-        return readFromFile(testImpactAnalysisJsonFile);
+    public String getId() {
+        return hashWith32Digits(toJson().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -127,7 +110,7 @@ public final class TestImpactAnalysis {
      * @return the Jacoco execution data references from the {@link AnalyzedTest}s
      */
     public List<String> getJacocoExecutionDataRefs() {
-        return analyzedTests.stream().map(AnalyzedTest::jacocoExecutionDataRef).toList();
+        return analyzedTests.stream().map(AnalyzedTest::jacocoId).toList();
     }
 
     List<AnalyzedTest> getAnalyzedTests() {
@@ -223,11 +206,12 @@ public final class TestImpactAnalysis {
                 remap(analyzedTest.testClassId(), original, merged),
                 analyzedTest.result(),
                 analyzedTest.coveredClassesIds().stream().map(id -> remap(id, original, merged)).toList(),
-                analyzedTest.jacocoExecutionDataRef());
+                analyzedTest.jacocoId());
     }
 
     private String remap(String id, ClassFileContainer original, ClassFileContainer merged) {
         var classFile = original.getById(id);
         return merged.getId(classFile);
     }
+
 }
