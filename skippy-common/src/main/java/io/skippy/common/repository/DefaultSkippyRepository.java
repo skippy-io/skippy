@@ -59,8 +59,7 @@ class DefaultSkippyRepository extends AbstractSkippyRepository {
             return TestImpactAnalysis.NOT_FOUND;
         }
         try {
-            var id = Files.readString(idFile, StandardCharsets.UTF_8);
-            var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("tia_%s.json".formatted(id)));
+            var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("test-impact-analysis.json"));
             if (false == jsonFile.toFile().exists()) {
                 return TestImpactAnalysis.NOT_FOUND;
             }
@@ -74,13 +73,12 @@ class DefaultSkippyRepository extends AbstractSkippyRepository {
     public void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
         try {
             var id = testImpactAnalysis.getId();
-            var path = SkippyFolder.get(projectDir).resolve(Path.of("tia_%s.json".formatted(id)));
-            Files.writeString(path, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("test-impact-analysis.json"));
+            Files.writeString(jsonFile, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
             Files.writeString(idFile, id, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             deleteTemporaryExecutionDataFilesForCurrentBuild();
             deleteObsoleteExecutionDataFiles(testImpactAnalysis);
-            deleteObsoleteTestImpactAnalysisFiles(testImpactAnalysis);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -124,18 +122,6 @@ class DefaultSkippyRepository extends AbstractSkippyRepository {
         for (var executionDataFile : permanentExecutionDataFiles) {
             if (false == executions.contains(executionDataFile.toFile().getName().replaceAll("\\.exec", ""))) {
                 executionDataFile.toFile().delete();
-            }
-        }
-    }
-
-    private void deleteObsoleteTestImpactAnalysisFiles(TestImpactAnalysis testImpactAnalysis) {
-        var jsonFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".json")))
-                .stream()
-                .map(File::toPath).toList();
-        for (var jsonFile : jsonFiles) {
-            var jsonFileId = jsonFile.toFile().getName().substring(4, 4 + 32);
-            if (false == testImpactAnalysis.getId().equals(jsonFileId)) {
-                jsonFile.toFile().delete();
             }
         }
     }
