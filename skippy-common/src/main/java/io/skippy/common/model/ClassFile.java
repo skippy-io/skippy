@@ -20,11 +20,10 @@ import io.skippy.common.util.ClassNameExtractor;
 import io.skippy.common.util.Profiler;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static io.skippy.common.util.HashUtil.debugAgnosticHash;
+import static java.lang.System.lineSeparator;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
@@ -48,6 +47,17 @@ public final class ClassFile implements Comparable<ClassFile> {
     private final Path outputFolder;
     private final Path classFile;
     private final String hash;
+
+    public enum JsonProperty {
+        NAME,
+        FILE,
+        OUTPUT_FOLDER,
+        HASH;
+
+        public static JsonProperty[] classProperties(ClassFile.JsonProperty... properties) {
+            return Arrays.asList(properties).toArray(new ClassFile.JsonProperty[0]);
+        }
+    }
 
     /**
      * C'tor.
@@ -119,7 +129,7 @@ public final class ClassFile implements Comparable<ClassFile> {
      * @return the instance as JSON string
      */
     public String toJson() {
-        return toJson(JsonConfiguration.Classes.all());
+        return toJson(JsonProperty.values());
     }
 
 
@@ -129,13 +139,20 @@ public final class ClassFile implements Comparable<ClassFile> {
      * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
      * @return the instance as JSON string
      */
-    String toJson(List<JsonConfiguration.Classes> propertiesToRender) {
+    String toJson(JsonProperty... propertiesToRender) {
         var result = new StringBuilder();
-        result.append("{" + System.lineSeparator());
-        var properties = propertiesToRender.stream()
-                .map(jsonProperty -> "\t\t\t\"%s\": \"%s\"".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
-                .collect(joining("," + System.lineSeparator()));
-        result.append(properties + System.lineSeparator());
+        result.append("{" + lineSeparator());
+        var renderedProperties = new ArrayList<String>();
+        for (var propertyToRender : propertiesToRender) {
+            renderedProperties.add(switch (propertyToRender) {
+                case NAME -> "\t\t\t\"name\": \"%s\"".formatted(className);
+                case FILE -> "\t\t\t\"path\": \"%s\"".formatted(classFile);
+                case OUTPUT_FOLDER -> "\t\t\t\"outputFolder\": \"%s\"".formatted(outputFolder);
+                case HASH -> "\t\t\t\"hash\": \"%s\"".formatted(hash);
+            });
+        }
+        result.append(renderedProperties.stream().collect(joining("," +  lineSeparator())));
+        result.append(lineSeparator());
         result.append("\t\t}");
         return result.toString();
     }

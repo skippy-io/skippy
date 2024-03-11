@@ -86,10 +86,10 @@ public class ClassFileContainer {
     }
 
     String toJson() {
-        return toJson(JsonConfiguration.Classes.all());
+        return toJson(ClassFile.JsonProperty.values());
     }
 
-    String toJson(List<JsonConfiguration.Classes> propertiesToRender) {
+    String toJson(ClassFile.JsonProperty... propertiesToRender) {
         StringBuilder result = new StringBuilder();
         var classFilesAsList = new ArrayList<>(classFiles);
         result.append("{" + lineSeparator());

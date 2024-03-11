@@ -18,6 +18,7 @@ package io.skippy.common.model;
 
 import org.junit.jupiter.api.Test;
 
+import static io.skippy.common.model.AnalyzedTest.JsonProperty.*;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -139,7 +140,7 @@ public class AnalyzedTestTest {
     void testToJsonClassProperty() {
         var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
 
-        assertThat(analyzedTest.toJson(asList(JsonConfiguration.Tests.CLASS))).isEqualToIgnoringWhitespace("""
+        assertThat(analyzedTest.toJson(CLASS)).isEqualToIgnoringWhitespace("""
             {
                 "class": "0"
             }
@@ -150,7 +151,7 @@ public class AnalyzedTestTest {
     void testToJsonResultProperty() {
         var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
 
-        assertThat(analyzedTest.toJson(asList(JsonConfiguration.Tests.RESULT))).isEqualToIgnoringWhitespace("""
+        assertThat(analyzedTest.toJson(RESULT)).isEqualToIgnoringWhitespace("""
             {
                 "result": "PASSED"
             }
@@ -161,7 +162,7 @@ public class AnalyzedTestTest {
     void testToJsonCoveredClassesProperty() {
         var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
 
-        assertThat(analyzedTest.toJson(asList(JsonConfiguration.Tests.COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
+        assertThat(analyzedTest.toJson(COVERED_CLASSES)).isEqualToIgnoringWhitespace("""
             {
                 "coveredClasses": ["0", "1"]
             }
@@ -171,7 +172,7 @@ public class AnalyzedTestTest {
     void testToJsonExecutionProperty() {
         var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
 
-        assertThat(analyzedTest.toJson(asList(JsonConfiguration.Tests.EXECUTION))).isEqualToIgnoringWhitespace("""
+        assertThat(analyzedTest.toJson(EXECUTION)).isEqualToIgnoringWhitespace("""
             {
                 "execution": "00000000000000000000000000000000"
             }

@@ -20,6 +20,7 @@ import io.skippy.common.util.Profiler;
 
 import java.util.*;
 
+import static java.lang.System.lineSeparator;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
@@ -38,6 +39,17 @@ import static java.util.stream.Collectors.joining;
  * @author Florian McKee
  */
 public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, String execution) implements Comparable<AnalyzedTest> {
+
+    public enum JsonProperty {
+        CLASS,
+        RESULT,
+        COVERED_CLASSES,
+        EXECUTION;
+
+        public static AnalyzedTest.JsonProperty[] testProperties(AnalyzedTest.JsonProperty... properties) {
+            return Arrays.asList(properties).toArray(new AnalyzedTest.JsonProperty[0]);
+        }
+    }
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
@@ -100,7 +112,7 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
      * @return the instance as JSON string
      */
     String toJson() {
-        return toJson(JsonConfiguration.Tests.all());
+        return toJson(JsonProperty.values());
     }
 
     /**
@@ -109,13 +121,24 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
      * @param propertiesToRender the properties that should be rendered (rendering only a sub-set is useful for testing)
      * @return the instance as JSON string
      */
-    String toJson(List<JsonConfiguration.Tests> propertiesToRender) {
+    String toJson(JsonProperty... propertiesToRender) {
         var result = new StringBuilder();
-        result.append("{" + System.lineSeparator());
-        var properties = propertiesToRender.stream()
-                .map(jsonProperty -> "\t\t\t\"%s\": %s".formatted(jsonProperty.propertyName, jsonProperty.propertyValueProvider.apply(this)))
-                .collect(joining("," + System.lineSeparator()));
-        result.append(properties + System.lineSeparator());
+        result.append("\t\t{" + lineSeparator());
+        var renderedProperties = new ArrayList<String>();
+
+        for (var propertyToRender : propertiesToRender) {
+            renderedProperties.add(switch (propertyToRender) {
+                case CLASS -> "\t\t\t\"class\": \"%s\"".formatted(testClassId());
+                case RESULT -> "\t\t\t\"result\": \"%s\"".formatted(result());
+                case COVERED_CLASSES -> "\t\t\t\"coveredClasses\": [%s]".formatted(coveredClassesIds().stream()
+                        .map(Integer::valueOf)
+                        .sorted()
+                        .map(id -> "\"%s\"".formatted(id)).collect(joining(",")));
+                case EXECUTION -> "\t\t\t\"execution\": \"%s\"".formatted(execution);
+            });
+        }
+        result.append(renderedProperties.stream().collect(joining("," +  lineSeparator())));
+        result.append(lineSeparator());
         result.append("\t\t}");
         return result.toString();
     }

@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -57,7 +56,7 @@ public class ClassFileTest {
                 "ZT0GoiWG8Az5TevH9/JwBg=="
         );
 
-        assertThat(classFile.toJson(asList(JsonConfiguration.Classes.NAME))).isEqualToIgnoringWhitespace(
+        assertThat(classFile.toJson(ClassFile.JsonProperty.NAME)).isEqualToIgnoringWhitespace(
                 """
                     {
                         "name": "com.example.RightPadder"

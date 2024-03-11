@@ -149,7 +149,7 @@ public final class TestImpactAnalysis {
      * @return the instance as JSON string
      */
     public String toJson() {
-        return toJson(JsonConfiguration.Classes.all(), JsonConfiguration.Tests.all());
+        return toJson(ClassFile.JsonProperty.values(), AnalyzedTest.JsonProperty.values());
     }
 
     /**
@@ -159,7 +159,7 @@ public final class TestImpactAnalysis {
      * @param testPropertiesToRender the test properties to include in the JSON string
      * @return this instance as JSON string
      */
-    public String toJson(List<JsonConfiguration.Classes> classPropertiesToRender, List<JsonConfiguration.Tests> testPropertiesToRender) {
+    public String toJson(ClassFile.JsonProperty[] classPropertiesToRender, AnalyzedTest.JsonProperty[] testPropertiesToRender) {
         return """
             {
                 "classes": %s,
@@ -168,7 +168,7 @@ public final class TestImpactAnalysis {
                 ]
             }""".formatted(
                 classFileContainer.toJson(classPropertiesToRender),
-                analyzedTests.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator())
+                analyzedTests.stream().sorted().map(c -> c.toJson(testPropertiesToRender)).collect(joining("," + lineSeparator())
             )
         );
     }
