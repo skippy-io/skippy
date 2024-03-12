@@ -20,7 +20,6 @@ import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
 import io.skippy.common.util.JacocoExecutionDataUtil;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -28,9 +27,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.nio.file.Files.delete;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.util.Arrays.asList;
 
 /**
  * Implementation for {@link SkippyRepository} methods that deal with storage of retrieval of temporary files that are
@@ -51,12 +50,13 @@ public abstract class AbstractSkippyRepository implements SkippyRepository {
         var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
         List<Path> executionDataFiles = getTemporaryExecutionDataFilesForCurrentBuild();
         for (var executionDataFile : executionDataFiles) {
-        var testName = executionDataFile.toFile().getName().substring(0, executionDataFile.toFile().getName().indexOf(".exec"));
+            var filename = executionDataFile.getFileName().toString();
+            var testName = filename.substring(0, filename.indexOf(".exec"));
             try {
                 var bytes = Files.readAllBytes(executionDataFile);
                 result.add(new TestWithJacocoExecutionDataAndCoveredClasses(testName, bytes, JacocoExecutionDataUtil.getCoveredClasses(bytes)));
             } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                throw new UncheckedIOException("Unable to get temporary test execution data for current build: %s.".formatted(e.getMessage()), e);
             }
         }
         return result;
@@ -65,24 +65,35 @@ public abstract class AbstractSkippyRepository implements SkippyRepository {
     @Override
     public final void saveTemporaryTestExecutionDataForCurrentBuild(String testClassName, byte[] executionData) {
         try {
-            Files.write(SkippyFolder.get().resolve("%s.exec".formatted(testClassName)), executionData, CREATE, TRUNCATE_EXISTING);
+            Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(testClassName)), executionData, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException("Unable to save temporary test execution data file for current build: %s / %s.".formatted(testClassName, e.getMessage()), e);
         }
     }
 
     protected final void deleteTemporaryExecutionDataFilesForCurrentBuild() {
         for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
-            executionDataFile.toFile().delete();
+            try {
+                delete(executionDataFile);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Unable to delete %s.".formatted(executionDataFile), e);
+            }
         }
     }
 
     private List<Path> getTemporaryExecutionDataFilesForCurrentBuild() {
-        var temporaryExecutionDataFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec")))
-                .stream()
-                .filter(file -> ! file.getName().matches("[A-Z0-9]{32}\\.exec"))
-                .map(File::toPath).toList();
-        return temporaryExecutionDataFiles;
+        try {
+            var result = new ArrayList<Path>();
+            try (var directoryStream  = Files.newDirectoryStream(SkippyFolder.get(projectDir),
+                    file -> false == file.getFileName().toString().matches("[A-Z0-9]{32}\\.exec"))) {
+                for (var executionDataFile : directoryStream) {
+                    result.add(executionDataFile);
+                }
+            }
+            return result;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to retrieve temporary execution data files for current build: %s".formatted(e), e);
+        }
     }
 
 }

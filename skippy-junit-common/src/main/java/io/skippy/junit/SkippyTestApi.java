@@ -93,7 +93,7 @@ public final class SkippyTestApi {
                 predictions.put(test.getName(), predictionWithReason.prediction());
                 return predictionWithReason.prediction() == Prediction.EXECUTE;
             } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                throw new UncheckedIOException("Unable to check if test %s needs to be executed: %s.".formatted(test.getName(), e.getMessage()), e);
             }
         });
     }

@@ -21,12 +21,13 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import static java.nio.file.Files.newInputStream;
 
 /**
  * Hash functions used throughout Skippy.
@@ -73,18 +74,18 @@ public final class HashUtil {
             md.update(data);
             return bytesToHex(md.digest());
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Generation of hash failed.", e);
+            throw new RuntimeException("Generation of hash failed: %s".formatted(e.getMessage()), e);
         }
     }
 
     private static byte[] getBytecodeWithoutDebugInformation(Path classFile) {
-        try (var inputStream = new FileInputStream(classFile.toFile())) {
+        try (var inputStream = newInputStream(classFile)) {
             var classWriter = new ClassWriter(Opcodes.ASM9);
             var classVisitor = new ClassVisitor(Opcodes.ASM9, classWriter) {};
             new ClassReader(inputStream).accept(classVisitor, ClassReader.SKIP_DEBUG);
             return classWriter.toByteArray();
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException("Unable to get bytecode without debug information for class file %s: %s".formatted(classFile, e.getMessage()), e);
         }
     }
 

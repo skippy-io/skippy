@@ -18,6 +18,8 @@ package io.skippy.common.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static io.skippy.common.model.AnalyzedTest.JsonProperty.*;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,55 +29,51 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonNoCoveredClasses() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList(), "0".repeat(32));
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList());
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": [],
-                "execution": "00000000000000000000000000000000"
+                "coveredClasses": []
             }
         """);
     }
 
     @Test
     void testToJsonOneCoveredClass() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0"), "0".repeat(32));
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0"));
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": ["0"],
-                "execution": "00000000000000000000000000000000"
+                "coveredClasses": ["0"]
             }
         """);
     }
     @Test
     void testToJsonTwoCoveredClasses() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"));
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": ["0", "1"],
-                "execution": "00000000000000000000000000000000"
+                "coveredClasses": ["0", "1"]
             }
         """);
     }
 
     @Test
     void testToJsonFailedTest() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.FAILED, asList(), "0".repeat(32));
+        var analyzedTest = new AnalyzedTest("0", TestResult.FAILED, asList());
 
         assertThat(analyzedTest.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "class": "0",
                 "result": "FAILED",
-                "coveredClasses": [],
-                "execution": "00000000000000000000000000000000"
+                "coveredClasses": []
             }
         """);
     }
@@ -86,15 +84,13 @@ public class AnalyzedTestTest {
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": [],
-                "execution": "B062C94D9270E1B784F66D8A83A72152"
+                "coveredClasses": []
             }
         """));
 
         assertEquals("0", analyzedTest.testClassId());
         assertEquals(TestResult.PASSED, analyzedTest.result());
         assertEquals(asList(), analyzedTest.coveredClassesIds());
-        assertEquals("B062C94D9270E1B784F66D8A83A72152", analyzedTest.execution());
     }
 
     @Test
@@ -103,8 +99,7 @@ public class AnalyzedTestTest {
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": ["0"],
-                "execution": "B062C94D9270E1B784F66D8A83A72152"
+                "coveredClasses": ["0"]
             }
         """));
         assertEquals(asList("0"), analyzedTest.coveredClassesIds());
@@ -116,8 +111,7 @@ public class AnalyzedTestTest {
             {
                 "class": "0",
                 "result": "PASSED",
-                "coveredClasses": ["0", "1"],
-                "execution": "B062C94D9270E1B784F66D8A83A72152"
+                "coveredClasses": ["0", "1"]
             }
         """));
         assertEquals(asList("0", "1"), analyzedTest.coveredClassesIds());
@@ -129,16 +123,40 @@ public class AnalyzedTestTest {
             {
                 "class": "0",
                 "result": "FAILED",
-                "coveredClasses": [],
-                "execution": "B062C94D9270E1B784F66D8A83A72152"
+                "coveredClasses": []
             }
         """));
         assertEquals(TestResult.FAILED, analyzedTest.result());
     }
 
     @Test
+    void testParseWithoutExecutionId() {
+        var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
+            {
+                "class": "0",
+                "result": "FAILED",
+                "coveredClasses": []
+            }
+        """));
+        assertEquals(Optional.empty(), analyzedTest.executionId());
+    }
+
+    @Test
+    void testParseWithExecutionId() {
+        var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
+            {
+                "class": "0",
+                "result": "FAILED",
+                "coveredClasses": [],
+                "executionId":  "00000000000000000000000000000000"
+            }
+        """));
+        assertEquals("00000000000000000000000000000000", analyzedTest.executionId().get());
+    }
+
+    @Test
     void testToJsonClassProperty() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"));
 
         assertThat(analyzedTest.toJson(CLASS)).isEqualToIgnoringWhitespace("""
             {
@@ -149,7 +167,7 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonResultProperty() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"));
 
         assertThat(analyzedTest.toJson(RESULT)).isEqualToIgnoringWhitespace("""
             {
@@ -160,7 +178,7 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonCoveredClassesProperty() {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
+        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"));
 
         assertThat(analyzedTest.toJson(COVERED_CLASSES)).isEqualToIgnoringWhitespace("""
             {
@@ -174,7 +192,7 @@ public class AnalyzedTestTest {
 
         assertThat(analyzedTest.toJson(EXECUTION)).isEqualToIgnoringWhitespace("""
             {
-                "execution": "00000000000000000000000000000000"
+                "executionId": "00000000000000000000000000000000"
             }
         """);
     }

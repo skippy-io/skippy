@@ -42,8 +42,9 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
     public void apply(Project project) {
         Profiler.clear();
         project.getPlugins().apply(JacocoPlugin.class);
+        var skippyExtension = project.getExtensions().create("skippy", SkippyPluginExtension.class);
         project.getTasks().register("skippyClean", SkippyCleanTask.class);
-        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
+        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class, skippyExtension);
         project.getTasks().withType(Test.class, testTask -> testTask.finalizedBy("skippyAnalyze"));
         project.afterEvaluate(action -> {
             if (supportsSkippy(action.getProject())) {

@@ -104,8 +104,8 @@ public final class TestImpactAnalysis {
      *
      * @return the Jacoco data ids from the {@link AnalyzedTest}s
      */
-    public List<String> getJacocoIds() {
-        return analyzedTests.stream().map(AnalyzedTest::execution).toList();
+    public List<String> getExecitionIds() {
+        return analyzedTests.stream().flatMap(analyzedTest -> analyzedTest.executionId().stream()).toList();
     }
 
     List<AnalyzedTest> getAnalyzedTests() {
@@ -202,7 +202,7 @@ public final class TestImpactAnalysis {
                 remap(analyzedTest.testClassId(), original, merged),
                 analyzedTest.result(),
                 analyzedTest.coveredClassesIds().stream().map(id -> remap(id, original, merged)).toList(),
-                analyzedTest.execution());
+                analyzedTest.executionId());
     }
 
     private String remap(String id, ClassFileContainer original, ClassFileContainer merged) {

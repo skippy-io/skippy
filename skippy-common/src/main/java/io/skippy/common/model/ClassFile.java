@@ -24,6 +24,7 @@ import java.util.*;
 
 import static io.skippy.common.util.HashUtil.debugAgnosticHash;
 import static java.lang.System.lineSeparator;
+import static java.nio.file.Files.exists;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
@@ -87,7 +88,7 @@ public final class ClassFile implements Comparable<ClassFile> {
             ClassNameExtractor.getFullyQualifiedClassName(classFile),
             projectDir.relativize(outputFolder),
             outputFolder.relativize(classFile),
-            classFile.toFile().exists() ? debugAgnosticHash(classFile) : ""
+            exists(classFile) ? debugAgnosticHash(classFile) : ""
         );
     }
 
@@ -218,6 +219,6 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     boolean classFileNotFound() {
-        return ! outputFolder.resolve(classFile).toFile().exists();
+        return false == exists(outputFolder.resolve(classFile));
     }
 }

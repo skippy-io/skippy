@@ -16,9 +16,13 @@
 
 package io.skippy.common;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
 import static io.skippy.common.SkippyConstants.SKIPPY_DIRECTORY;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.exists;
 
 /**
  * A couple of static methods for retrieval and creation of the skippy folder.
@@ -44,11 +48,15 @@ public final class SkippyFolder {
      * @return the Skippy folder in the given {@code projectFolder}
      */
     public static Path get(Path projectFolder) {
-        var skippyFolder = projectFolder.resolve(SKIPPY_DIRECTORY);
-        if ( ! skippyFolder.toFile().exists()) {
-            skippyFolder.toFile().mkdirs();
+        try {
+            var skippyFolder = projectFolder.resolve(SKIPPY_DIRECTORY);
+            if (false == exists(skippyFolder)) {
+                createDirectories(skippyFolder);
+            }
+            return skippyFolder;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not create Skippy folder: %s".formatted(e.getMessage()), e);
         }
-        return skippyFolder;
     }
 
 }

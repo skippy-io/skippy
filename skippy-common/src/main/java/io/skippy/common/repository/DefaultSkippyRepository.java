@@ -20,7 +20,6 @@ import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.TestImpactAnalysis;
 import io.skippy.common.util.JacocoExecutionDataUtil;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.zip.Deflater;
 
-import static java.util.Arrays.asList;
+import static java.nio.file.Files.delete;
+import static java.nio.file.Files.exists;
 
 /**
  * {@link SkippyRepository} that stores and retrieves all data in / from the .skippy folder. This implementation only
@@ -54,33 +54,27 @@ class DefaultSkippyRepository extends AbstractSkippyRepository {
 
     @Override
     public TestImpactAnalysis readTestImpactAnalysis() {
-        var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
-        if (false == idFile.toFile().exists()) {
-            return TestImpactAnalysis.NOT_FOUND;
-        }
         try {
             var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("test-impact-analysis.json"));
-            if (false == jsonFile.toFile().exists()) {
+
+            if (false == exists(jsonFile)) {
                 return TestImpactAnalysis.NOT_FOUND;
             }
             return TestImpactAnalysis.parse(Files.readString(jsonFile, StandardCharsets.UTF_8));
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException("Unable to read test impact analysis: %s.".formatted(e.getMessage()), e);
         }
     }
 
     @Override
     public void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
         try {
-            var id = testImpactAnalysis.getId();
             var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("test-impact-analysis.json"));
             Files.writeString(jsonFile, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            var idFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
-            Files.writeString(idFile, id, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             deleteTemporaryExecutionDataFilesForCurrentBuild();
             deleteObsoleteExecutionDataFiles(testImpactAnalysis);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException("Unable to save test impact analysis %s: %s.".formatted(testImpactAnalysis.getId(), e.getMessage()), e);
         }
     }
 
@@ -91,7 +85,7 @@ class DefaultSkippyRepository extends AbstractSkippyRepository {
             Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(executionId)), compress(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             return executionId;
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException("Unable to save JaCoCo execution data: %s.".formatted(e.getMessage()), e);
         }
     }
 
@@ -115,14 +109,15 @@ class DefaultSkippyRepository extends AbstractSkippyRepository {
     }
 
     private void deleteObsoleteExecutionDataFiles(TestImpactAnalysis testImpactAnalysis) {
-        var executions = testImpactAnalysis.getJacocoIds();
-        var permanentExecutionDataFiles = asList(SkippyFolder.get(projectDir).toFile().listFiles((dir, name) -> name.toLowerCase().endsWith(".exec")))
-                .stream()
-                .map(File::toPath).toList();
-        for (var executionDataFile : permanentExecutionDataFiles) {
-            if (false == executions.contains(executionDataFile.toFile().getName().replaceAll("\\.exec", ""))) {
-                executionDataFile.toFile().delete();
+        var executions = testImpactAnalysis.getExecitionIds();
+        try (var directoryStream  = Files.newDirectoryStream(SkippyFolder.get(projectDir), path -> path.toString().endsWith(".exec"))) {
+            for (var executionDataFile : directoryStream) {
+                if (false == executions.contains(executionDataFile.getFileName().toString().replaceAll("\\.exec", ""))) {
+                    delete(executionDataFile);
+                }
             }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Deletion of obsolete execution data files failed: %s".formatted(e.getMessage()), e);
         }
     }
 

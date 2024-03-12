@@ -36,13 +36,13 @@ import static io.skippy.gradle.SkippyGradleUtils.skippyBuildApi;
 class SkippyAnalyzeTask extends DefaultTask {
 
     @Inject
-    public SkippyAnalyzeTask() {
+    public SkippyAnalyzeTask(SkippyPluginExtension skippyPluginExtension) {
         setGroup("skippy");
         if (supportsSkippy(getProject())) {
             var skippyBuildApi = skippyBuildApi(getProject());
             var testFailedListener = new TestFailedListener((className) -> skippyBuildApi.testFailed(className));
             getProject().getTasks().withType(Test.class, testTask -> testTask.addTestListener(testFailedListener));
-            doLast(task -> skippyBuildApi.buildFinished());
+            doLast(task -> skippyBuildApi.buildFinished(skippyPluginExtension.getExecutionData().get()));
         }
     }
 

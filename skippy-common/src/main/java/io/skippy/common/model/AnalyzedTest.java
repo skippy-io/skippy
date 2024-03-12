@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Florian McKee
  */
-public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, String execution) implements Comparable<AnalyzedTest> {
+public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, Optional<String> executionId) implements Comparable<AnalyzedTest> {
 
     public enum JsonProperty {
         CLASS,
@@ -51,13 +51,21 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
         }
     }
 
+    public AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, String execution) {
+        this(testClassId, result, coveredClassesIds, Optional.of(execution));
+    }
+
+    public AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds) {
+        this(testClassId, result, coveredClassesIds, Optional.empty());
+    }
+
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
         String clazz = null;
         List<String> coveredClasses = null;
         TestResult testResult = null;
-        String execution = null;
-        while (clazz == null || coveredClasses == null || testResult == null || execution == null) {
+        Optional<String> execution = Optional.empty();
+        while (true) {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
@@ -70,15 +78,16 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
                 case "result":
                     testResult = TestResult.valueOf(tokenizer.next());
                     break;
-                case "execution":
-                    execution = tokenizer.next();
+                case "executionId":
+                    execution = Optional.of(tokenizer.next());
                     break;
             }
-            if (clazz == null || coveredClasses == null || testResult == null || execution == null) {
-                tokenizer.skip(',');
+            tokenizer.skipIfNext(',');
+            if (tokenizer.peek('}')) {
+                tokenizer.skip('}');
+                break;
             }
         }
-        tokenizer.skip('}');
         return new AnalyzedTest(clazz, testResult, coveredClasses, execution);
     }
 
@@ -127,6 +136,9 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
         var renderedProperties = new ArrayList<String>();
 
         for (var propertyToRender : propertiesToRender) {
+            if (propertyToRender == JsonProperty.EXECUTION && executionId().isEmpty()) {
+                continue;
+            }
             renderedProperties.add(switch (propertyToRender) {
                 case CLASS -> "\t\t\t\"class\": \"%s\"".formatted(testClassId());
                 case RESULT -> "\t\t\t\"result\": \"%s\"".formatted(result());
@@ -134,7 +146,7 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
                         .map(Integer::valueOf)
                         .sorted()
                         .map(id -> "\"%s\"".formatted(id)).collect(joining(",")));
-                case EXECUTION -> "\t\t\t\"execution\": \"%s\"".formatted(execution);
+                case EXECUTION -> "\t\t\t\"executionId\": \"%s\"".formatted(executionId.get());
             });
         }
         result.append(renderedProperties.stream().collect(joining("," +  lineSeparator())));

@@ -16,27 +16,10 @@
 
 package io.skippy.gradle;
 
-import org.gradle.api.DefaultTask;
-import javax.inject.Inject;
+import org.gradle.api.provider.Property;
 
-import static io.skippy.gradle.SkippyGradleUtils.supportsSkippy;
-import static io.skippy.gradle.SkippyGradleUtils.skippyBuildApi;
+public interface SkippyPluginExtension  {
 
-/**
- * Clears the skippy directory.
- * <br /><br />
- * Invocation: {@code ./gradlew skippyClean}
- *
- * @author Florian McKee
- */
-class SkippyCleanTask extends DefaultTask {
-
-    @Inject
-    public SkippyCleanTask() {
-        setGroup("skippy");
-        if (supportsSkippy(getProject())) {
-            doLast((project) -> skippyBuildApi(getProject()).deleteSkippyFolder());
-        }
-    }
+    Property<Boolean> getExecutionData();
 
 }

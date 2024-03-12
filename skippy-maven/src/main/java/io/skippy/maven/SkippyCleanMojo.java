@@ -50,7 +50,7 @@ public class SkippyCleanMojo extends AbstractMojo {
             new MavenClassFileCollector(project),
             SkippyRepository.getInstance(projectDir)
         );
-        skippyBuildApi.removeSkippyFolder();
+        skippyBuildApi.deleteSkippyFolder();
     }
 
 }

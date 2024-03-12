@@ -51,7 +51,7 @@ public class JacocoExecutionDataUtil {
             reader.read();
             return coveredClasses;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException("Unable to compute covered classes for JaCoCo execution data: %s.".formatted(e.getMessage()), e);
         }
     }
 
@@ -74,7 +74,7 @@ public class JacocoExecutionDataUtil {
             reader.read();
             return hashWith32Digits(byteArrayOutputStream.toByteArray());
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException("Unable to compute execution id from JaCoCo execution data: %s.".formatted(e.getMessage()), e);
         }
     }
 }

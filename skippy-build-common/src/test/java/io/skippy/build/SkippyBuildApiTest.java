@@ -60,11 +60,11 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList());
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished();
+        buildApi.buildFinished(false);
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES, EXECUTION))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -81,7 +81,6 @@ public final class SkippyBuildApiTest {
                     }
                 },
                 "tests": [
-             
                 ]
             }
         """);
@@ -105,15 +104,12 @@ public final class SkippyBuildApiTest {
             )
         ));
 
-        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
-        when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("0xBAR");
-
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished();
+        buildApi.buildFinished(false);
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES, EXECUTION))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -133,14 +129,12 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"],
-                        "execution": "0xBAR"
+                        "coveredClasses": ["0","1"]
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"],
-                        "execution": "0xFOO"
+                        "coveredClasses": ["2","3"]
                     }
                 ]
             }
@@ -165,15 +159,12 @@ public final class SkippyBuildApiTest {
                 )
         ));
 
-        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
-        when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("0xBAR");
-
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished();
+        buildApi.buildFinished(false);
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES, EXECUTION))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -193,14 +184,12 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"],
-                        "execution": "0xBAR"
+                        "coveredClasses": ["0","1"]
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"],
-                        "execution": "0xFOO"
+                        "coveredClasses": ["2","3"]
                     }
                 ]
             }
@@ -227,15 +216,12 @@ public final class SkippyBuildApiTest {
 
         buildApi.testFailed("com.example.FooTest");
 
-        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
-        when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("0xBAR");
-
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished();
+        buildApi.buildFinished(false);
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES, EXECUTION))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -255,14 +241,12 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0"],
-                        "execution": "0xBAR"
+                        "coveredClasses": ["0"]
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
-                        "coveredClasses": ["2"],
-                        "execution": "0xFOO"
+                        "coveredClasses": ["2"]
                     }
                 ]
             }
@@ -287,11 +271,11 @@ public final class SkippyBuildApiTest {
         """));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished();
+        buildApi.buildFinished(false);
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES, EXECUTION))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -329,8 +313,7 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"],
-                        "execution": "00000000000000000000000000000000"
+                        "coveredClasses": ["0"]
                     }
                 ]
             }
@@ -346,14 +329,12 @@ public final class SkippyBuildApiTest {
                 )
         ));
 
-        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
-
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished();
+        buildApi.buildFinished(false);
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES, EXECUTION))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
         {
              "classes": {
                 "0": {
@@ -373,8 +354,7 @@ public final class SkippyBuildApiTest {
                 {
                     "class": "3",
                     "result": "PASSED",
-                    "coveredClasses": ["2","3"],
-                    "execution": "0xFOO"
+                    "coveredClasses": ["2","3"]
                 }
              ]
          }
@@ -415,14 +395,12 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"],
-                        "execution": "11111111111111111111111111111111"
+                        "coveredClasses": ["0","1"]
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"],
-                        "execution": "22222222222222222222222222222222"
+                        "coveredClasses": ["2","3"]
                     }
                 ]
             }
@@ -438,17 +416,15 @@ public final class SkippyBuildApiTest {
                         asList("com.example.Foo", "com.example.FooTest")
                 )
         ));
-        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("0xFOO");
-
 
         buildApi.testFailed("com.example.FooTest");
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished();
+        buildApi.buildFinished(false);
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES, EXECUTION))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
            {
                 "classes": {
                     "0": {
@@ -468,14 +444,12 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"],
-                        "execution": "11111111111111111111111111111111"
+                        "coveredClasses": ["0","1"]
                     },
                     {
                         "class": "3",
                         "result": "FAILED",
-                        "coveredClasses": ["2","3"],
-                        "execution": "0xFOO"
+                        "coveredClasses": ["2","3"]
                     }
                 ]
             }

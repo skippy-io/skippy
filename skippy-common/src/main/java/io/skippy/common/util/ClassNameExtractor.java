@@ -20,11 +20,12 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.nio.file.Files.newInputStream;
 
 /**
  * Extracts the fully-qualified class name (e.g., com.example.Foo) from a class file.
@@ -41,11 +42,11 @@ public final class ClassNameExtractor {
      */
     public static String getFullyQualifiedClassName(Path classFile) {
         var className = new AtomicReference<String>();
-        try (var inputStream = new FileInputStream(classFile.toFile())) {
+        try (var inputStream = newInputStream(classFile)) {
             new ClassReader(inputStream).accept(createClassVisitor(className), 0);
             return className.get();
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException("Unable to obtain fully qualified class name from class file %s.".formatted(classFile), e);
         }
     }
 

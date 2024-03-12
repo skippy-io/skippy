@@ -52,7 +52,7 @@ public class TestImpactAnalysisTest {
         );
         var testImpactAnalysis = new TestImpactAnalysis(
                 ClassFileContainer.from(asList(fooTest)),
-                asList(new AnalyzedTest("0", TestResult.PASSED, asList("0"), "0".repeat(32)))
+                asList(new AnalyzedTest("0", TestResult.PASSED, asList("0")))
         );
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
@@ -68,8 +68,7 @@ public class TestImpactAnalysisTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"],
-                        "execution": "00000000000000000000000000000000"
+                        "coveredClasses": ["0"]
                     }
                 ]
             }
@@ -105,8 +104,8 @@ public class TestImpactAnalysisTest {
         var testImpactAnalysis = new TestImpactAnalysis(
                 ClassFileContainer.from(asList(class1, class2, class1Test, class2Test)),
                 asList(
-                        new AnalyzedTest("1", TestResult.PASSED, asList("0", "1"), "0".repeat(32)),
-                        new AnalyzedTest("2", TestResult.PASSED, asList("2", "3"), "1".repeat(32))
+                        new AnalyzedTest("1", TestResult.PASSED, asList("0", "1")),
+                        new AnalyzedTest("2", TestResult.PASSED, asList("2", "3"))
                 )
         );
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
@@ -141,14 +140,12 @@ public class TestImpactAnalysisTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"],
-                        "execution": "00000000000000000000000000000000"
+                        "coveredClasses": ["0","1"]
                     },
                     {
                         "class": "2",
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"],
-                        "execution": "11111111111111111111111111111111"
+                        "coveredClasses": ["2","3"]
                     }
                 ]
             }
@@ -186,8 +183,7 @@ public class TestImpactAnalysisTest {
                     {
                         "class": "0",
                         "result": "PASSED",
-                        "coveredClasses": ["0"],
-                        "execution": "00000000000000000000000000000000"
+                        "coveredClasses": ["0"]
                     }
                 ]
             }
@@ -238,14 +234,12 @@ public class TestImpactAnalysisTest {
                     {
                         "class": "2",
                         "result": "PASSED",
-                        "coveredClasses": ["0","2"],
-                        "execution": "00000000000000000000000000000000"
+                        "coveredClasses": ["0","2"]
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
-                        "coveredClasses": ["1","3"],
-                        "execution": "11111111111111111111111111111111"
+                        "coveredClasses": ["1","3"]
                     }
                 ]
             }

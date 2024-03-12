@@ -47,7 +47,7 @@ public class SkippyBuildFinishedMojo extends AbstractMojo {
             new MavenClassFileCollector(project),
             SkippyRepository.getInstance(projectDir)
         );
-        skippyBuildApi.buildFinished();
+        skippyBuildApi.buildFinished(false);
     }
 
 }
