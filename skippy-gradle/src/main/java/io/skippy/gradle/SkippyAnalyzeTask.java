@@ -42,7 +42,7 @@ class SkippyAnalyzeTask extends DefaultTask {
             var skippyBuildApi = skippyBuildApi(getProject());
             var testFailedListener = new TestFailedListener((className) -> skippyBuildApi.testFailed(className));
             getProject().getTasks().withType(Test.class, testTask -> testTask.addTestListener(testFailedListener));
-            doLast(task -> skippyBuildApi.buildFinished(skippyPluginExtension.getExecutionData().orElse(false).get()));
+            doLast(task -> skippyBuildApi.buildFinished(skippyPluginExtension.toSkippyConfiguration()));
         }
     }
 

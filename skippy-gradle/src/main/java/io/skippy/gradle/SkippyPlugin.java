@@ -48,7 +48,7 @@ public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         project.getTasks().withType(Test.class, testTask -> testTask.finalizedBy("skippyAnalyze"));
         project.afterEvaluate(action -> {
             if (supportsSkippy(action.getProject())) {
-                skippyBuildApi(action.getProject()).buildStarted();
+                skippyBuildApi(action.getProject()).buildStarted(skippyExtension.toSkippyConfiguration());
             }
         });
     }

@@ -16,10 +16,14 @@
 
 package io.skippy.gradle;
 
+import io.skippy.common.model.SkippyConfiguration;
 import org.gradle.api.provider.Property;
 
 public interface SkippyPluginExtension  {
 
     Property<Boolean> getExecutionData();
 
+    default SkippyConfiguration toSkippyConfiguration() {
+        return new SkippyConfiguration(getExecutionData().getOrElse(false));
+    }
 }

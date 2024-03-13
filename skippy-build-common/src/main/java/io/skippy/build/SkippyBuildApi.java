@@ -80,8 +80,10 @@ public final class SkippyBuildApi {
 
     /**
      * Informs Skippy that a build has started.
+     *
+     * @param skippyConfiguration the {@link SkippyConfiguration}
      */
-    public void buildStarted() {
+    public void buildStarted(SkippyConfiguration skippyConfiguration) {
         var predictionsLog = SkippyFolder.get(projectDir).resolve(PREDICTIONS_LOG_FILE);
         if (exists(predictionsLog)) {
             try {
@@ -103,10 +105,10 @@ public final class SkippyBuildApi {
     /**
      * Informs Skippy that a build has finished.
      *
-     * @param createExecutionDataFileForSkippedTests Skippy will generate a JaCoCo execution data file for skipped tests if set to {@code true}
+     * @param skippyConfiguration the {@link SkippyConfiguration}
      */
-    public void buildFinished(boolean createExecutionDataFileForSkippedTests) {
-        upsert(failedTests, createExecutionDataFileForSkippedTests);
+    public void buildFinished(SkippyConfiguration skippyConfiguration) {
+        upsert(failedTests, skippyConfiguration);
     }
 
     /**
@@ -118,10 +120,10 @@ public final class SkippyBuildApi {
         failedTests.add(className);
     }
 
-    private void upsert(Set<String> failedTests, boolean createExecutionDataFileForSkippedTests) {
+    private void upsert(Set<String> failedTests, SkippyConfiguration skippyConfiguration) {
         try {
             var existingAnalysis = skippyRepository.readTestImpactAnalysis();
-            var newAnalysis = getTestImpactAnalysis(failedTests, createExecutionDataFileForSkippedTests);
+            var newAnalysis = getTestImpactAnalysis(failedTests, skippyConfiguration.getPersistExecutionData());
             var mergedAnalysis = existingAnalysis.merge(newAnalysis);
             skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
         } catch (IOException e) {
@@ -129,11 +131,11 @@ public final class SkippyBuildApi {
         }
     }
 
-    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, boolean createExecutionDataFileForSkippedTests) throws IOException {
+    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, boolean persistExecutionData) throws IOException {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
         var executionDataForCurrentBuild = skippyRepository.getTemporaryTestExecutionDataForCurrentBuild();
         var analyzedTests = executionDataForCurrentBuild.stream()
-                .flatMap(testWithExecutionData -> getAnalyzedTests(failedTests, testWithExecutionData, classFileContainer, createExecutionDataFileForSkippedTests).stream())
+                .flatMap(testWithExecutionData -> getAnalyzedTests(failedTests, testWithExecutionData, classFileContainer, persistExecutionData).stream())
                 .toList();
         return new TestImpactAnalysis(classFileContainer, analyzedTests);
     }
@@ -142,14 +144,14 @@ public final class SkippyBuildApi {
             Set<String> failedTests,
             TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData,
             ClassFileContainer classFileContainer,
-            boolean createExecutionDataFileForSkippedTests
+            boolean persistExecutionData
     ) {
         var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
         var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
-        if (createExecutionDataFileForSkippedTests) {
-            var execution = skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData());
+        if (persistExecutionData) {
+            var executionId = skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData());
             return ids.stream()
-                    .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), execution))
+                    .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), executionId))
                     .toList();
         } else {
             return ids.stream()

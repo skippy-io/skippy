@@ -17,6 +17,7 @@
 package io.skippy.maven;
 
 import io.skippy.build.SkippyBuildApi;
+import io.skippy.common.model.SkippyConfiguration;
 import io.skippy.common.repository.SkippyRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -47,7 +48,7 @@ public class SkippyBuildFinishedMojo extends AbstractMojo {
             new MavenClassFileCollector(project),
             SkippyRepository.getInstance(projectDir)
         );
-        skippyBuildApi.buildFinished(false);
+        skippyBuildApi.buildFinished(new SkippyConfiguration(false));
     }
 
 }
