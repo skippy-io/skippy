@@ -64,7 +64,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -87,7 +87,7 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testEmptySkippyFolderWithTwoCovFiles() {
+    void testEmptySkippyFolderWithTwoExecFilesExecutionDataEnabled() {
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
@@ -104,12 +104,15 @@ public final class SkippyBuildApiTest {
             )
         ));
 
+        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("FOO");
+        when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("BAR");
+
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(false);
+        buildApi.buildFinished(true);
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -129,12 +132,14 @@ public final class SkippyBuildApiTest {
                     {
                         "class": "1",
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": ["0","1"],
+                        "executionId": "BAR"
                     },
                     {
                         "class": "3",
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": ["2","3"],
+                        "executionId": "FOO"
                     }
                 ]
             }
@@ -142,7 +147,7 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testEmptySkippyFolderWithTwoCovFilesAndTwoExecFiles() {
+    void testEmptySkippyFolderWithTwoExecFiles() {
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
@@ -164,7 +169,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -197,7 +202,62 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testEmptySkippyFolderWithTwoCovFilesOneFailedTests()  {
+    void testEmptySkippyFolderWithTwoExecFilesAndTwoExecFiles() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
+        buildApi.buildStarted();
+
+        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.FooTest",
+                        "0xFOO".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Foo", "com.example.FooTest")
+                ),
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.BarTest",
+                        "0xBAR".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Bar", "com.example.BarTest")
+                )
+        ));
+
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
+        buildApi.buildFinished(false);
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
+
+        var tia = tiaCaptor.getValue();
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.Bar"
+                    },
+                    "1": {
+                        "name": "com.example.BarTest"
+                    },
+                    "2": {
+                        "name": "com.example.Foo"
+                    },
+                    "3": {
+                        "name": "com.example.FooTest"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "result": "PASSED",
+                        "coveredClasses": ["0","1"]
+                    },
+                    {
+                        "class": "3",
+                        "result": "PASSED",
+                        "coveredClasses": ["2","3"]
+                    }
+                ]
+            }
+    """);
+    }
+
+    @Test
+    void testEmptySkippyFolderWithTwoExecFilesOneFailedTests()  {
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
@@ -221,7 +281,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -275,7 +335,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
             {
                 "classes": {
                     "0": {
@@ -298,7 +358,7 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testExistingJsonFileUpdatedCovFile() {
+    void testExistingJsonFileUpdatedExecFile() {
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
                 "classes": {
@@ -334,7 +394,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
         {
              "classes": {
                 "0": {
@@ -355,6 +415,74 @@ public final class SkippyBuildApiTest {
                     "class": "3",
                     "result": "PASSED",
                     "coveredClasses": ["2","3"]
+                }
+             ]
+         }
+        """);
+    }
+
+    @Test
+    void testExistingJsonFileUpdatedExecFileExecutionDataEnabled() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.FooTest",
+                        "path": "com/example/FooTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "0",
+                        "result": "PASSED",
+                        "coveredClasses": ["0"],
+                        "executionId": "00000000000000000000000000000000"
+                    }
+                ]
+            }
+        """));
+
+        buildApi.buildStarted();
+
+        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+                new TestWithJacocoExecutionDataAndCoveredClasses(
+                        "com.example.FooTest",
+                        "0xFOO".getBytes(StandardCharsets.UTF_8),
+                        asList("com.example.Foo", "com.example.FooTest")
+                )
+        ));
+
+        when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("11111111111111111111111111111111");
+
+        var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
+        buildApi.buildFinished(true);
+        verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
+
+        var tia = tiaCaptor.getValue();
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
+        {
+             "classes": {
+                "0": {
+                    "name": "com.example.Bar"
+                },
+                "1": {
+                    "name": "com.example.BarTest"
+                },
+                "2": {
+                    "name": "com.example.Foo"
+                },
+                "3": {
+                    "name": "com.example.FooTest"
+                }
+             },
+             "tests": [
+                {
+                    "class": "3",
+                    "result": "PASSED",
+                    "coveredClasses": ["2","3"],
+                    "executionId": "11111111111111111111111111111111"
                 }
              ]
          }
@@ -424,7 +552,7 @@ public final class SkippyBuildApiTest {
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
-        assertThat(tia.toJson(classProperties(NAME), testProperties(CLASS, RESULT, COVERED_CLASSES))).isEqualToIgnoringWhitespace("""
+        assertThat(tia.toJson(classProperties(NAME), allTestProperties())).isEqualToIgnoringWhitespace("""
            {
                 "classes": {
                     "0": {

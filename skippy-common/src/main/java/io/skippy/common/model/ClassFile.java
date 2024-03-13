@@ -22,6 +22,7 @@ import io.skippy.common.util.Profiler;
 import java.nio.file.Path;
 import java.util.*;
 
+import static io.skippy.common.model.ClassFile.JsonProperty.allClassProperties;
 import static io.skippy.common.util.HashUtil.debugAgnosticHash;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.Files.exists;
@@ -57,6 +58,10 @@ public final class ClassFile implements Comparable<ClassFile> {
 
         public static JsonProperty[] classProperties(ClassFile.JsonProperty... properties) {
             return Arrays.asList(properties).toArray(new ClassFile.JsonProperty[0]);
+        }
+
+        public static JsonProperty[] allClassProperties() {
+            return values();
         }
     }
 
@@ -130,7 +135,7 @@ public final class ClassFile implements Comparable<ClassFile> {
      * @return the instance as JSON string
      */
     public String toJson() {
-        return toJson(JsonProperty.values());
+        return toJson(allClassProperties());
     }
 
 

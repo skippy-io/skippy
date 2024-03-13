@@ -21,6 +21,7 @@ import io.skippy.common.util.Profiler;
 import java.util.*;
 import java.util.stream.IntStream;
 
+import static io.skippy.common.model.ClassFile.JsonProperty.allClassProperties;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toMap;
@@ -86,7 +87,7 @@ public class ClassFileContainer {
     }
 
     String toJson() {
-        return toJson(ClassFile.JsonProperty.values());
+        return toJson(allClassProperties());
     }
 
     String toJson(ClassFile.JsonProperty... propertiesToRender) {

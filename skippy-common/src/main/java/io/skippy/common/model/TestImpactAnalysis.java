@@ -21,6 +21,8 @@ import io.skippy.common.util.Profiler;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static io.skippy.common.model.AnalyzedTest.JsonProperty.allTestProperties;
+import static io.skippy.common.model.ClassFile.JsonProperty.allClassProperties;
 import static io.skippy.common.model.Reason.Category.*;
 import static io.skippy.common.util.HashUtil.hashWith32Digits;
 import static java.lang.System.lineSeparator;
@@ -149,7 +151,7 @@ public final class TestImpactAnalysis {
      * @return the instance as JSON string
      */
     public String toJson() {
-        return toJson(ClassFile.JsonProperty.values(), AnalyzedTest.JsonProperty.values());
+        return toJson(allClassProperties(), allTestProperties());
     }
 
     /**

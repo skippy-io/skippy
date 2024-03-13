@@ -20,6 +20,7 @@ import io.skippy.common.util.Profiler;
 
 import java.util.*;
 
+import static io.skippy.common.model.AnalyzedTest.JsonProperty.allTestProperties;
 import static java.lang.System.lineSeparator;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
@@ -44,10 +45,14 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
         CLASS,
         RESULT,
         COVERED_CLASSES,
-        EXECUTION;
+        EXECUTION_ID;
 
         public static AnalyzedTest.JsonProperty[] testProperties(AnalyzedTest.JsonProperty... properties) {
             return Arrays.asList(properties).toArray(new AnalyzedTest.JsonProperty[0]);
+        }
+
+        public static AnalyzedTest.JsonProperty[] allTestProperties() {
+            return JsonProperty.values();
         }
     }
 
@@ -121,7 +126,7 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
      * @return the instance as JSON string
      */
     String toJson() {
-        return toJson(JsonProperty.values());
+        return toJson(allTestProperties());
     }
 
     /**
@@ -136,7 +141,7 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
         var renderedProperties = new ArrayList<String>();
 
         for (var propertyToRender : propertiesToRender) {
-            if (propertyToRender == JsonProperty.EXECUTION && executionId().isEmpty()) {
+            if (propertyToRender == JsonProperty.EXECUTION_ID && executionId().isEmpty()) {
                 continue;
             }
             renderedProperties.add(switch (propertyToRender) {
@@ -146,7 +151,7 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
                         .map(Integer::valueOf)
                         .sorted()
                         .map(id -> "\"%s\"".formatted(id)).collect(joining(",")));
-                case EXECUTION -> "\t\t\t\"executionId\": \"%s\"".formatted(executionId.get());
+                case EXECUTION_ID -> "\t\t\t\"executionId\": \"%s\"".formatted(executionId.get());
             });
         }
         result.append(renderedProperties.stream().collect(joining("," +  lineSeparator())));

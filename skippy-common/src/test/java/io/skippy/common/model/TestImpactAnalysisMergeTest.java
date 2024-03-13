@@ -237,4 +237,69 @@ public class TestImpactAnalysisMergeTest {
         """);
     }
 
+    @Test
+    void testMergeWithExecutionId() {
+        var baseline = TestImpactAnalysis.parse("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.FooTest",
+                        "path": "com/example/FooTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "FooTest#hash-new"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "0",
+                        "result": "PASSED",
+                        "coveredClasses": ["0"],
+                        "executionId": "00000000000000000000000000000000"
+                    }
+                ]
+            }
+        """);
+        var newAnalysis = TestImpactAnalysis.parse("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.FooTest",
+                        "path": "com/example/FooTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "FooTest#hash-new"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "0",
+                        "result": "PASSED",
+                        "coveredClasses": ["0"],
+                        "executionId": "11111111111111111111111111111111"
+                    }
+                ]
+            }
+        """);
+        var mergedAnalysis = baseline.merge(newAnalysis);
+        assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.FooTest",
+                        "path": "com/example/FooTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "FooTest#hash-new"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "0",
+                        "result": "PASSED",
+                        "coveredClasses": ["0"],
+                        "executionId": "11111111111111111111111111111111"
+                    }
+                ]
+            }
+        """);
+    }
+
 }

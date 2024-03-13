@@ -64,7 +64,7 @@ public interface SkippyRepository {
      * Saves Jacoco execution data.
      *
      * @param jacocoExecutionData Jacoco execution data
-     * @return a identifier that uniquely identifies the Jacoco execution data
+     * @return a unique identifier for the execution data
      */
     String saveJacocoExecutionData(byte[] jacocoExecutionData);
 

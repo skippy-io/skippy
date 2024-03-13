@@ -190,7 +190,7 @@ public class AnalyzedTestTest {
     void testToJsonExecutionProperty() {
         var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), "0".repeat(32));
 
-        assertThat(analyzedTest.toJson(EXECUTION)).isEqualToIgnoringWhitespace("""
+        assertThat(analyzedTest.toJson(EXECUTION_ID)).isEqualToIgnoringWhitespace("""
             {
                 "executionId": "00000000000000000000000000000000"
             }

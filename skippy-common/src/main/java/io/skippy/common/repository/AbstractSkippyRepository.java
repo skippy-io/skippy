@@ -85,7 +85,7 @@ public abstract class AbstractSkippyRepository implements SkippyRepository {
         try {
             var result = new ArrayList<Path>();
             try (var directoryStream  = Files.newDirectoryStream(SkippyFolder.get(projectDir),
-                    file -> false == file.getFileName().toString().matches("[A-Z0-9]{32}\\.exec"))) {
+                    file -> file.getFileName().toString().endsWith(".exec") && false == file.getFileName().toString().matches("[A-Z0-9]{32}\\.exec"))) {
                 for (var executionDataFile : directoryStream) {
                     result.add(executionDataFile);
                 }
