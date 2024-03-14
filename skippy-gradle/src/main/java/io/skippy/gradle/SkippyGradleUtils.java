@@ -32,7 +32,6 @@ final class SkippyGradleUtils {
         var sourceSetContainer = project.getExtensions().findByType(SourceSetContainer.class);
         var projectDir = project.getProjectDir().toPath();
         return new SkippyBuildApi(
-                projectDir,
                 new GradleClassFileCollector(projectDir, sourceSetContainer),
                 SkippyRepository.getInstance(projectDir)
         );

@@ -36,7 +36,7 @@ import static io.skippy.gradle.SkippyGradleUtils.supportsSkippy;
  *
  * @author Florian McKee
  */
-public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
+final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
     @Override
     public void apply(Project project) {

@@ -16,7 +16,6 @@
 
 package io.skippy.build;
 
-import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.*;
 import io.skippy.common.repository.SkippyRepository;
 import java.io.IOException;
@@ -24,8 +23,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.*;
 
-import static io.skippy.common.SkippyConstants.*;
-import static java.nio.file.Files.*;
 
 /**
  * API that is used by Skippy's Gradle and Maven plugins to remoev the Skippy folder and to inform Skippy about events
@@ -40,21 +37,17 @@ import static java.nio.file.Files.*;
  */
 public final class SkippyBuildApi {
 
-    private final Path projectDir;
     private final ClassFileCollector classFileCollector;
     private final SkippyRepository skippyRepository;
     private final Set<String> failedTests = new HashSet<>();
 
-
     /**
      * C'tor.
      *
-     * @param projectDir         the project folder
      * @param classFileCollector the {@link ClassFileCollector}
      * @param skippyRepository   the {@link SkippyRepository}
      */
-    public SkippyBuildApi(Path projectDir, ClassFileCollector classFileCollector, SkippyRepository skippyRepository) {
-        this.projectDir = projectDir;
+    public SkippyBuildApi(ClassFileCollector classFileCollector, SkippyRepository skippyRepository) {
         this.classFileCollector = classFileCollector;
         this.skippyRepository = skippyRepository;
     }
@@ -63,19 +56,7 @@ public final class SkippyBuildApi {
      * Deletes the skippy folder.
      */
     public void deleteSkippyFolder() {
-        try {
-            var skippyFolder = SkippyFolder.get(projectDir);
-            if (exists(skippyFolder)) {
-                try (var stream = newDirectoryStream(skippyFolder)) {
-                    for (Path file : stream) {
-                        delete(file);
-                    }
-                }
-                delete(skippyFolder);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to delete the Skippy folder: %s.".formatted(e), e);
-        }
+        skippyRepository.deleteSkippyFolder();
     }
 
     /**
@@ -84,22 +65,8 @@ public final class SkippyBuildApi {
      * @param skippyConfiguration the {@link SkippyConfiguration}
      */
     public void buildStarted(SkippyConfiguration skippyConfiguration) {
-        var predictionsLog = SkippyFolder.get(projectDir).resolve(PREDICTIONS_LOG_FILE);
-        if (exists(predictionsLog)) {
-            try {
-                delete(predictionsLog);
-            } catch (IOException e) {
-                throw new UncheckedIOException("Unable to delete %s: %s.".formatted(predictionsLog, e.getMessage()), e);
-            }
-        }
-        var profilingLog = SkippyFolder.get(projectDir).resolve(PROFILING_LOG_FILE);
-        if (exists(profilingLog)) {
-            try {
-                delete(profilingLog);
-            } catch (IOException e) {
-                throw new UncheckedIOException("Unable to delete %s: %s.".formatted(profilingLog, e.getMessage()), e);
-            }
-        }
+        skippyRepository.deleteLogFiles();
+        skippyRepository.saveConfiguration(skippyConfiguration);
     }
 
     /**
@@ -123,7 +90,7 @@ public final class SkippyBuildApi {
     private void upsert(Set<String> failedTests, SkippyConfiguration skippyConfiguration) {
         try {
             var existingAnalysis = skippyRepository.readTestImpactAnalysis();
-            var newAnalysis = getTestImpactAnalysis(failedTests, skippyConfiguration.getPersistExecutionData());
+            var newAnalysis = getTestImpactAnalysis(failedTests, skippyConfiguration.persistExecutionData());
             var mergedAnalysis = existingAnalysis.merge(newAnalysis);
             skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
         } catch (IOException e) {

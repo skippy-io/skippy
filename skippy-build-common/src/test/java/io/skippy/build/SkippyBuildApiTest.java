@@ -16,6 +16,7 @@
 
 package io.skippy.build;
 
+import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.*;
 import io.skippy.common.repository.SkippyRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +51,9 @@ public final class SkippyBuildApiTest {
         );
 
         projectDir = Paths.get(getClass().getResource("project").toURI());
-        buildApi = new SkippyBuildApi(projectDir, classFileCollector, skippyRepository);
+        buildApi = new SkippyBuildApi(classFileCollector, skippyRepository);
+        ignoreStubs(skippyRepository);
+
     }
 
     @Test
@@ -390,7 +393,7 @@ public final class SkippyBuildApiTest {
         ));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildStarted(new SkippyConfiguration(false));
+        buildApi.buildFinished(new SkippyConfiguration(false));
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();

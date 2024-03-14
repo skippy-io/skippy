@@ -19,10 +19,31 @@ package io.skippy.gradle;
 import io.skippy.common.model.SkippyConfiguration;
 import org.gradle.api.provider.Property;
 
+/**
+ * Extension that allows configuration of Skippy in Gradle's build file:
+ * <pre>
+ * skippy {
+ *     executionData = true
+ *     ...
+ * }
+ * </pre>
+ *
+ * @author Florian McKee
+ */
 public interface SkippyPluginExtension  {
 
+    /**
+     * Returns the property to enable / disable capture of per-test JaCoCo execution data.
+     *
+     * @return the property to enable / disable capture of per-test JaCoCo execution data
+     */
     Property<Boolean> getExecutionData();
 
+    /**
+     * Converts the extension data into a {@link SkippyConfiguration}
+     *
+     * @return a {@link SkippyConfiguration} derived from the extension data
+     */
     default SkippyConfiguration toSkippyConfiguration() {
         return new SkippyConfiguration(getExecutionData().getOrElse(false));
     }

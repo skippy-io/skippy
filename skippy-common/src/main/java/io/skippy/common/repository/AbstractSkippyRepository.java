@@ -17,17 +17,19 @@
 package io.skippy.common.repository;
 
 import io.skippy.common.SkippyFolder;
+import io.skippy.common.model.SkippyConfiguration;
 import io.skippy.common.model.TestWithJacocoExecutionDataAndCoveredClasses;
 import io.skippy.common.util.JacocoExecutionDataUtil;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.nio.file.Files.delete;
+import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
@@ -45,11 +47,49 @@ public abstract class AbstractSkippyRepository implements SkippyRepository {
         this.projectDir = projectDir;
     }
 
+
+    @Override
+    public void deleteSkippyFolder() {
+        try {
+            var skippyFolder = SkippyFolder.get(projectDir);
+            if (exists(skippyFolder)) {
+                try (var stream = newDirectoryStream(skippyFolder)) {
+                    for (Path file : stream) {
+                        delete(file);
+                    }
+                }
+                delete(skippyFolder);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to delete the Skippy folder: %s.".formatted(e), e);
+        }
+    }
+
+    @Override
+    public final void saveConfiguration(SkippyConfiguration skippyConfiguration) {
+        try {
+            Files.writeString(SkippyFolder.get(projectDir).resolve("config.json"), skippyConfiguration.toJson(), StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to save Skippy configuration: %s.".formatted(e.getMessage()), e);
+        }
+    }
+
+    @Override
+    public void deleteLogFiles() {
+        try (var directoryStream  = Files.newDirectoryStream(SkippyFolder.get(projectDir),
+                file -> file.getFileName().toString().endsWith(".log"))) {
+            for (var logFile : directoryStream) {
+                delete(logFile);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to delete log files: %s.".formatted(e.getMessage()), e);
+        }
+    }
+
     @Override
     public final List<TestWithJacocoExecutionDataAndCoveredClasses> getTemporaryTestExecutionDataForCurrentBuild() {
         var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
-        List<Path> executionDataFiles = getTemporaryExecutionDataFilesForCurrentBuild();
-        for (var executionDataFile : executionDataFiles) {
+        for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
             var filename = executionDataFile.getFileName().toString();
             var testName = filename.substring(0, filename.indexOf(".exec"));
             try {

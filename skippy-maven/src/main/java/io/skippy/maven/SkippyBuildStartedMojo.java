@@ -43,7 +43,6 @@ public class SkippyBuildStartedMojo extends AbstractMojo {
     public void execute() {
         var projectDir = project.getBasedir().toPath();
         var skippyBuildApi = new SkippyBuildApi(
-            projectDir,
             new MavenClassFileCollector(project),
             SkippyRepository.getInstance(projectDir)
         );
