@@ -196,6 +196,11 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
         }
     }
 
+    /**
+     * Returns the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, byte[])}
+     *
+     * @return the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, byte[])}
+     */
     public List<TestWithJacocoExecutionDataAndCoveredClasses> readTemporaryJaCoCoExecutionDataForCurrentBuild() {
         var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
         for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
