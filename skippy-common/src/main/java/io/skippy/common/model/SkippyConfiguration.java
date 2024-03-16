@@ -49,7 +49,7 @@ public record SkippyConfiguration(boolean persistExecutionData) {
     public String toJson() {
         return """
         {
-            "persistExecutionData": %s
+            "persistExecutionData": "%s"
         }
         """.formatted(persistExecutionData);
     }

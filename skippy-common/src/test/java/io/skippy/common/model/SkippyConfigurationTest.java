@@ -14,18 +14,34 @@
  * limitations under the License.
  */
 
-package io.skippy.common.repository;
+package io.skippy.common.model;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DefaultSkippyRepositoryTest {
+public class SkippyConfigurationTest {
 
     @Test
-    @Disabled
-    void name() {
-        fail();
+    void testToJson() {
+        var configuration = new SkippyConfiguration(true);
+        assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "persistExecutionData": "true"
+            }
+        """);
     }
+
+    @Test
+    void testParse() {
+        var json = """
+            {
+                "persistExecutionData": "true"
+            }
+        """;
+        assertEquals(new SkippyConfiguration(true), SkippyConfiguration.parse(json));
+    }
+
+
 }

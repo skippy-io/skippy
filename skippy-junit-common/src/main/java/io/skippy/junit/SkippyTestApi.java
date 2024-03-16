@@ -46,7 +46,8 @@ public final class SkippyTestApi {
     /**
      * The SkippyTestApi singleton.
      */
-    public static final SkippyTestApi INSTANCE = new SkippyTestApi(SkippyRepository.getInstance().readTestImpactAnalysis());
+    public static final SkippyTestApi INSTANCE = new SkippyTestApi(
+            SkippyRepository.getInstance().readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND));
 
     private final TestImpactAnalysis testImpactAnalysis;
     private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();
@@ -123,7 +124,7 @@ public final class SkippyTestApi {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 byte[] executionData = agent.getExecutionData(true);
-                SkippyRepository.getInstance().saveTemporaryTestExecutionDataForCurrentBuild(testClass.getName(), executionData);
+                SkippyRepository.getInstance().saveTemporaryJaCoCoExecutionDataForCurrentBuild(testClass.getName(), executionData);
             });
         });
     }

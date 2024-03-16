@@ -16,7 +16,6 @@
 
 package io.skippy.build;
 
-import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.*;
 import io.skippy.common.repository.SkippyRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +26,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import static io.skippy.common.model.AnalyzedTest.JsonProperty.*;
 import static io.skippy.common.model.ClassFile.JsonProperty.*;
@@ -57,10 +57,16 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testEmptySkippyFolderWithoutExecFiles() {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
+    void testBuildStartedSavesSkippyConfiguration() {
         buildApi.buildStarted(new SkippyConfiguration(false));
-        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList());
+        verify(skippyRepository).saveConfiguration(new SkippyConfiguration(false));
+    }
+
+    @Test
+    void testEmptySkippyFolderWithoutExecFiles() {
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
+        buildApi.buildStarted(new SkippyConfiguration(false));
+        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList());
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished(new SkippyConfiguration(false));
@@ -91,10 +97,10 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesExecutionDataPersistenceEnabled() {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
         buildApi.buildStarted(new SkippyConfiguration(true));
 
-        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
             new TestWithJacocoExecutionDataAndCoveredClasses(
                 "com.example.FooTest",
                 "0xFOO".getBytes(StandardCharsets.UTF_8),
@@ -151,10 +157,10 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFiles() {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
         buildApi.buildStarted(new SkippyConfiguration(false));
 
-        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
@@ -206,10 +212,10 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesAndTwoExecFiles() {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
         buildApi.buildStarted(new SkippyConfiguration(false));
 
-        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
@@ -261,10 +267,10 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesOneFailedTests()  {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
         buildApi.buildStarted(new SkippyConfiguration(false));
 
-        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
@@ -318,7 +324,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileNoExecFile() {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -331,7 +337,7 @@ public final class SkippyBuildApiTest {
                 "tests": [
                 ]
             }
-        """));
+        """)));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished(new SkippyConfiguration(false));
@@ -362,7 +368,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileUpdatedExecFile() {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -380,11 +386,11 @@ public final class SkippyBuildApiTest {
                     }
                 ]
             }
-        """));
+        """)));
 
         buildApi.buildStarted(new SkippyConfiguration(false));
 
-        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
@@ -426,7 +432,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileUpdatedExecFileExecutionDataEnabled() {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -445,11 +451,11 @@ public final class SkippyBuildApiTest {
                     }
                 ]
             }
-        """));
+        """)));
 
         buildApi.buildStarted(new SkippyConfiguration(true));
 
-        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
@@ -494,7 +500,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileNewTestFailure() {
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
+        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -535,11 +541,11 @@ public final class SkippyBuildApiTest {
                     }
                 ]
             }
-        """));
+        """)));
 
         buildApi.buildStarted(new SkippyConfiguration(false));
 
-        when(skippyRepository.getTemporaryTestExecutionDataForCurrentBuild()).thenReturn(asList(
+        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),

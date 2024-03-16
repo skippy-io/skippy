@@ -18,9 +18,6 @@ package io.skippy.build;
 
 import io.skippy.common.model.*;
 import io.skippy.common.repository.SkippyRepository;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Path;
 import java.util.*;
 
 
@@ -88,19 +85,15 @@ public final class SkippyBuildApi {
     }
 
     private void upsert(Set<String> failedTests, SkippyConfiguration skippyConfiguration) {
-        try {
-            var existingAnalysis = skippyRepository.readTestImpactAnalysis();
-            var newAnalysis = getTestImpactAnalysis(failedTests, skippyConfiguration.persistExecutionData());
-            var mergedAnalysis = existingAnalysis.merge(newAnalysis);
-            skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Upsert failed: %s".formatted(e.getMessage()), e);
-        }
+        var existingAnalysis = skippyRepository.readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND);
+        var newAnalysis = getTestImpactAnalysis(failedTests, skippyConfiguration.persistExecutionData());
+        var mergedAnalysis = existingAnalysis.merge(newAnalysis);
+        skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
     }
 
-    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, boolean persistExecutionData) throws IOException {
+    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, boolean persistExecutionData) {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
-        var executionDataForCurrentBuild = skippyRepository.getTemporaryTestExecutionDataForCurrentBuild();
+        var executionDataForCurrentBuild = skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild();
         var analyzedTests = executionDataForCurrentBuild.stream()
                 .flatMap(testWithExecutionData -> getAnalyzedTests(failedTests, testWithExecutionData, classFileContainer, persistExecutionData).stream())
                 .toList();
