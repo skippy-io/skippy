@@ -52,6 +52,24 @@ public final class TestImpactAnalysis {
     }
 
     /**
+     * Returns the {@link ClassFileContainer}.
+     *
+     * @return the {@link ClassFileContainer}
+     */
+    public ClassFileContainer getClassFileContainer() {
+        return classFileContainer;
+    }
+
+    /**
+     * Returns the list of {@link AnalyzedTest}s.
+     *
+     * @return the list of {@link AnalyzedTest}s
+     */
+    public List<AnalyzedTest> getAnalyzedTests() {
+        return analyzedTests;
+    }
+
+    /**
      * Returns a unique identifier for this instance.
      *
      * @return a unique identifier for this instance
@@ -108,14 +126,6 @@ public final class TestImpactAnalysis {
      */
     public List<String> getExecutionIds() {
         return analyzedTests.stream().flatMap(analyzedTest -> analyzedTest.executionId().stream()).toList();
-    }
-
-    List<AnalyzedTest> getAnalyzedTests() {
-        return analyzedTests;
-    }
-
-    ClassFileContainer getClassFileContainer() {
-        return classFileContainer;
     }
 
     public static TestImpactAnalysis parse(String string) {

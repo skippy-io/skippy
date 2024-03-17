@@ -27,29 +27,45 @@ import static java.util.Collections.*;
 import static java.util.stream.Collectors.toMap;
 
 /**
- * Container for {@link ClassFile}s that supports a variety of queries.
+ * Container for {@link ClassFile}s that stores static information about classes in a project.
+ * It supports a variety of queries:
+ * <ul>
+ *     <li>get {@link ClassFile} by id</li>
+ *     <li>get ids by class name</li>
+ *     <li>get {@link ClassFile} by id</li>
+ * </ul>
+ * The JSON representation:
+ * <pre>
+ * {
+ *      "0": {
+ *          "name": "com.example.Bar",
+ *          "path": "com/example/Bar.class",
+ *          "outputFolder": "build/classes/java/main",
+ *          "hash": "08B76AA9"
+ *      },
+ *      "1": {
+ *          "name": "com.example.BarTest",
+ *          "path": "com/example/BarTest.class",
+ *          "outputFolder": "build/classes/java/test",
+ *          "hash": "119F463C"
+ *      },
+ *      ...
+ * }
+ * </pre>
+ *
+ * A {@link ClassFileContainer} assigns a numerical id to each analyzed class file. Those ids are used  for referencing
+ * purposes in the JSON representation of a {@link TestImpactAnalysis}.
+ * <br /><br />
  *
  * @author Florian McKee
  */
 public class ClassFileContainer {
-
     private final Set<ClassFile> classFiles = new TreeSet<>();
     private final Map<String, List<ClassFile>> classFilesByClassName = new HashMap<>();
     private final Map<ClassFile, String> idsByClassFile = new HashMap<>();
     private final Map<String, List<String>> idsByClassName = new HashMap<>();
 
     private final Map<String, ClassFile> classFilesById = new HashMap<>();
-
-    /**
-     * Creates a new instance for the given {@code classFiles}.
-     * @param classFiles a list of {@link ClassFile}s
-     * @return a new instance for the given {@code classFiles}
-     */
-    public static ClassFileContainer from(List<ClassFile> classFiles) {
-        var sorted = classFiles.stream().sorted().toList();
-        return new ClassFileContainer(IntStream.range(0, classFiles.size()).boxed()
-                .collect(toMap(i -> Integer.toString(i), i -> sorted.get(i))));
-    }
 
      private ClassFileContainer(Map<String, ClassFile> classFilesById) {
         for (var entry : classFilesById.entrySet()) {
@@ -69,12 +85,27 @@ public class ClassFileContainer {
         }
     }
 
-    ClassFile getById(String id) {
-        return classFilesById.get(id);
+    /**
+     * Creates a new instance for the given {@code classFiles}.
+     *
+     * @param classFiles a list of {@link ClassFile}s
+     * @return a new instance for the given {@code classFiles}
+     */
+    public static ClassFileContainer from(List<ClassFile> classFiles) {
+        var sorted = classFiles.stream().sorted().toList();
+        return new ClassFileContainer(IntStream.range(0, classFiles.size()).boxed()
+                .collect(toMap(i -> Integer.toString(i), i -> sorted.get(i))));
     }
 
     /**
      * Returns the ids of the classes that match the provided class name.
+     * <br /><br />
+     * Note that class names might not be unique within a project:
+     * <pre>
+     *     src/integration-test/java/com.example.FooTest
+     *     src/functional-test/java/com.example.FooTest
+     * </pre>
+     * That's why this method returns a list.
      *
      * @param className a class name
      * @return the ids of the classes that match the provided class name
@@ -84,6 +115,19 @@ public class ClassFileContainer {
             return emptyList();
         }
         return idsByClassName.get(className);
+    }
+
+    Set<ClassFile> getClassFiles() {
+        return unmodifiableSet(classFiles);
+    }
+
+    String getId(ClassFile classFile) {
+        return idsByClassFile.get(classFile);
+    }
+
+
+    ClassFile getById(String id) {
+        return classFilesById.get(id);
     }
 
     String toJson() {
@@ -121,10 +165,6 @@ public class ClassFileContainer {
         });
     }
 
-    Set<ClassFile> getClassFiles() {
-        return unmodifiableSet(classFiles);
-    }
-
     /**
      * Combines the {@link ClassFile}s in this instance with the {@link ClassFile}s in the {@code other} instance.
      *
@@ -142,14 +182,4 @@ public class ClassFileContainer {
         return ClassFileContainer.from(new ArrayList<>(result));
     }
 
-    /**
-     * Returns the id of the {@link ClassFile}. The id is used to for referencing purposes in the JSON representation of
-     * a {@link TestImpactAnalysis}.
-     *
-     * @param classFile a {@link ClassFile}
-     * @return the id of the {@link ClassFile}
-     */
-    String getId(ClassFile classFile) {
-        return idsByClassFile.get(classFile);
-    }
 }

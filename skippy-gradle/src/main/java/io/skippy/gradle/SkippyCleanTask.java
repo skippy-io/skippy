@@ -33,7 +33,7 @@ class SkippyCleanTask extends DefaultTask {
     @Inject
     public SkippyCleanTask() {
         setGroup("skippy");
-        doIfBuildSupportsSkippy(getProject(), skippyBuildApi ->
+        ifBuildSupportsSkippy(getProject(), skippyBuildApi ->
             doLast((project) -> skippyBuildApi.deleteSkippyFolder())
         );
     }

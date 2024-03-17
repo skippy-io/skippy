@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 
 final class SkippyGradleUtils {
 
-    static void doIfBuildSupportsSkippy(Project project, Consumer<SkippyBuildApi> action) {
+    static void ifBuildSupportsSkippy(Project project, Consumer<SkippyBuildApi> action) {
         var sourceSetContainer = project.getExtensions().findByType(SourceSetContainer.class);
         if (sourceSetContainer != null) {
             var skippyExtension = project.getExtensions().getByType(SkippyPluginExtension.class);

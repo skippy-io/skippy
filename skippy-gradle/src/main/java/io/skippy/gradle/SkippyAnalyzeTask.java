@@ -37,7 +37,7 @@ class SkippyAnalyzeTask extends DefaultTask {
     @Inject
     public SkippyAnalyzeTask() {
         setGroup("skippy");
-        doIfBuildSupportsSkippy(getProject(), skippyBuildApi -> {
+        ifBuildSupportsSkippy(getProject(), skippyBuildApi -> {
             var testFailedListener = new TestFailedListener((className) -> skippyBuildApi.testFailed(className));
             getProject().getTasks().withType(Test.class, testTask -> testTask.addTestListener(testFailedListener));
             doLast(task -> skippyBuildApi.buildFinished());

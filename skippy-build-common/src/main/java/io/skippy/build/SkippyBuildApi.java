@@ -71,7 +71,10 @@ public final class SkippyBuildApi {
      * Informs Skippy that a build has finished.
      */
     public void buildFinished() {
-        upsert(failedTests, skippyConfiguration);
+        var existingAnalysis = skippyRepository.readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND);
+        var newAnalysis = getTestImpactAnalysis();
+        var mergedAnalysis = existingAnalysis.merge(newAnalysis);
+        skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
     }
 
     /**
@@ -83,31 +86,22 @@ public final class SkippyBuildApi {
         failedTests.add(className);
     }
 
-    private void upsert(Set<String> failedTests, SkippyConfiguration skippyConfiguration) {
-        var existingAnalysis = skippyRepository.readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND);
-        var newAnalysis = getTestImpactAnalysis(failedTests, skippyConfiguration.saveExecutionData());
-        var mergedAnalysis = existingAnalysis.merge(newAnalysis);
-        skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
-    }
-
-    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, boolean saveExecutionData) {
+    private TestImpactAnalysis getTestImpactAnalysis() {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
         var executionDataForCurrentBuild = skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild();
         var analyzedTests = executionDataForCurrentBuild.stream()
-                .flatMap(testWithExecutionData -> getAnalyzedTests(failedTests, testWithExecutionData, classFileContainer, saveExecutionData).stream())
+                .flatMap(testWithExecutionData -> getAnalyzedTests(testWithExecutionData, classFileContainer).stream())
                 .toList();
         return new TestImpactAnalysis(classFileContainer, analyzedTests);
     }
 
     private List<AnalyzedTest> getAnalyzedTests(
-            Set<String> failedTests,
             TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData,
-            ClassFileContainer classFileContainer,
-            boolean saveExecutionData
+            ClassFileContainer classFileContainer
     ) {
         var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
         var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
-        if (saveExecutionData) {
+        if (skippyConfiguration.saveExecutionData()) {
             var executionId = skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData());
             return ids.stream()
                     .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), executionId))
