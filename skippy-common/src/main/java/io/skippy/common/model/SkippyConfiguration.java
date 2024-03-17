@@ -16,29 +16,27 @@
 
 package io.skippy.common.model;
 
-import io.skippy.common.SkippyFolder;
-
 /**
  * Skippy configuration that is used by Skippy's build plugins and JUnit libraries.
  *
- * @param persistExecutionData {@code true} if JaCoCo execution data for individual test should be persisted, {@code false}
+ * @param saveExecutionData {@code true} if JaCoCo execution data for individual test should be persisted, {@code false}
  *
  * @author Florian McKee
  */
-public record SkippyConfiguration(boolean persistExecutionData) {
+public record SkippyConfiguration(boolean saveExecutionData) {
 
     public static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false);
 
     public static SkippyConfiguration parse(String string) {
         var tokenizer = new Tokenizer(string);
         tokenizer.skip('{');
-        boolean persistExecutionData = false;
+        boolean executionData = false;
         while (true) {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
-                case "persistExecutionData":
-                    persistExecutionData = Boolean.valueOf(tokenizer.next());
+                case "saveExecutionData":
+                    executionData = Boolean.valueOf(tokenizer.next());
                     break;
             }
             tokenizer.skipIfNext(',');
@@ -47,14 +45,14 @@ public record SkippyConfiguration(boolean persistExecutionData) {
                 break;
             }
         }
-        return new SkippyConfiguration(persistExecutionData);
+        return new SkippyConfiguration(executionData);
     }
 
     public String toJson() {
         return """
         {
-            "persistExecutionData": "%s"
+            "saveExecutionData": "%s"
         }
-        """.formatted(persistExecutionData);
+        """.formatted(saveExecutionData);
     }
 }

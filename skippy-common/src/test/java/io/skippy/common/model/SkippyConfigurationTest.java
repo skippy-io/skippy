@@ -28,7 +28,7 @@ public class SkippyConfigurationTest {
         var configuration = new SkippyConfiguration(true);
         assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "persistExecutionData": "true"
+                "saveExecutionData": "true"
             }
         """);
     }
@@ -37,7 +37,7 @@ public class SkippyConfigurationTest {
     void testParse() {
         var json = """
             {
-                "persistExecutionData": "true"
+                "saveExecutionData": "true"
             }
         """;
         assertEquals(new SkippyConfiguration(true), SkippyConfiguration.parse(json));

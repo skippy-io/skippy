@@ -85,7 +85,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
  * public class S3SkippyRepository implements SkippyRepositoryExtension {
  *
  *    {@literal @}Override
- *     public Optional<TestImpactAnalysis> readTestImpactAnalysis() {
+ *     public Optional&lt;TestImpactAnalysis&gt; readTestImpactAnalysis() {
  *         // read from S3
  *     }
  *
@@ -95,7 +95,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
  *     }
  *
  *    {@literal @}Override
- *     public Optional<byte[]> readJacocoExecutionData(String executionId) {
+ *     public Optional&lt;byte[]&gt; readJacocoExecutionData(String executionId) {
  *         // read from S3
  *     }
  *
@@ -328,7 +328,7 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
     }
 
     private void deleteObsoleteExecutionDataFiles(TestImpactAnalysis testImpactAnalysis) {
-        var executions = testImpactAnalysis.getExecitionIds();
+        var executions = testImpactAnalysis.getExecutionIds();
         try (var directoryStream  = Files.newDirectoryStream(SkippyFolder.get(projectDir), path -> path.toString().endsWith(".exec"))) {
             for (var executionDataFile : directoryStream) {
                 if (false == executions.contains(executionDataFile.getFileName().toString().replaceAll("\\.exec", ""))) {

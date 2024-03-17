@@ -85,16 +85,16 @@ public final class SkippyBuildApi {
 
     private void upsert(Set<String> failedTests, SkippyConfiguration skippyConfiguration) {
         var existingAnalysis = skippyRepository.readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND);
-        var newAnalysis = getTestImpactAnalysis(failedTests, skippyConfiguration.persistExecutionData());
+        var newAnalysis = getTestImpactAnalysis(failedTests, skippyConfiguration.saveExecutionData());
         var mergedAnalysis = existingAnalysis.merge(newAnalysis);
         skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
     }
 
-    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, boolean persistExecutionData) {
+    private TestImpactAnalysis getTestImpactAnalysis(Set<String> failedTests, boolean saveExecutionData) {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
         var executionDataForCurrentBuild = skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild();
         var analyzedTests = executionDataForCurrentBuild.stream()
-                .flatMap(testWithExecutionData -> getAnalyzedTests(failedTests, testWithExecutionData, classFileContainer, persistExecutionData).stream())
+                .flatMap(testWithExecutionData -> getAnalyzedTests(failedTests, testWithExecutionData, classFileContainer, saveExecutionData).stream())
                 .toList();
         return new TestImpactAnalysis(classFileContainer, analyzedTests);
     }
@@ -103,11 +103,11 @@ public final class SkippyBuildApi {
             Set<String> failedTests,
             TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData,
             ClassFileContainer classFileContainer,
-            boolean persistExecutionData
+            boolean saveExecutionData
     ) {
         var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
         var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
-        if (persistExecutionData) {
+        if (saveExecutionData) {
             var executionId = skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData());
             return ids.stream()
                     .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), executionId))

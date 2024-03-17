@@ -37,7 +37,7 @@ public interface SkippyPluginExtension  {
      *
      * @return the property to enable / disable capture of per-test JaCoCo execution data
      */
-    Property<Boolean> getExecutionData();
+    Property<Boolean> getSaveExecutionData();
 
     /**
      * Converts the extension data into a {@link SkippyConfiguration}
@@ -45,6 +45,6 @@ public interface SkippyPluginExtension  {
      * @return a {@link SkippyConfiguration} derived from the extension data
      */
     default SkippyConfiguration toSkippyConfiguration() {
-        return new SkippyConfiguration(getExecutionData().getOrElse(false));
+        return new SkippyConfiguration(getSaveExecutionData().getOrElse(false));
     }
 }

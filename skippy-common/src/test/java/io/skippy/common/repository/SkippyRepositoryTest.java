@@ -63,7 +63,7 @@ public class SkippyRepositoryTest {
         var content = Files.readString(configFile, StandardCharsets.UTF_8);
         assertThat(content).isEqualToIgnoringWhitespace("""
             {
-                "persistExecutionData": "true"
+                "saveExecutionData": "true"
             }
         """);
     }

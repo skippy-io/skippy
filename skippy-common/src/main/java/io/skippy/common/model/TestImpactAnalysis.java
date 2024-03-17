@@ -102,11 +102,11 @@ public final class TestImpactAnalysis {
     }
 
     /**
-     * Returns the Jacoco ids from the {@link AnalyzedTest}s.
+     * Returns the Jacoco execution ids from the {@link AnalyzedTest}s.
      *
-     * @return the Jacoco data ids from the {@link AnalyzedTest}s
+     * @return the Jacoco execution ids from the {@link AnalyzedTest}s
      */
-    public List<String> getExecitionIds() {
+    public List<String> getExecutionIds() {
         return analyzedTests.stream().flatMap(analyzedTest -> analyzedTest.executionId().stream()).toList();
     }
 
