@@ -17,6 +17,7 @@
 package io.skippy.maven;
 
 import io.skippy.build.SkippyBuildApi;
+import io.skippy.common.model.SkippyConfiguration;
 import io.skippy.common.repository.SkippyRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -46,8 +47,9 @@ public class SkippyCleanMojo extends AbstractMojo {
     public void execute() {
         var projectDir = project.getBasedir().toPath();
         var skippyBuildApi = new SkippyBuildApi(
+            SkippyConfiguration.DEFAULT,
             new MavenClassFileCollector(project),
-            SkippyRepository.getInstance(projectDir)
+            SkippyRepository.getInstance(SkippyConfiguration.DEFAULT, projectDir)
         );
         skippyBuildApi.deleteSkippyFolder();
     }

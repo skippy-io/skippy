@@ -11,7 +11,7 @@ ossrhPublish {
 dependencies {
     api 'junit:junit:' + versions.junit4
     implementation project(':skippy-junit-common')
-    testImplementation 'org.mockito:mockito-core:5.4.0'
+    testImplementation 'org.mockito:mockito-core:' + versions.mockito
 }
 
 test {

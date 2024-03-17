@@ -121,18 +121,33 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 public final class SkippyRepository implements SkippyRepositoryExtension {
 
     private final Path projectDir;
+    private final SkippyConfiguration skippyConfiguration;
     private final Optional<SkippyRepositoryExtension> extension = Optional.empty();
 
-    private SkippyRepository(Path projectDir) {
+    private SkippyRepository(SkippyConfiguration skippyConfiguration, Path projectDir) {
+        this.skippyConfiguration = skippyConfiguration;
         this.projectDir = projectDir;
     }
 
-    public static SkippyRepository getInstance(Path projectDir) {
-        return new SkippyRepository(projectDir);
+    /**
+     * Returns the {@link SkippyRepository} instance for Skippy's build plugins.
+     *
+     * @param skippyConfiguration the {@link SkippyConfiguration}
+     * @param projectDir the project directory
+     * @return the {@link SkippyRepository}
+     */
+    public static SkippyRepository getInstance(SkippyConfiguration skippyConfiguration, Path projectDir) {
+        return new SkippyRepository(skippyConfiguration, projectDir);
     }
 
-    public static SkippyRepository getInstance() {
-        return getInstance(Path.of("."));
+    /**
+     * Returns the {@link SkippyRepository} instance for Skippy's JUnit libraries.
+     *
+     * @param skippyConfiguration the {@link SkippyConfiguration}
+     * @return the {@link SkippyRepository}
+     */
+    public static SkippyRepository getInstance(SkippyConfiguration skippyConfiguration) {
+        return getInstance(skippyConfiguration, Path.of("."));
     }
 
     /**
@@ -151,6 +166,24 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
             }
         } catch (IOException e) {
             throw new RuntimeException("Unable to delete the Skippy folder: %s.".formatted(e), e);
+        }
+    }
+
+    /**
+     * Reads the {@link SkippyConfiguration} from the Skippy folder.
+     *
+     * This method is intended for Skippy's JUnit libraries.
+     *
+     * @return  the {@link SkippyConfiguration}
+     */
+    public static SkippyConfiguration readConfiguration() {
+        try {
+            if (false == exists(SkippyFolder.get().resolve("config.json"))) {
+                return SkippyConfiguration.DEFAULT;
+            }
+            return SkippyConfiguration.parse(Files.readString(SkippyFolder.get().resolve("config.json"), StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to read Skippy configuration: %s.".formatted(e.getMessage()), e);
         }
     }
 

@@ -37,13 +37,13 @@ import static org.mockito.Mockito.*;
 
 public final class SkippyBuildApiTest {
 
+    private ClassFileCollector classFileCollector;
     private Path projectDir;
-    private SkippyBuildApi buildApi;
     private SkippyRepository skippyRepository = mock(SkippyRepository.class);
 
     @BeforeEach
     void setup() throws URISyntaxException {
-        ClassFileCollector classFileCollector = () -> asList(
+        classFileCollector = () -> asList(
                 fromParsedJson("com.example.FooTest", Path.of("build/classes/java/test"), Path.of("com/example/FooTest.class"), "hash-foo-test"),
                 fromParsedJson("com.example.BarTest", Path.of("build/classes/java/test"), Path.of("com/example/BarTest.class"), "hash-bar-test"),
                 fromParsedJson("com.example.Foo", Path.of("build/classes/java/main"), Path.of("com/example/Foo.class"), "hash-foo"),
@@ -51,25 +51,29 @@ public final class SkippyBuildApiTest {
         );
 
         projectDir = Paths.get(getClass().getResource("project").toURI());
-        buildApi = new SkippyBuildApi(classFileCollector, skippyRepository);
         ignoreStubs(skippyRepository);
 
     }
 
     @Test
     void testBuildStartedSavesSkippyConfiguration() {
-        buildApi.buildStarted(new SkippyConfiguration(false));
+        var skippyConfiguration = new SkippyConfiguration(false);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        buildApi.buildStarted();
         verify(skippyRepository).saveConfiguration(new SkippyConfiguration(false));
     }
 
     @Test
     void testEmptySkippyFolderWithoutExecFiles() {
+        var skippyConfiguration = new SkippyConfiguration(false);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
-        buildApi.buildStarted(new SkippyConfiguration(false));
+        buildApi.buildStarted();
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList());
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(false));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
@@ -97,8 +101,11 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesExecutionDataPersistenceEnabled() {
+        var skippyConfiguration = new SkippyConfiguration(true);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
-        buildApi.buildStarted(new SkippyConfiguration(true));
+        buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
             new TestWithJacocoExecutionDataAndCoveredClasses(
@@ -117,7 +124,7 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("BAR");
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(true));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
@@ -157,8 +164,11 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFiles() {
+        var skippyConfiguration = new SkippyConfiguration(false);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
-        buildApi.buildStarted(new SkippyConfiguration(false));
+        buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
@@ -174,7 +184,7 @@ public final class SkippyBuildApiTest {
         ));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(false));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
@@ -212,8 +222,11 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesAndTwoExecFiles() {
+        var skippyConfiguration = new SkippyConfiguration(false);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
-        buildApi.buildStarted(new SkippyConfiguration(false));
+        buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
@@ -229,7 +242,7 @@ public final class SkippyBuildApiTest {
         ));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(false));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
@@ -267,8 +280,11 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesOneFailedTests()  {
+        var skippyConfiguration = new SkippyConfiguration(false);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
-        buildApi.buildStarted(new SkippyConfiguration(false));
+        buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
@@ -286,7 +302,7 @@ public final class SkippyBuildApiTest {
         buildApi.testFailed("com.example.FooTest");
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(false));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
@@ -324,6 +340,9 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileNoExecFile() {
+        var skippyConfiguration = new SkippyConfiguration(false);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
             {
                 "classes": {
@@ -340,7 +359,7 @@ public final class SkippyBuildApiTest {
         """)));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(false));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
@@ -368,6 +387,9 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileUpdatedExecFile() {
+        var skippyConfiguration = new SkippyConfiguration(false);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
             {
                 "classes": {
@@ -388,7 +410,7 @@ public final class SkippyBuildApiTest {
             }
         """)));
 
-        buildApi.buildStarted(new SkippyConfiguration(false));
+        buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
@@ -399,7 +421,7 @@ public final class SkippyBuildApiTest {
         ));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(false));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
@@ -432,6 +454,9 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileUpdatedExecFileExecutionDataEnabled() {
+        var skippyConfiguration = new SkippyConfiguration(true);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
             {
                 "classes": {
@@ -453,7 +478,7 @@ public final class SkippyBuildApiTest {
             }
         """)));
 
-        buildApi.buildStarted(new SkippyConfiguration(true));
+        buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
@@ -466,7 +491,7 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("11111111111111111111111111111111");
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(true));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();
@@ -500,6 +525,9 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileNewTestFailure() {
+        var skippyConfiguration = new SkippyConfiguration(false);
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
         when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
             {
                 "classes": {
@@ -543,7 +571,7 @@ public final class SkippyBuildApiTest {
             }
         """)));
 
-        buildApi.buildStarted(new SkippyConfiguration(false));
+        buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
@@ -556,7 +584,7 @@ public final class SkippyBuildApiTest {
         buildApi.testFailed("com.example.FooTest");
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
-        buildApi.buildFinished(new SkippyConfiguration(false));
+        buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
 
         var tia = tiaCaptor.getValue();

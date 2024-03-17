@@ -34,6 +34,7 @@ import java.util.*;
  */
 public final class SkippyBuildApi {
 
+    private final SkippyConfiguration skippyConfiguration;
     private final ClassFileCollector classFileCollector;
     private final SkippyRepository skippyRepository;
     private final Set<String> failedTests = new HashSet<>();
@@ -41,10 +42,12 @@ public final class SkippyBuildApi {
     /**
      * C'tor.
      *
-     * @param classFileCollector the {@link ClassFileCollector}
-     * @param skippyRepository   the {@link SkippyRepository}
+     * @param skippyConfiguration
+     * @param classFileCollector  the {@link ClassFileCollector}
+     * @param skippyRepository    the {@link SkippyRepository}
      */
-    public SkippyBuildApi(ClassFileCollector classFileCollector, SkippyRepository skippyRepository) {
+    public SkippyBuildApi(SkippyConfiguration skippyConfiguration, ClassFileCollector classFileCollector, SkippyRepository skippyRepository) {
+        this.skippyConfiguration = skippyConfiguration;
         this.classFileCollector = classFileCollector;
         this.skippyRepository = skippyRepository;
     }
@@ -58,20 +61,16 @@ public final class SkippyBuildApi {
 
     /**
      * Informs Skippy that a build has started.
-     *
-     * @param skippyConfiguration the {@link SkippyConfiguration}
      */
-    public void buildStarted(SkippyConfiguration skippyConfiguration) {
+    public void buildStarted() {
         skippyRepository.deleteLogFiles();
         skippyRepository.saveConfiguration(skippyConfiguration);
     }
 
     /**
      * Informs Skippy that a build has finished.
-     *
-     * @param skippyConfiguration the {@link SkippyConfiguration}
      */
-    public void buildFinished(SkippyConfiguration skippyConfiguration) {
+    public void buildFinished() {
         upsert(failedTests, skippyConfiguration);
     }
 

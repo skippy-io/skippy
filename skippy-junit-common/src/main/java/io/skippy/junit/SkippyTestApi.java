@@ -18,6 +18,7 @@ package io.skippy.junit;
 
 import io.skippy.common.SkippyFolder;
 import io.skippy.common.model.Prediction;
+import io.skippy.common.model.SkippyConfiguration;
 import io.skippy.common.model.TestImpactAnalysis;
 import io.skippy.common.repository.SkippyRepository;
 import io.skippy.common.util.Profiler;
@@ -46,14 +47,22 @@ public final class SkippyTestApi {
     /**
      * The SkippyTestApi singleton.
      */
-    public static final SkippyTestApi INSTANCE = new SkippyTestApi(
-            SkippyRepository.getInstance().readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND));
+    public static SkippyTestApi INSTANCE = getInstance();
 
     private final TestImpactAnalysis testImpactAnalysis;
+    private final SkippyRepository skippyRepository;
     private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();
 
-    private SkippyTestApi(TestImpactAnalysis testImpactAnalysis) {
+    private SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyRepository skippyRepository) {
         this.testImpactAnalysis = testImpactAnalysis;
+        this.skippyRepository = skippyRepository;
+    }
+
+    private static SkippyTestApi getInstance() {
+        var skippyConfiguration = SkippyRepository.readConfiguration();
+        var skippyRepository = SkippyRepository.getInstance(skippyConfiguration);
+        var tia = skippyRepository.readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND);
+        return new SkippyTestApi(tia, skippyRepository);
     }
 
     /**
@@ -104,7 +113,7 @@ public final class SkippyTestApi {
      *
      * @param testClass a test class
      */
-    public static void prepareExecFileGeneration(Class<?> testClass) {
+    public void prepareExecFileGeneration(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareCoverageDataCaptureFor", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
@@ -119,12 +128,12 @@ public final class SkippyTestApi {
      *
      * @param testClass a test class
      */
-    public static void writeExecFile(Class<?> testClass) {
+    public void writeExecFile(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#writeExecFile", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 byte[] executionData = agent.getExecutionData(true);
-                SkippyRepository.getInstance().saveTemporaryJaCoCoExecutionDataForCurrentBuild(testClass.getName(), executionData);
+                skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild(testClass.getName(), executionData);
             });
         });
     }

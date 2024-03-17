@@ -33,6 +33,8 @@ import java.util.List;
  */
 class CoverageFileRule implements TestRule {
 
+    private final SkippyTestApi skippyTestApi = SkippyTestApi.INSTANCE;
+
     public Statement apply(Statement base, Description description) {
         return statement(base, description);
     }
@@ -41,7 +43,7 @@ class CoverageFileRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                SkippyTestApi.prepareExecFileGeneration(description.getTestClass());
+                skippyTestApi.prepareExecFileGeneration(description.getTestClass());
                 List<Throwable> errors = new ArrayList<Throwable>();
                 try {
                     base.evaluate();
@@ -49,7 +51,7 @@ class CoverageFileRule implements TestRule {
                     errors.add(t);
                 } finally {
                     try {
-                        SkippyTestApi.writeExecFile(description.getTestClass());
+                        skippyTestApi.writeExecFile(description.getTestClass());
                     } catch (Throwable t) {
                         errors.add(t);
                     }

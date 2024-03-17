@@ -21,20 +21,24 @@ import io.skippy.common.repository.SkippyRepository;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
 
+import java.util.function.Consumer;
+
 
 final class SkippyGradleUtils {
 
-    static boolean supportsSkippy(Project project) {
-        return project.getExtensions().findByType(SourceSetContainer.class) != null;
-    }
-
-    static SkippyBuildApi skippyBuildApi(Project project) {
+    static void doIfBuildSupportsSkippy(Project project, Consumer<SkippyBuildApi> action) {
         var sourceSetContainer = project.getExtensions().findByType(SourceSetContainer.class);
-        var projectDir = project.getProjectDir().toPath();
-        return new SkippyBuildApi(
-                new GradleClassFileCollector(projectDir, sourceSetContainer),
-                SkippyRepository.getInstance(projectDir)
-        );
+        if (sourceSetContainer != null) {
+            var skippyExtension = project.getExtensions().getByType(SkippyPluginExtension.class);
+            var skippyConfiguration = skippyExtension.toSkippyConfiguration();
+            var projectDir = project.getProjectDir().toPath();
+            var skippyBuildApi = new SkippyBuildApi(
+                    skippyConfiguration,
+                    new GradleClassFileCollector(projectDir, sourceSetContainer),
+                    SkippyRepository.getInstance(skippyConfiguration, projectDir)
+            );
+            action.accept(skippyBuildApi);
+        }
     }
 
 }

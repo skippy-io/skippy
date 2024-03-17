@@ -16,6 +16,8 @@
 
 package io.skippy.common.model;
 
+import io.skippy.common.SkippyFolder;
+
 /**
  * Skippy configuration that is used by Skippy's build plugins and JUnit libraries.
  *
@@ -25,7 +27,9 @@ package io.skippy.common.model;
  */
 public record SkippyConfiguration(boolean persistExecutionData) {
 
-    static SkippyConfiguration parse(String string) {
+    public static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false);
+
+    public static SkippyConfiguration parse(String string) {
         var tokenizer = new Tokenizer(string);
         tokenizer.skip('{');
         boolean persistExecutionData = false;

@@ -21,8 +21,7 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
-import static io.skippy.gradle.SkippyGradleUtils.skippyBuildApi;
-import static io.skippy.gradle.SkippyGradleUtils.supportsSkippy;
+import static io.skippy.gradle.SkippyGradleUtils.*;
 
 /**
  * The Skippy plugin adds the
@@ -42,15 +41,13 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
     public void apply(Project project) {
         Profiler.clear();
         project.getPlugins().apply(JacocoPlugin.class);
-        var skippyExtension = project.getExtensions().create("skippy", SkippyPluginExtension.class);
+        project.getExtensions().create("skippy", SkippyPluginExtension.class);
         project.getTasks().register("skippyClean", SkippyCleanTask.class);
-        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class, skippyExtension);
+        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
         project.getTasks().withType(Test.class, testTask -> testTask.finalizedBy("skippyAnalyze"));
-        project.afterEvaluate(action -> {
-            if (supportsSkippy(action.getProject())) {
-                skippyBuildApi(action.getProject()).buildStarted(skippyExtension.toSkippyConfiguration());
-            }
-        });
+        project.afterEvaluate(action ->
+            doIfBuildSupportsSkippy(action.getProject(), skippyBuildApi -> skippyBuildApi.buildStarted())
+        );
     }
 
 }
