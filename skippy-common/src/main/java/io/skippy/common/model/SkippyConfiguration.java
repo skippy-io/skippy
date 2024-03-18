@@ -27,8 +27,14 @@ public record SkippyConfiguration(boolean saveExecutionData) {
 
     public static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false);
 
-    public static SkippyConfiguration parse(String string) {
-        var tokenizer = new Tokenizer(string);
+    /**
+     * Creates a new instance from JSON.
+     *
+     * @param json the JSON representation of a {@link SkippyConfiguration}
+     * @return a new instance from JSON
+     */
+    public static SkippyConfiguration parse(String json) {
+        var tokenizer = new Tokenizer(json);
         tokenizer.skip('{');
         boolean executionData = false;
         while (true) {
@@ -48,6 +54,11 @@ public record SkippyConfiguration(boolean saveExecutionData) {
         return new SkippyConfiguration(executionData);
     }
 
+    /**
+     * Returns this instance as JSON string.
+     *
+     * @return the instance as JSON string
+     */
     public String toJson() {
         return """
         {

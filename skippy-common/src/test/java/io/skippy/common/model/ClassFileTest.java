@@ -56,7 +56,7 @@ public class ClassFileTest {
                 "ZT0GoiWG8Az5TevH9/JwBg=="
         );
 
-        assertThat(classFile.toJson(ClassFile.JsonProperty.NAME)).isEqualToIgnoringWhitespace(
+        assertThat(classFile.toJson(ClassFile.JsonProperty.CF_CLASS)).isEqualToIgnoringWhitespace(
                 """
                     {
                         "name": "com.example.RightPadder"
@@ -76,8 +76,8 @@ public class ClassFileTest {
                 }
                 """
         ));
-        assertEquals("com.example.RightPadder", classFile.getClassName());
-        assertEquals(Path.of("com/example/RightPadder.class"), classFile.getClassFile());
+        assertEquals("com.example.RightPadder", classFile.getClazz());
+        assertEquals(Path.of("com/example/RightPadder.class"), classFile.getPath());
         assertEquals(Path.of("build/classes/java/main"), classFile.getOutputFolder());
         assertEquals("ZT0GoiWG8Az5TevH9/JwBg==", classFile.getHash());
     }
@@ -92,7 +92,7 @@ public class ClassFileTest {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
         var outputFolder = classFile.getParent();
         var projectDir = outputFolder.getParent();
-        assertEquals(expectedValue, ClassFile.fromFileSystem(projectDir, outputFolder, classFile).getClassName());
+        assertEquals(expectedValue, ClassFile.fromFileSystem(projectDir, outputFolder, classFile).getClazz());
     }
 
     @ParameterizedTest
@@ -104,7 +104,7 @@ public class ClassFileTest {
         var classFile = Paths.get(getClass().getResource(fileName).toURI());
         var outputFolder = classFile.getParent();
         var projectDir = outputFolder.getParent();
-        assertEquals(Path.of(expectedValue), ClassFile.fromFileSystem(projectDir, outputFolder, classFile).getClassFile());
+        assertEquals(Path.of(expectedValue), ClassFile.fromFileSystem(projectDir, outputFolder, classFile).getPath());
     }
 
     @ParameterizedTest

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -268,7 +269,15 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
 
     @Override
     public Optional<byte[]> readJacocoExecutionData(String executionId) {
-        return Optional.empty();
+        try {
+            var execFile = SkippyFolder.get(this.projectDir).resolve("%s.exec".formatted(executionId));
+            if (exists(execFile)) {
+                return Optional.of(unzip(readAllBytes(execFile)));
+            }
+            return Optional.empty();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to read JaCoCo execution data %s: %s.".formatted(executionId, e.getMessage()), e);
+        }
     }
 
     @Override
@@ -301,30 +310,54 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
         }
         try {
             var executionId = JacocoExecutionDataUtil.getExecutionId(jacocoExecutionData);
-            Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(executionId)), compress(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(executionId)), zip(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             return executionId;
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to save JaCoCo execution data: %s.".formatted(e.getMessage()), e);
         }
     }
 
-    private static byte[] compress(byte[] data) {
+    private static byte[] zip(byte[] data) {
         Deflater deflater = new Deflater();
         deflater.setInput(data);
         deflater.finish();
 
         byte[] buffer = new byte[1024];
-        byte[] outputStream = new byte[0];
+        byte[] result = new byte[0];
 
         while (!deflater.finished()) {
             int count = deflater.deflate(buffer);
-            byte[] newOutputStream = new byte[outputStream.length + count];
-            System.arraycopy(outputStream, 0, newOutputStream, 0, outputStream.length);
-            System.arraycopy(buffer, 0, newOutputStream, outputStream.length, count);
-            outputStream = newOutputStream;
+            byte[] tmp = new byte[result.length + count];
+            System.arraycopy(result, 0, tmp, 0, result.length);
+            System.arraycopy(buffer, 0, tmp, result.length, count);
+            result = tmp;
         }
         deflater.end();
-        return outputStream;
+        return result;
+    }
+
+    public static byte[] unzip(byte[] data) {
+        Inflater inflater = new Inflater();
+        inflater.setInput(data);
+
+        byte[] buffer = new byte[1024];
+        byte[] result = new byte[0];
+
+        try {
+            while (!inflater.finished()) {
+                int count = inflater.inflate(buffer);
+                byte[] tmp = new byte[result.length + count];
+                System.arraycopy(result, 0, tmp, 0, result.length);
+                System.arraycopy(buffer, 0, tmp, result.length, count);
+                result = tmp;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            inflater.end();
+        }
+
+        return result;
     }
 
     private void deleteObsoleteExecutionDataFiles(TestImpactAnalysis testImpactAnalysis) {

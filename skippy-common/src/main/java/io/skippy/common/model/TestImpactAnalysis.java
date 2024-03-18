@@ -87,7 +87,7 @@ public final class TestImpactAnalysis {
     public PredictionWithReason predict(String testClassName) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
             var maybeAnalyzedTest = analyzedTests.stream()
-                    .filter(test -> classFileContainer.getById(test.testClassId()).getClassName().equals(testClassName))
+                    .filter(test -> classFileContainer.getById(test.testClassId()).getClazz().equals(testClassName))
                     .findFirst();
             if (maybeAnalyzedTest.isEmpty()) {
                 return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));
@@ -100,7 +100,7 @@ public final class TestImpactAnalysis {
             }
 
             if (testClass.classFileNotFound()) {
-                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(testClass.getClassFile().toString())));
+                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(testClass.getPath().toString())));
             }
 
             if (testClass.hasChanged()) {
@@ -109,10 +109,10 @@ public final class TestImpactAnalysis {
             for (var coveredClassId : analyzedTest.coveredClassesIds()) {
                 var coveredClass = classFileContainer.getById(coveredClassId);
                 if (coveredClass.classFileNotFound()) {
-                    return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(coveredClass.getClassFile().toString())));
+                    return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(coveredClass.getPath().toString())));
                 }
                 if (coveredClass.hasChanged()) {
-                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of(coveredClass.getClassName())));
+                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of(coveredClass.getClazz())));
                 }
             }
             return PredictionWithReason.skip(new Reason(NO_CHANGE, Optional.empty()));

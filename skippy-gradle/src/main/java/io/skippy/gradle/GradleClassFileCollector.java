@@ -90,7 +90,7 @@ final class GradleClassFileCollector implements ClassFileCollector {
 
     private List<ClassFile> sort(List<ClassFile> input) {
         return input.stream()
-                .sorted(comparing(ClassFile::getClassName))
+                .sorted(comparing(ClassFile::getClazz))
                 .toList();
     }
 

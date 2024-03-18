@@ -89,8 +89,8 @@ public class ClassFileContainerTest {
                 }
             """));
         assertEquals(2, classFileContainer.getClassFiles().size());
-        assertEquals("com.example.LeftPadder", classFileContainer.getById("0").getClassName());
-        assertEquals("com.example.LeftPadderTest", classFileContainer.getById("1").getClassName());
+        assertEquals("com.example.LeftPadder", classFileContainer.getById("0").getClazz());
+        assertEquals("com.example.LeftPadderTest", classFileContainer.getById("1").getClazz());
         assertEquals(asList("0"), classFileContainer.getIdsByClassName("com.example.LeftPadder"));
         assertEquals(asList("1"), classFileContainer.getIdsByClassName("com.example.LeftPadderTest"));
     }

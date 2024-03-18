@@ -191,7 +191,7 @@ public class TestImpactAnalysisTest {
 
         var classFiles = new ArrayList<>(testImpactAnalysis.getClassFileContainer().getClassFiles());
         assertEquals(1, classFiles.size());
-        assertEquals("com.example.FooTest", classFiles.get(0).getClassName());
+        assertEquals("com.example.FooTest", classFiles.get(0).getClazz());
 
         var tests = testImpactAnalysis.getAnalyzedTests();
         assertEquals(1, tests.size());
@@ -247,10 +247,10 @@ public class TestImpactAnalysisTest {
 
         var classFiles = new ArrayList<>(testImpactAnalysis.getClassFileContainer().getClassFiles());
         assertEquals(4, classFiles.size());
-        assertEquals("com.example.Class1", classFiles.get(0).getClassName());
-        assertEquals("com.example.Class1Test", classFiles.get(1).getClassName());
-        assertEquals("com.example.Class2", classFiles.get(2).getClassName());
-        assertEquals("com.example.Class2Test", classFiles.get(3).getClassName());
+        assertEquals("com.example.Class1", classFiles.get(0).getClazz());
+        assertEquals("com.example.Class1Test", classFiles.get(1).getClazz());
+        assertEquals("com.example.Class2", classFiles.get(2).getClazz());
+        assertEquals("com.example.Class2Test", classFiles.get(3).getClazz());
 
         var tests = testImpactAnalysis.getAnalyzedTests();
         assertEquals(2, tests.size());

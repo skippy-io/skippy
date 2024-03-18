@@ -30,8 +30,9 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
 /**
- * Programmatic representation of a class file in `test-impact-analysis.json`:
- *
+ * Represents a class file that has been analyzed by Skippy.
+ * <br /><br />
+ * JSON example:
  * <pre>
  *  {
  *      "class": "com.example.Foo",
@@ -45,21 +46,52 @@ import static java.util.stream.Collectors.joining;
  */
 public final class ClassFile implements Comparable<ClassFile> {
 
-    private final String className;
+    private final String clazz;
     private final Path outputFolder;
-    private final Path classFile;
+    private final Path path;
     private final String hash;
 
+    /**
+     * Allows test to specify which properties to include in the JSON representation. This allows tests to focus on a
+     * sub-set of all properties instead of asserting against the value of all properties.
+     */
     public enum JsonProperty {
-        NAME,
-        FILE,
-        OUTPUT_FOLDER,
-        HASH;
 
+        /**
+         * The fully qualified class name.
+         */
+        CF_CLASS,
+
+        /**
+         * The path of the class file relative to the output folder (e.g., com/example/Foo.class).
+         */
+        CF_PATH,
+
+        /**
+         * The path of the output folder relative to the project root (e.g., build/classes/java/main).
+         */
+        CF_OUTPUT_FOLDER,
+
+        /**
+         * The hash of the class file.
+         */
+        CF_HASH;
+
+        /**
+         * Convenience method for tests that assert against a sub-set of the JSON representation.
+         *
+         * @param properties the input
+         * @return the input
+         */
         public static JsonProperty[] classProperties(ClassFile.JsonProperty... properties) {
-            return Arrays.asList(properties).toArray(new ClassFile.JsonProperty[0]);
+            return properties;
         }
 
+        /**
+         * Convenience method for tests that assert against the entire JSON representation.
+         *
+         * @return all properties
+         */
         public static JsonProperty[] allClassProperties() {
             return values();
         }
@@ -68,15 +100,15 @@ public final class ClassFile implements Comparable<ClassFile> {
     /**
      * C'tor.
      *
-     * @param className the fully qualified class name
+     * @param clazz the fully qualified class name
      * @param outputFolder the path of the output folder relative to the project root (e.g., build/classes/java/main)
-     * @param classFile the path of the class file relative to the output folder (e.g., com/example/Foo.class)
+     * @param path the path of the class file relative to the output folder (e.g., com/example/Foo.class)
      * @param hash a hash of the class file
      */
-    private ClassFile(String className, Path outputFolder, Path classFile, String hash) {
-        this.className = className;
+    private ClassFile(String clazz, Path outputFolder, Path path, String hash) {
+        this.clazz = clazz;
         this.outputFolder = outputFolder;
-        this.classFile = classFile;
+        this.path = path;
         this.hash = hash;
     }
 
@@ -151,10 +183,10 @@ public final class ClassFile implements Comparable<ClassFile> {
         var renderedProperties = new ArrayList<String>();
         for (var propertyToRender : propertiesToRender) {
             renderedProperties.add(switch (propertyToRender) {
-                case NAME -> "\t\t\t\"name\": \"%s\"".formatted(className);
-                case FILE -> "\t\t\t\"path\": \"%s\"".formatted(classFile);
-                case OUTPUT_FOLDER -> "\t\t\t\"outputFolder\": \"%s\"".formatted(outputFolder);
-                case HASH -> "\t\t\t\"hash\": \"%s\"".formatted(hash);
+                case CF_CLASS -> "\t\t\t\"name\": \"%s\"".formatted(clazz);
+                case CF_PATH -> "\t\t\t\"path\": \"%s\"".formatted(path);
+                case CF_OUTPUT_FOLDER -> "\t\t\t\"outputFolder\": \"%s\"".formatted(outputFolder);
+                case CF_HASH -> "\t\t\t\"hash\": \"%s\"".formatted(hash);
             });
         }
         result.append(renderedProperties.stream().collect(joining("," +  lineSeparator())));
@@ -168,13 +200,13 @@ public final class ClassFile implements Comparable<ClassFile> {
      *
      * @return the fully qualified class name (e.g., com.example.Foo)
      */
-    public String getClassName() {
-        return className;
+    public String getClazz() {
+        return clazz;
     }
 
     @Override
     public int compareTo(ClassFile other) {
-        return comparing(ClassFile::getClassName)
+        return comparing(ClassFile::getClazz)
                 .thenComparing(ClassFile::getOutputFolder)
                 .compare(this, other);
     }
@@ -182,14 +214,14 @@ public final class ClassFile implements Comparable<ClassFile> {
     @Override
     public boolean equals(Object other) {
         if (other instanceof ClassFile c) {
-            return Objects.equals(getClassName() + getOutputFolder(), c.getClassName()  + c.getOutputFolder());
+            return Objects.equals(getClazz() + getOutputFolder(), c.getClazz()  + c.getOutputFolder());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClassName(), getOutputFolder());
+        return Objects.hash(getClazz(), getOutputFolder());
     }
 
     /**
@@ -206,8 +238,8 @@ public final class ClassFile implements Comparable<ClassFile> {
      *
      * @return the path of the class file relative to the output folder (e.g., com/example/Foo.class)
      */
-    Path getClassFile() {
-        return classFile;
+    Path getPath() {
+        return path;
     }
 
     /**
@@ -220,10 +252,10 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     boolean hasChanged() {
-        return ! hash.equals(debugAgnosticHash(outputFolder.resolve(classFile)));
+        return ! hash.equals(debugAgnosticHash(outputFolder.resolve(path)));
     }
 
     boolean classFileNotFound() {
-        return false == exists(outputFolder.resolve(classFile));
+        return false == exists(outputFolder.resolve(path));
     }
 }

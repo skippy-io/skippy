@@ -26,31 +26,70 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
 /**
- * Programmatic representation of a test in `test-impact-analysis.json`:
- *
+ * Represents a test that has been analyzed by Skippy.
+ * <br /><br />
+ * A list of {@link AnalyzedTest}s together with a {@link ClassFileContainer} make up a {@link TestImpactAnalysis}.
+ * <br /><br />
+ * JSON example:
  * <pre>
  * {
  *      "class": "0",
  *      "result": "PASSED",
  *      "coveredClasses": ["0", "1"],
- *      "execution": "C57F877F6F9BF164"
+ *      "executionId": "C57F877F6F9BF164"
  * }
  * </pre>
  *
+ * @param testClassId the reference to the test class in the {@link ClassFileContainer}
+ * @param result the {@link TestResult}
+ * @param coveredClassesIds references to the covered classes in the {@link ClassFileContainer}
+ * @param executionId a unique identifier for JaCoCo execution data if capture of execution data is enabled
+ *                    (see {@link SkippyConfiguration#saveExecutionData()}), an empty {@link Optional} otherwise
  * @author Florian McKee
  */
 public record AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, Optional<String> executionId) implements Comparable<AnalyzedTest> {
 
+    /**
+     * Allows test to specify which properties to include in the JSON representation. This allows tests to focus on a
+     * sub-set of all properties instead of asserting against the value of all properties.
+     */
     public enum JsonProperty {
-        CLASS,
-        RESULT,
-        COVERED_CLASSES,
-        EXECUTION_ID;
 
+        /**
+         * The reference to the test class in the {@link ClassFileContainer}.
+         */
+        AT_CLASS,
+
+        /**
+         * The {@link TestResult}.
+         */
+        AT_RESULT,
+
+        /**
+         * References to the covered classes in the {@link ClassFileContainer}.
+         */
+        AT_COVERED_CLASSES,
+
+        /**
+         * A unique identifier for JaCoCo execution data if capture of execution data is enabled.
+         */
+        AT_EXECUTION_ID;
+
+        /**
+         * Convenience method for tests that assert against a sub-set of the JSON representation.
+         *
+         * @param properties the input
+         * @return the input
+         */
         public static AnalyzedTest.JsonProperty[] testProperties(AnalyzedTest.JsonProperty... properties) {
-            return Arrays.asList(properties).toArray(new AnalyzedTest.JsonProperty[0]);
+            return properties;
         }
 
+        /**
+         * Convenience method for tests that assert against the entire JSON representation.
+         *
+         * @return all properties
+         */
         public static AnalyzedTest.JsonProperty[] allTestProperties() {
             return JsonProperty.values();
         }
@@ -121,7 +160,7 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
     }
 
     /**
-     * Renders this instance as JSON string.
+     * Returns this instance as JSON string.
      *
      * @return the instance as JSON string
      */
@@ -141,17 +180,17 @@ public record AnalyzedTest(String testClassId, TestResult result, List<String> c
         var renderedProperties = new ArrayList<String>();
 
         for (var propertyToRender : propertiesToRender) {
-            if (propertyToRender == JsonProperty.EXECUTION_ID && executionId().isEmpty()) {
+            if (propertyToRender == JsonProperty.AT_EXECUTION_ID && executionId().isEmpty()) {
                 continue;
             }
             renderedProperties.add(switch (propertyToRender) {
-                case CLASS -> "\t\t\t\"class\": \"%s\"".formatted(testClassId());
-                case RESULT -> "\t\t\t\"result\": \"%s\"".formatted(result());
-                case COVERED_CLASSES -> "\t\t\t\"coveredClasses\": [%s]".formatted(coveredClassesIds().stream()
+                case AT_CLASS -> "\t\t\t\"class\": \"%s\"".formatted(testClassId());
+                case AT_RESULT -> "\t\t\t\"result\": \"%s\"".formatted(result());
+                case AT_COVERED_CLASSES -> "\t\t\t\"coveredClasses\": [%s]".formatted(coveredClassesIds().stream()
                         .map(Integer::valueOf)
                         .sorted()
                         .map(id -> "\"%s\"".formatted(id)).collect(joining(",")));
-                case EXECUTION_ID -> "\t\t\t\"executionId\": \"%s\"".formatted(executionId.get());
+                case AT_EXECUTION_ID -> "\t\t\t\"executionId\": \"%s\"".formatted(executionId.get());
             });
         }
         result.append(renderedProperties.stream().collect(joining("," +  lineSeparator())));

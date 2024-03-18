@@ -28,13 +28,16 @@ import static java.util.stream.Collectors.toMap;
 
 /**
  * Container for {@link ClassFile}s that stores static information about classes in a project.
- * It supports a variety of queries:
+ * <br /><br />
+ * A list of {@link AnalyzedTest}s together with a {@link ClassFileContainer} make up a {@link TestImpactAnalysis}.
+ * <br /><br />
+ * A {@link ClassFileContainer} supports a variety of queries:
  * <ul>
  *     <li>get {@link ClassFile} by id</li>
  *     <li>get ids by class name</li>
  *     <li>get {@link ClassFile} by id</li>
  * </ul>
- * The JSON representation:
+ * JSON example:
  * <pre>
  * {
  *      "0": {
@@ -54,8 +57,7 @@ import static java.util.stream.Collectors.toMap;
  * </pre>
  *
  * A {@link ClassFileContainer} assigns a numerical id to each analyzed class file. Those ids are used  for referencing
- * purposes in the JSON representation of a {@link TestImpactAnalysis}.
- * <br /><br />
+ * purposes in the JSON representation of the {@link TestImpactAnalysis}.
  *
  * @author Florian McKee
  */
@@ -74,14 +76,14 @@ public class ClassFileContainer {
             classFiles.add(classFile);
             idsByClassFile.put(classFile, id);
             this.classFilesById.put(entry.getKey(), entry.getValue());
-            if (false == idsByClassName.containsKey(classFile.getClassName())) {
-                idsByClassName.put(classFile.getClassName(), new ArrayList<>());
+            if (false == idsByClassName.containsKey(classFile.getClazz())) {
+                idsByClassName.put(classFile.getClazz(), new ArrayList<>());
             }
-            idsByClassName.get(classFile.getClassName()).add(id);
-            if (false == classFilesByClassName.containsKey(classFile.getClassName())) {
-                classFilesByClassName.put(classFile.getClassName(), new ArrayList<>());
+            idsByClassName.get(classFile.getClazz()).add(id);
+            if (false == classFilesByClassName.containsKey(classFile.getClazz())) {
+                classFilesByClassName.put(classFile.getClazz(), new ArrayList<>());
             }
-            classFilesByClassName.get(classFile.getClassName()).add(classFile);
+            classFilesByClassName.get(classFile.getClazz()).add(classFile);
         }
     }
 
