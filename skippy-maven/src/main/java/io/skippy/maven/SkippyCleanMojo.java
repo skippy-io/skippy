@@ -40,13 +40,16 @@ public class SkippyCleanMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
 
+    @Parameter(defaultValue = "false", property = "saveExecutionData", required = false)
+    private boolean saveExecutionData;
+
     @Component
     private MavenSession session;
 
     @Override
     public void execute() {
         var projectDir = project.getBasedir().toPath();
-        var skippyConfiguration = new SkippyConfiguration(false);
+        var skippyConfiguration = new SkippyConfiguration(saveExecutionData);
         var skippyApi = new SkippyApi(
                 skippyConfiguration,
                 new MavenClassFileCollector(project),

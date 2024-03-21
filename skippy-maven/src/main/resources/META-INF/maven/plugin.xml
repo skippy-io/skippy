@@ -11,6 +11,7 @@
   <inheritedByDefault>true</inheritedByDefault>
   <requiredJavaVersion>17</requiredJavaVersion>
   <requiredMavenVersion>2.0</requiredMavenVersion>
+
   <mojos>
     <mojo>
       <goal>buildStarted</goal>
@@ -40,6 +41,13 @@
           <required>true</required>
           <editable>false</editable>
           <description></description>
+        </parameter>
+        <parameter>
+          <name>saveExecutionData</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>enables / disables capture of per-test JaCoCo execution data</description>
         </parameter>
       </parameters>
       <configuration>
@@ -76,6 +84,13 @@
           <editable>false</editable>
           <description></description>
         </parameter>
+        <parameter>
+          <name>saveExecutionData</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>enables / disables capture of per-test JaCoCo execution data</description>
+        </parameter>
       </parameters>
       <configuration>
         <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
@@ -110,6 +125,13 @@
           <required>true</required>
           <editable>false</editable>
           <description></description>
+        </parameter>
+        <parameter>
+          <name>saveExecutionData</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>enables / disables capture of per-test JaCoCo execution data</description>
         </parameter>
       </parameters>
       <configuration>
