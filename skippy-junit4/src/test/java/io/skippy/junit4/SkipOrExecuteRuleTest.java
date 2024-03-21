@@ -15,7 +15,7 @@
  */
 
 package io.skippy.junit4;
-import io.skippy.junit.SkippyTestApi;
+import io.skippy.core.SkippyTestApi;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;

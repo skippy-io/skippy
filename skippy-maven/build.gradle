@@ -9,7 +9,7 @@ ossrhPublish {
 }
 
 dependencies {
-    implementation project(':skippy-build-common')
+    implementation project(':skippy-core')
     implementation 'org.apache.maven:maven-plugin-api:' + versions.maven
     implementation 'org.apache.maven:maven-core:' + versions.maven
     implementation 'org.apache.maven.plugin-tools:maven-plugin-annotations:' + versions.'maven-plugin-annotations'

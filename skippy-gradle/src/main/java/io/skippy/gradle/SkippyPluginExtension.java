@@ -16,7 +16,7 @@
 
 package io.skippy.gradle;
 
-import io.skippy.common.model.SkippyConfiguration;
+import io.skippy.core.SkippyConfiguration;
 import org.gradle.api.provider.Property;
 
 /**

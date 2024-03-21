@@ -16,7 +16,7 @@
 
 package io.skippy.gradle;
 
-import io.skippy.common.util.Profiler;
+import io.skippy.core.Profiler;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;

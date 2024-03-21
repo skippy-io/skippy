@@ -16,8 +16,8 @@
 
 package io.skippy.maven;
 
-import io.skippy.common.model.ClassFile;
-import io.skippy.build.ClassFileCollector;
+import io.skippy.core.ClassFile;
+import io.skippy.core.ClassFileCollector;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
@@ -72,7 +72,7 @@ final class MavenClassFileCollector implements ClassFileCollector {
 
     private List<ClassFile> sort(List<ClassFile> input) {
         return input.stream()
-                .sorted(comparing(ClassFile::getClazz))
+                .sorted()
                 .toList();
     }
 

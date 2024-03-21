@@ -16,9 +16,9 @@
 
 package io.skippy.gradle;
 
-import io.skippy.build.ClassFileCollector;
-import io.skippy.common.model.ClassFile;
-import io.skippy.common.util.Profiler;
+import io.skippy.core.ClassFileCollector;
+import io.skippy.core.ClassFile;
+import io.skippy.core.Profiler;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
@@ -90,7 +90,7 @@ final class GradleClassFileCollector implements ClassFileCollector {
 
     private List<ClassFile> sort(List<ClassFile> input) {
         return input.stream()
-                .sorted(comparing(ClassFile::getClazz))
+                .sorted()
                 .toList();
     }
 

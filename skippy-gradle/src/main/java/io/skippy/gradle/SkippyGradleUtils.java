@@ -16,23 +16,22 @@
 
 package io.skippy.gradle;
 
-import io.skippy.build.SkippyBuildApi;
-import io.skippy.common.repository.SkippyRepository;
+import io.skippy.core.SkippyApi;
+import io.skippy.core.SkippyRepository;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.util.function.Consumer;
 
-
 final class SkippyGradleUtils {
 
-    static void ifBuildSupportsSkippy(Project project, Consumer<SkippyBuildApi> action) {
+    static void ifBuildSupportsSkippy(Project project, Consumer<SkippyApi> action) {
         var sourceSetContainer = project.getExtensions().findByType(SourceSetContainer.class);
         if (sourceSetContainer != null) {
             var skippyExtension = project.getExtensions().getByType(SkippyPluginExtension.class);
             var skippyConfiguration = skippyExtension.toSkippyConfiguration();
             var projectDir = project.getProjectDir().toPath();
-            var skippyBuildApi = new SkippyBuildApi(
+            var skippyBuildApi = new SkippyApi(
                     skippyConfiguration,
                     new GradleClassFileCollector(projectDir, sourceSetContainer),
                     SkippyRepository.getInstance(skippyConfiguration, projectDir)
