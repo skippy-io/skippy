@@ -117,12 +117,14 @@ import static java.util.Collections.emptyList;
 public final class SkippyRepository implements SkippyRepositoryExtension {
 
     private final Path projectDir;
+    private final Path buildDir;
     private final SkippyConfiguration skippyConfiguration;
     private final Optional<SkippyRepositoryExtension> extension = Optional.empty();
 
-    private SkippyRepository(SkippyConfiguration skippyConfiguration, Path projectDir) {
+    private SkippyRepository(SkippyConfiguration skippyConfiguration, Path projectDir, Path buildDir) {
         this.skippyConfiguration = skippyConfiguration;
         this.projectDir = projectDir;
+        this.buildDir = buildDir;
     }
 
     /**
@@ -130,10 +132,11 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
      *
      * @param skippyConfiguration the {@link SkippyConfiguration}
      * @param projectDir the project directory
+     * @param projectDir the build directory
      * @return the {@link SkippyRepository}
      */
-    public static SkippyRepository getInstance(SkippyConfiguration skippyConfiguration, Path projectDir) {
-        return new SkippyRepository(skippyConfiguration, projectDir);
+    public static SkippyRepository getInstance(SkippyConfiguration skippyConfiguration, Path projectDir, Path buildDirectory) {
+        return new SkippyRepository(skippyConfiguration, projectDir, buildDirectory);
     }
 
     /**
@@ -143,7 +146,7 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
      * @return the {@link SkippyRepository}
      */
     public static SkippyRepository getInstance(SkippyConfiguration skippyConfiguration) {
-        return getInstance(skippyConfiguration, Path.of("."));
+        return getInstance(skippyConfiguration, Path.of("."), null);
     }
 
     /**

@@ -45,7 +45,7 @@ public class SkippyRepositoryTest {
     @BeforeEach
     void setUp() throws URISyntaxException {
         projectDir = Paths.get(getClass().getResource(".").toURI());
-        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false), projectDir);
+        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false), projectDir, null);
         skippyRepository.deleteSkippyFolder();
         skippyFolder = SkippyFolder.get(projectDir);
     }

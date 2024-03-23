@@ -34,7 +34,11 @@ final class SkippyGradleUtils {
             var skippyBuildApi = new SkippyApi(
                     skippyConfiguration,
                     new GradleClassFileCollector(projectDir, sourceSetContainer),
-                    SkippyRepository.getInstance(skippyConfiguration, projectDir)
+                    SkippyRepository.getInstance(
+                            skippyConfiguration,
+                            projectDir,
+                            project.getLayout().getBuildDirectory().getAsFile().get().toPath()
+                    )
             );
             action.accept(skippyBuildApi);
         }
