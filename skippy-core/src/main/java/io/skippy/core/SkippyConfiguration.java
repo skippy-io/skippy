@@ -38,7 +38,14 @@ public class SkippyConfiguration {
         this.saveExecutionData = saveExecutionData;
     }
 
-    boolean getSaveExecutionData() {
+    /**
+     * Returns {@code true} if JaCoCo execution data for individual tests will be saved, {@code false} otherwise.
+     * <br /><br />
+     * The purpose of this feature is to generate accurate test coverage reports despite tests being skipped.
+     *
+     * @return {@code true} if JaCoCo execution data for individual tests will be saved, {@code false} otherwise
+     */
+    boolean saveExecutionData() {
         return saveExecutionData;
     }
 

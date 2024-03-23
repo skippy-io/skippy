@@ -19,6 +19,7 @@ package io.skippy.core;
 import org.jacoco.core.data.ExecutionDataReader;
 import org.jacoco.core.data.ExecutionDataWriter;
 import org.jacoco.core.data.SessionInfoStore;
+import org.jacoco.core.tools.ExecFileLoader;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -111,4 +112,19 @@ class JacocoUtil {
             throw new UncheckedIOException("Unable to compute execution id from JaCoCo execution data: %s.".formatted(e.getMessage()), e);
         }
     }
+
+    static byte[] mergeExecutionData(List<byte[]> executionDataList) {
+        try {
+            var execFileLoader = new ExecFileLoader();
+            for (byte[] executionData : executionDataList) {
+                execFileLoader.load(new ByteArrayInputStream(executionData));
+            }
+            var outputStream = new ByteArrayOutputStream();
+            execFileLoader.save(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

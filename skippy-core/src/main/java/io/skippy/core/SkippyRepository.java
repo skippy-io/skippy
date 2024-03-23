@@ -31,6 +31,7 @@ import java.util.zip.Inflater;
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.util.Collections.emptyList;
 
 /**
  * Repository for storage and retrieval of
@@ -148,7 +149,7 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
     /**
      * Deletes the Skippy folder.
      */
-    public void deleteSkippyFolder() {
+    void deleteSkippyFolder() {
         try {
             var skippyFolder = SkippyFolder.get(projectDir);
             if (exists(skippyFolder)) {
@@ -171,7 +172,7 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
      *
      * @return  the {@link SkippyConfiguration}
      */
-    public static SkippyConfiguration readConfiguration() {
+    static SkippyConfiguration readConfiguration() {
         try {
             if (false == exists(SkippyFolder.get().resolve("config.json"))) {
                 return SkippyConfiguration.DEFAULT;
@@ -187,7 +188,7 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
      *
      * @param skippyConfiguration the {@link SkippyConfiguration}
      */
-    public void saveConfiguration(SkippyConfiguration skippyConfiguration) {
+    void saveConfiguration(SkippyConfiguration skippyConfiguration) {
         try {
             Files.writeString(SkippyFolder.get(projectDir).resolve("config.json"), skippyConfiguration.toJson(), StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
@@ -196,9 +197,34 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
     }
 
     /**
+     * Reads the predictions.log file in the Skippy folder. The return type is a list of {@link ClassNameAndPrediction}s with the left
+     * element being the class name of a test, and the right element being the {@link Prediction} for that test.
+     *
+     * @return the contents of the predictions.log file in the Skippy folder
+     */
+    List<ClassNameAndPrediction> readPredictionsLog() {
+        try {
+            var predictionsLog = SkippyFolder.get(projectDir).resolve("predictions.log");
+            if (false == exists(predictionsLog)) {
+                return emptyList();
+            }
+            return Files.readAllLines(predictionsLog, StandardCharsets.UTF_8).stream().
+                    map(line -> {
+                        var className = line.split(",")[0];
+                        var prediction = Prediction.valueOf(line.split(",")[1]);
+                        return new ClassNameAndPrediction(className, prediction);
+                    })
+                    .toList();
+
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to read predictions log: %s.".formatted(e.getMessage()), e);
+        }
+    }
+
+    /**
      * Deletes all log files from the Skippy folder.
      */
-    public void deleteLogFiles() {
+    void deleteLogFiles() {
         try (var directoryStream  = Files.newDirectoryStream(SkippyFolder.get(projectDir),
                 file -> file.getFileName().toString().endsWith(".log"))) {
             for (var logFile : directoryStream) {
@@ -216,7 +242,7 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
      * @param testClassName the name of a test class (e.g., com.example.FooTest)
      * @param jacocoExecutionData Jacoco execution data for the test.
      */
-    public void saveTemporaryJaCoCoExecutionDataForCurrentBuild(String testClassName, byte[] jacocoExecutionData) {
+    void saveTemporaryJaCoCoExecutionDataForCurrentBuild(String testClassName, byte[] jacocoExecutionData) {
         try {
             Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(testClassName)), jacocoExecutionData, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
@@ -229,7 +255,7 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
      *
      * @return the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, byte[])}
      */
-    public List<TestWithJacocoExecutionDataAndCoveredClasses> readTemporaryJaCoCoExecutionDataForCurrentBuild() {
+    List<TestWithJacocoExecutionDataAndCoveredClasses> readTemporaryJaCoCoExecutionDataForCurrentBuild() {
         var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
         for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
             var filename = executionDataFile.getFileName().toString();
@@ -242,6 +268,19 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
             }
         }
         return result;
+    }
+
+    /**
+     * Saves the merged Jacoco execution data for skipped tests as file named skipped.exec in the Skippy folder
+     *
+     * @param mergeJacocoExecutionData the merged Jacoco execution data for skipped tests
+     */
+    void saveMergedJacocoExecutionDataForSkippedTest(byte[] mergeJacocoExecutionData) {
+        try {
+            Files.write(SkippyFolder.get(projectDir).resolve("skipped.exec"), mergeJacocoExecutionData, CREATE, TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to save merged execution data file: %s.".formatted(e.getMessage()), e);
+        }
     }
 
     @Override

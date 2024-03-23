@@ -73,6 +73,31 @@ public final class SkippyApi {
         var newAnalysis = getTestImpactAnalysis();
         var mergedAnalysis = existingAnalysis.merge(newAnalysis);
         skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
+        if (skippyConfiguration.saveExecutionData()) {
+            mergeExecutionDataForSkippedTests(mergedAnalysis);
+        }
+    }
+
+    private void mergeExecutionDataForSkippedTests(TestImpactAnalysis testImpactAnalysis) {
+        var skippedTestClassNames = skippyRepository.readPredictionsLog().stream()
+                .filter(classNameAndPrediction -> classNameAndPrediction.prediction() == Prediction.SKIP)
+                .map(classNameAndPrediction -> classNameAndPrediction.className())
+                .toList();
+
+        var skippedTests = testImpactAnalysis.getAnalyzedTests().stream()
+                .filter(test -> skippedTestClassNames.contains(testImpactAnalysis.getClassFileContainer().getById(test.getTestClassId()).getClassName()))
+                .toList();
+
+        if (skippedTests.isEmpty()) {
+            return;
+        }
+
+        List<byte[]> executionData = skippedTests.stream()
+                .flatMap(skippedTest -> skippyRepository.readJacocoExecutionData(skippedTest.getExecutionId().get()).stream())
+                .toList();
+        byte[] mergeExecutionData = JacocoUtil.mergeExecutionData(executionData);
+
+        skippyRepository.saveMergedJacocoExecutionDataForSkippedTest(mergeExecutionData);
     }
 
     /**
@@ -99,16 +124,12 @@ public final class SkippyApi {
     ) {
         var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
         var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
-        if (skippyConfiguration.getSaveExecutionData()) {
-            var executionId = skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData());
-            return ids.stream()
-                    .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), Optional.of(executionId)))
-                    .toList();
-        } else {
-            return ids.stream()
-                    .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), Optional.empty()))
-                    .toList();
-        }
+        var executionId = skippyConfiguration.saveExecutionData() ?
+                Optional.of(skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData())) :
+                Optional.<String>empty();
+        return ids.stream()
+                .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), executionId))
+                .toList();
     }
 
     private List<String> getCoveredClassesIds(List<String> coveredClasses, ClassFileContainer classFileContainer) {
