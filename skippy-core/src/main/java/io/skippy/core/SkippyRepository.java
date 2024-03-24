@@ -280,7 +280,7 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
      */
     void saveMergedJacocoExecutionDataForSkippedTest(byte[] mergeJacocoExecutionData) {
         try {
-            Files.write(SkippyFolder.get(projectDir).resolve("skipped.exec"), mergeJacocoExecutionData, CREATE, TRUNCATE_EXISTING);
+            Files.write(buildDir.resolve("skippy.exec"), mergeJacocoExecutionData, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to save merged execution data file: %s.".formatted(e.getMessage()), e);
         }

@@ -27,6 +27,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.nio.file.Path;
+
 /**
  * Mojo that informs Skippy that a build has started.
  */
@@ -49,7 +51,7 @@ public class SkippyBuildStartedMojo extends AbstractMojo {
         var skippyApi = new SkippyApi(
                 skippyConfiguration,
                 new MavenClassFileCollector(project),
-                SkippyRepository.getInstance(skippyConfiguration, projectDir)
+                SkippyRepository.getInstance(skippyConfiguration, projectDir, projectDir.resolve(Path.of(project.getBuild().getOutputDirectory()).getParent()))
         );
         skippyApi.buildStarted();
     }

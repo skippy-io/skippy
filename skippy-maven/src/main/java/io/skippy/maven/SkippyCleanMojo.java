@@ -27,6 +27,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.nio.file.Path;
+
 /**
  * Clears the skippy folder.
  * <br /><br />
@@ -53,7 +55,7 @@ public class SkippyCleanMojo extends AbstractMojo {
         var skippyApi = new SkippyApi(
                 skippyConfiguration,
                 new MavenClassFileCollector(project),
-                SkippyRepository.getInstance(skippyConfiguration, projectDir)
+                SkippyRepository.getInstance(skippyConfiguration, projectDir, projectDir.resolve(Path.of(project.getBuild().getOutputDirectory()).getParent()))
         );
         skippyApi.deleteSkippyFolder();
     }

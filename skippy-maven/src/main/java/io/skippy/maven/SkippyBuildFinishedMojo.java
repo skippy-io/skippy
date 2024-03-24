@@ -27,6 +27,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.nio.file.Path;
+
 /**
  * Mojo that informs Skippy that the parts of the build that are relevant for Skippy (e.g., compilation and test
  * execution) have finished.
@@ -48,9 +50,9 @@ public class SkippyBuildFinishedMojo extends AbstractMojo {
         var projectDir = project.getBasedir().toPath();
         var skippyConfiguration = new SkippyConfiguration(saveExecutionData);
         var skippyApi = new SkippyApi(
-            skippyConfiguration,
-            new MavenClassFileCollector(project),
-            SkippyRepository.getInstance(skippyConfiguration, projectDir)
+                skippyConfiguration,
+                new MavenClassFileCollector(project),
+                SkippyRepository.getInstance(skippyConfiguration, projectDir, projectDir.resolve(Path.of(project.getBuild().getOutputDirectory()).getParent()))
         );
         skippyApi.buildFinished();
     }
