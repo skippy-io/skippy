@@ -59,7 +59,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.LeftPadder",
                 "path": "com/example/LeftPadder.class",
                 "outputFolder": "build/classes/java/main",
-                "hash": "9U3+WYit7uiiNqA9jplN2A=="
+                "hash": "8E994DD8"
             }
         """);
 
@@ -68,7 +68,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.RightPadder",
                 "path": "com/example/RightPadder.class",
                 "outputFolder": "build/classes/java/main",
-                "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
+                "hash": "F7F27006"
             }
         """);
 
@@ -77,7 +77,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.StringUtils",
                 "path": "com/example/StringUtils.class",
                 "outputFolder": "build/classes/java/main",
-                "hash": "4VP9fWGFUJHKIBG47OXZTQ=="
+                "hash": "ECE5D94D"
             }
         """);
 
@@ -86,7 +86,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.LeftPadderTest",
                 "path": "com/example/LeftPadderTest.class",
                 "outputFolder": "build/classes/java/test",
-                "hash": "sGLJTZJw4beE9m2Kg6chUg=="
+                "hash": "83A72152"
             }
         """);
 
@@ -95,7 +95,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.RightPadderTest",
                 "path": "com/example/RightPadderTest.class",
                 "outputFolder": "build/classes/java/test",
-                "hash": "wAwQMlDS3xxmX/Yl5fsSdA=="
+                "hash": "E5FB1274"
             }
         """);
 
@@ -104,7 +104,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.TestConstants",
                 "path": "com/example/TestConstants.class",
                 "outputFolder": "build/classes/java/test",
-                "hash": "3qNbG+sSd1S1OGe0EZ9GPA=="
+                "hash": "119F463C"
             }
         """);
     }

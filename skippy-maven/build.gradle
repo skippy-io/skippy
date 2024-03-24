@@ -9,14 +9,14 @@ ossrhPublish {
 }
 
 dependencies {
-    implementation project(':skippy-build-common')
+    implementation project(':skippy-core')
     implementation 'org.apache.maven:maven-plugin-api:' + versions.maven
     implementation 'org.apache.maven:maven-core:' + versions.maven
     implementation 'org.apache.maven.plugin-tools:maven-plugin-annotations:' + versions.'maven-plugin-annotations'
     implementation 'org.apache.maven:maven-project:' + versions.'maven-project'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:' + versions.junit5
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:' + versions.junit5
-    testImplementation 'org.mockito:mockito-core:5.4.0'
+    testImplementation 'org.mockito:mockito-core:' + versions.mockito
 }
 
 test {

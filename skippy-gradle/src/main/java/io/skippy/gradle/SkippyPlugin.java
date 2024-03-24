@@ -16,13 +16,12 @@
 
 package io.skippy.gradle;
 
-import io.skippy.common.util.Profiler;
+import io.skippy.core.Profiler;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
-import static io.skippy.gradle.SkippyGradleUtils.skippyBuildApi;
-import static io.skippy.gradle.SkippyGradleUtils.supportsSkippy;
+import static io.skippy.gradle.SkippyGradleUtils.*;
 
 /**
  * The Skippy plugin adds the
@@ -36,20 +35,19 @@ import static io.skippy.gradle.SkippyGradleUtils.supportsSkippy;
  *
  * @author Florian McKee
  */
-public final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
+final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
     @Override
     public void apply(Project project) {
         Profiler.clear();
         project.getPlugins().apply(JacocoPlugin.class);
+        project.getExtensions().create("skippy", SkippyPluginExtension.class);
         project.getTasks().register("skippyClean", SkippyCleanTask.class);
         project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
         project.getTasks().withType(Test.class, testTask -> testTask.finalizedBy("skippyAnalyze"));
-        project.afterEvaluate(action -> {
-            if (supportsSkippy(action.getProject())) {
-                skippyBuildApi(action.getProject()).buildStarted();
-            }
-        });
+        project.afterEvaluate(action ->
+            ifBuildSupportsSkippy(action.getProject(), skippyBuildApi -> skippyBuildApi.buildStarted())
+        );
     }
 
 }

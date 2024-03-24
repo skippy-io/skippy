@@ -27,8 +27,7 @@ import org.gradle.api.tasks.testing.TestResult;
 
 import java.util.function.Consumer;
 
-import static io.skippy.gradle.SkippyGradleUtils.supportsSkippy;
-import static io.skippy.gradle.SkippyGradleUtils.skippyBuildApi;
+import static io.skippy.gradle.SkippyGradleUtils.*;
 
 /**
  * Informs Skippy that the relevant parts of the build (e.g., compilation and testing) have finished.
@@ -38,12 +37,11 @@ class SkippyAnalyzeTask extends DefaultTask {
     @Inject
     public SkippyAnalyzeTask() {
         setGroup("skippy");
-        if (supportsSkippy(getProject())) {
-            var skippyBuildApi = skippyBuildApi(getProject());
+        ifBuildSupportsSkippy(getProject(), skippyBuildApi -> {
             var testFailedListener = new TestFailedListener((className) -> skippyBuildApi.testFailed(className));
             getProject().getTasks().withType(Test.class, testTask -> testTask.addTestListener(testFailedListener));
             doLast(task -> skippyBuildApi.buildFinished());
-        }
+        });
     }
 
     static private class TestFailedListener implements TestListener {
