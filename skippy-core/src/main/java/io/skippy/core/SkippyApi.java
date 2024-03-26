@@ -88,10 +88,6 @@ public final class SkippyApi {
                 .filter(test -> skippedTestClassNames.contains(testImpactAnalysis.getClassFileContainer().getById(test.getTestClassId()).getClassName()))
                 .toList();
 
-        if (skippedTests.isEmpty()) {
-            return;
-        }
-
         List<byte[]> executionData = skippedTests.stream()
                 .flatMap(skippedTest -> skippyRepository.readJacocoExecutionData(skippedTest.getExecutionId().get()).stream())
                 .toList();
