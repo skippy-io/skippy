@@ -67,14 +67,14 @@ import static java.util.stream.Collectors.joining;
  *      },                                                              ──┘    ids in AnalyzedTest
  *      "tests": [                                                              reference classes
  *          {                                               ──┐                in ClassFileContainer
- *              "class": "1",                                 │                         │
+ *              "class": 1,                                   │                         │
  *              "result": "PASSED",                      AnalyzedTest                   │
- *              "coveredClasses": ["0","1"]                   │                         │
+ *              "coveredClasses": [0,1]                       │                         │
  *          },                                              ──┘                         │
  *          {                                                                           │
- *              "class": "3", ──────────┬───────────────────────────────────────────────┘
- *              "result": "PASSED",     │
- *              "coveredClasses": ["2","3"]
+ *              "class": 3,   ───────┬──────────────────────────────────────────────────┘
+ *              "result": "PASSED",  │
+ *              "coveredClasses": [2,3]
  *          }
  *      ]
  * }
@@ -244,7 +244,7 @@ final class TestImpactAnalysis {
                 analyzedTest.getExecutionId());
     }
 
-    private String remap(String id, ClassFileContainer original, ClassFileContainer merged) {
+    private int remap(int id, ClassFileContainer original, ClassFileContainer merged) {
         var classFile = original.getById(id);
         return merged.getId(classFile);
     }

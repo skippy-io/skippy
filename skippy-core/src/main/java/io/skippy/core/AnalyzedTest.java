@@ -28,9 +28,9 @@ import static java.util.stream.Collectors.joining;
  * JSON example:
  * <pre>
  * {
- *      "class": "0",
+ *      "class": 0,
  *      "result": "PASSED",
- *      "coveredClasses": ["0", "1"],
+ *      "coveredClasses": [0, 1],
  *      "executionId": "C57F877F6F9BF164"
  * }
  * </pre>
@@ -41,9 +41,9 @@ import static java.util.stream.Collectors.joining;
  */
 final class AnalyzedTest implements Comparable<AnalyzedTest> {
 
-    private final String testClassId;
+    private final int testClassId;
     private final TestResult result;
-    private final List<String> coveredClassesIds;
+    private final List<Integer> coveredClassesIds;
     private final Optional<String> executionId;
 
     /**
@@ -54,7 +54,7 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
      * @param coveredClassesIds the ids of the covered classes in the {@link ClassFileContainer}
      * @param executionId a unique identifier for the test's JaCoCo execution data if capture of execution data is enabled
      */
-    AnalyzedTest(String testClassId, TestResult result, List<String> coveredClassesIds, Optional<String> executionId) {
+    AnalyzedTest(int testClassId, TestResult result, List<Integer> coveredClassesIds, Optional<String> executionId) {
         this.testClassId = testClassId;
         this.result = result;
         this.coveredClassesIds = coveredClassesIds;
@@ -66,7 +66,7 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
      *
      * @return the id of the test class in the {@link ClassFileContainer}
      */
-    String getTestClassId() {
+    int getTestClassId() {
         return testClassId;
     }
 
@@ -84,7 +84,7 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
      *
      * @return the ids of the covered classes in the {@link ClassFileContainer}
      */
-    List<String> getCoveredClassesIds() {
+    List<Integer> getCoveredClassesIds() {
         return coveredClassesIds;
     }
 
@@ -112,8 +112,8 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
 
     static AnalyzedTest parse(Tokenizer tokenizer) {
         tokenizer.skip('{');
-        String clazz = null;
-        List<String> coveredClasses = null;
+        Integer clazz = null;
+        List<Integer> coveredClasses = null;
         TestResult testResult = null;
         Optional<String> executionId = Optional.empty();
         while (true) {
@@ -121,7 +121,7 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
             tokenizer.skip(':');
             switch (key) {
                 case "class":
-                    clazz = tokenizer.next();
+                    clazz = Integer.valueOf(tokenizer.next());
                     break;
                 case "coveredClasses":
                     coveredClasses = parseCoveredClasses(tokenizer);
@@ -142,12 +142,12 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
         return new AnalyzedTest(clazz, testResult, coveredClasses, executionId);
     }
 
-    static List<String> parseCoveredClasses(Tokenizer tokenizer) {
-        var coveredClasses = new ArrayList<String>();
+    static List<Integer> parseCoveredClasses(Tokenizer tokenizer) {
+        var coveredClasses = new ArrayList<Integer>();
         tokenizer.skip('[');
         while ( ! tokenizer.peek(']')) {
             tokenizer.skipIfNext(',');
-            coveredClasses.add(tokenizer.next());
+            coveredClasses.add(Integer.valueOf(tokenizer.next()));
         }
         tokenizer.skip(']');
         return coveredClasses;
@@ -156,14 +156,15 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
     String toJson() {
         var result = new StringBuilder();
         result.append("\t\t{" + lineSeparator());
-        result.append("\t\t\t\"class\": \"%s\"".formatted(getTestClassId()));
+        result.append("\t\t\t\"class\": %s".formatted(getTestClassId()));
         result.append(",%s".formatted(lineSeparator()));
         result.append("\t\t\t\"result\": \"%s\"".formatted(getResult()));
         result.append(",%s".formatted(lineSeparator()));
         result.append("\t\t\t\"coveredClasses\": [%s]".formatted(getCoveredClassesIds().stream()
                 .map(Integer::valueOf)
                 .sorted()
-                .map(id -> "\"%s\"".formatted(id)).collect(joining(","))));
+                .map(val -> Integer.toString(val))
+                .collect(joining(","))));
         if (executionId.isPresent()) {
             result.append(",%s".formatted(lineSeparator()));
             result.append("\t\t\t\"executionId\": \"%s\"".formatted(executionId.get()));

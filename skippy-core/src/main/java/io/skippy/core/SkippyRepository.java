@@ -131,8 +131,8 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
      * Returns the {@link SkippyRepository} instance for Skippy's build plugins.
      *
      * @param skippyConfiguration the {@link SkippyConfiguration}
-     * @param projectDir the project directory
-     * @param projectDir the build directory
+     * @param projectDir the project directory (e.g., ~/repo)
+     * @param buildDirectory the project's build directory (e.g., ~/repo/build or ~/repo/target)
      * @return the {@link SkippyRepository}
      */
     public static SkippyRepository getInstance(SkippyConfiguration skippyConfiguration, Path projectDir, Path buildDirectory) {

@@ -18,6 +18,8 @@ package io.skippy.core;
 
 import java.util.Arrays;
 
+import static java.lang.Character.isDigit;
+
 /**
  * Home-grown JSON tokenization to avoid a transitive dependencies to Jackson (or some other JSON library).
  *
@@ -56,6 +58,7 @@ final class Tokenizer {
             head++;
             return "{";
         }
+        // read string
         if (peek('"')) {
             int pointer = head + 1;
             while (stream[pointer] != '"') {
@@ -63,6 +66,17 @@ final class Tokenizer {
             }
             var result = new String(Arrays.copyOfRange(stream, head + 1, pointer));
             head = pointer + 1;
+            return result;
+        }
+
+        // read number
+        if (peekDigit()) {
+            int pointer = head;
+            while (pointer < stream.length && isDigit(stream[pointer])) {
+                pointer++;
+            }
+            var result = new String(Arrays.copyOfRange(stream, head, pointer));
+            head = pointer;
             return result;
         }
         throw new IllegalStateException("Unable to determine next token in residual characters '%s'.".formatted(asString()));
@@ -74,6 +88,14 @@ final class Tokenizer {
         }
         return stream[head] == c;
     }
+
+    boolean peekDigit() {
+        if (head == tail) {
+            return false;
+        }
+        return isDigit(stream[head]);
+    }
+
     void skipIfNext(char c) {
         if (head == tail) {
             return;

@@ -128,8 +128,8 @@ public final class SkippyApi {
                 .toList();
     }
 
-    private List<String> getCoveredClassesIds(List<String> coveredClasses, ClassFileContainer classFileContainer) {
-        var coveredClassIds = new LinkedList<String>();
+    private List<Integer> getCoveredClassesIds(List<String> coveredClasses, ClassFileContainer classFileContainer) {
+        var coveredClassIds = new LinkedList<Integer>();
         for (String clazz : coveredClasses) {
             coveredClassIds.addAll(classFileContainer.getIdsByClassName(clazz));
         }
