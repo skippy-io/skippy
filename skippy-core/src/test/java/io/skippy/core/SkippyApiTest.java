@@ -144,15 +144,15 @@ public final class SkippyApiTest {
                 },
                 "tests": [
                     {
-                        "class": "1",
+                        "class": 1,
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"],
+                        "coveredClasses": [0,1],
                         "executionId": "BAR"
                     },
                     {
-                        "class": "3",
+                        "class": 3,
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"],
+                        "coveredClasses": [2,3],
                         "executionId": "FOO"
                     }
                 ]
@@ -205,14 +205,14 @@ public final class SkippyApiTest {
                 },
                 "tests": [
                     {
-                        "class": "1",
+                        "class": 1,
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": [0,1]
                     },
                     {
-                        "class": "3",
+                        "class": 3,
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": [2,3]
                     }
                 ]
             }
@@ -264,14 +264,14 @@ public final class SkippyApiTest {
                 },
                 "tests": [
                     {
-                        "class": "1",
+                        "class": 1,
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": [0,1]
                     },
                     {
-                        "class": "3",
+                        "class": 3,
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": [2,3]
                     }
                 ]
             }
@@ -325,14 +325,14 @@ public final class SkippyApiTest {
                 },
                 "tests": [
                     {
-                        "class": "1",
+                        "class": 1,
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": [0]
                     },
                     {
-                        "class": "3",
+                        "class": 3,
                         "result": "FAILED",
-                        "coveredClasses": ["2"]
+                        "coveredClasses": [2]
                     }
                 ]
             }
@@ -405,9 +405,9 @@ public final class SkippyApiTest {
                 },
                 "tests": [
                     {
-                        "class": "0",
+                        "class": 0,
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": [0]
                     }
                 ]
             }
@@ -446,9 +446,9 @@ public final class SkippyApiTest {
              },
              "tests": [
                 {
-                    "class": "3",
+                    "class": 3,
                     "result": "PASSED",
-                    "coveredClasses": ["2","3"]
+                    "coveredClasses": [2,3]
                 }
              ]
          }
@@ -517,9 +517,9 @@ public final class SkippyApiTest {
              },
              "tests": [
                 {
-                    "class": "3",
+                    "class": 3,
                     "result": "PASSED",
-                    "coveredClasses": ["2","3"],
+                    "coveredClasses": [2,3],
                     "executionId": "11111111111111111111111111111111"
                 }
              ]
@@ -563,14 +563,14 @@ public final class SkippyApiTest {
                 },
                 "tests": [
                     {
-                        "class": "1",
+                        "class": 1,
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": [0,1]
                     },
                     {
-                        "class": "3",
+                        "class": 3,
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": [2,3]
                     }
                 ]
             }
@@ -611,14 +611,14 @@ public final class SkippyApiTest {
                 },
                 "tests": [
                     {
-                        "class": "1",
+                        "class": 1,
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": [0,1]
                     },
                     {
-                        "class": "3",
+                        "class": 3,
                         "result": "FAILED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": [2,3]
                     }
                 ]
             }

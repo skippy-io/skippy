@@ -53,7 +53,8 @@ public class TokenizerTest {
     @ParameterizedTest
     @CsvSource(value = {
             "{:{",
-            "\"value\":value"
+            "\"value\":value",
+            "123:123"
     }, delimiter = ':')
     void testNext(String stream, String expectedNextToken) {
         var tokenizer = new Tokenizer(stream);

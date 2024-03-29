@@ -30,11 +30,11 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonNoCoveredClasses() throws JSONException {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList(), Optional.empty());
+        var analyzedTest = new AnalyzedTest(0, TestResult.PASSED, asList(), Optional.empty());
 
         var expected = """
             {
-                "class": "0",
+                "class": 0,
                 "result": "PASSED",
                 "coveredClasses": []
             }
@@ -44,24 +44,24 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonOneCoveredClass() throws JSONException {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0"), Optional.empty());
+        var analyzedTest = new AnalyzedTest(0, TestResult.PASSED, asList(0), Optional.empty());
         var expected = """
             {
-                "class": "0",
+                "class": 0,
                 "result": "PASSED",
-                "coveredClasses": ["0"]
+                "coveredClasses": [0]
             }
         """;
         JSONAssert.assertEquals(expected, analyzedTest.toJson(), JSONCompareMode.LENIENT);
     }
     @Test
     void testToJsonTwoCoveredClasses() throws JSONException {
-        var analyzedTest = new AnalyzedTest("0", TestResult.PASSED, asList("0", "1"), Optional.empty());
+        var analyzedTest = new AnalyzedTest(0, TestResult.PASSED, asList(0, 1), Optional.empty());
         var expected = """
             {
-                "class": "0",
+                "class": 0,
                 "result": "PASSED",
-                "coveredClasses": ["0", "1"]
+                "coveredClasses": [0, 1]
             }
         """;
         JSONAssert.assertEquals(expected, analyzedTest.toJson(), JSONCompareMode.LENIENT);
@@ -69,10 +69,10 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonFailedTest() throws JSONException {
-        var analyzedTest = new AnalyzedTest("0", TestResult.FAILED, asList(), Optional.empty());
+        var analyzedTest = new AnalyzedTest(0, TestResult.FAILED, asList(), Optional.empty());
         var expected = """
             {
-                "class": "0",
+                "class": 0,
                 "result": "FAILED",
                 "coveredClasses": []
             }
@@ -84,13 +84,13 @@ public class AnalyzedTestTest {
     void testParseNoCoveredClasses() {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
-                "class": "0",
+                "class": 0,
                 "result": "PASSED",
                 "coveredClasses": []
             }
         """));
 
-        assertEquals("0", analyzedTest.getTestClassId());
+        assertEquals(0, analyzedTest.getTestClassId());
         assertEquals(TestResult.PASSED, analyzedTest.getResult());
         assertEquals(asList(), analyzedTest.getCoveredClassesIds());
     }
@@ -99,31 +99,31 @@ public class AnalyzedTestTest {
     void testParseOneCoveredClass() {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
-                "class": "0",
+                "class": 0,
                 "result": "PASSED",
-                "coveredClasses": ["0"]
+                "coveredClasses": [0]
             }
         """));
-        assertEquals(asList("0"), analyzedTest.getCoveredClassesIds());
+        assertEquals(asList(0), analyzedTest.getCoveredClassesIds());
     }
 
     @Test
     void testParseTwoCoveredClasses() {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
-                "class": "0",
+                "class": 0,
                 "result": "PASSED",
-                "coveredClasses": ["0", "1"]
+                "coveredClasses": [0, 1]
             }
         """));
-        assertEquals(asList("0", "1"), analyzedTest.getCoveredClassesIds());
+        assertEquals(asList(0, 1), analyzedTest.getCoveredClassesIds());
     }
 
     @Test
     void testParseFailedTest() {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
-                "class": "0",
+                "class": 0,
                 "result": "FAILED",
                 "coveredClasses": []
             }
@@ -135,7 +135,7 @@ public class AnalyzedTestTest {
     void testParseWithoutExecutionId() {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
-                "class": "0",
+                "class": 0,
                 "result": "FAILED",
                 "coveredClasses": []
             }
@@ -147,7 +147,7 @@ public class AnalyzedTestTest {
     void testParseWithExecutionId() {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
-                "class": "0",
+                "class": 0,
                 "result": "FAILED",
                 "coveredClasses": [],
                 "executionId":  "00000000000000000000000000000000"

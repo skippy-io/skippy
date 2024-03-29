@@ -53,7 +53,7 @@ public class TestImpactAnalysisTest {
         );
         var testImpactAnalysis = new TestImpactAnalysis(
                 ClassFileContainer.from(asList(fooTest)),
-                asList(new AnalyzedTest("0", TestResult.PASSED, asList("0"), Optional.empty()))
+                asList(new AnalyzedTest(0, TestResult.PASSED, asList(0), Optional.empty()))
         );
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
@@ -67,9 +67,9 @@ public class TestImpactAnalysisTest {
                 },
                 "tests": [
                     {
-                        "class": "0",
+                        "class": 0,
                         "result": "PASSED",
-                        "coveredClasses": ["0"]
+                        "coveredClasses": [0]
                     }
                 ]
             }
@@ -105,8 +105,8 @@ public class TestImpactAnalysisTest {
         var testImpactAnalysis = new TestImpactAnalysis(
                 ClassFileContainer.from(asList(class1, class2, class1Test, class2Test)),
                 asList(
-                        new AnalyzedTest("1", TestResult.PASSED, asList("0", "1"), Optional.empty()),
-                        new AnalyzedTest("2", TestResult.PASSED, asList("2", "3"), Optional.empty())
+                        new AnalyzedTest(1, TestResult.PASSED, asList(0, 1), Optional.empty()),
+                        new AnalyzedTest(2, TestResult.PASSED, asList(2, 3), Optional.empty())
                 )
         );
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
@@ -139,14 +139,14 @@ public class TestImpactAnalysisTest {
                 },
                 "tests": [
                     {
-                        "class": "1",
+                        "class": 1,
                         "result": "PASSED",
-                        "coveredClasses": ["0","1"]
+                        "coveredClasses": [0,1]
                     },
                     {
-                        "class": "2",
+                        "class": 2,
                         "result": "PASSED",
-                        "coveredClasses": ["2","3"]
+                        "coveredClasses": [2,3]
                     }
                 ]
             }
@@ -196,9 +196,9 @@ public class TestImpactAnalysisTest {
 
         var tests = testImpactAnalysis.getAnalyzedTests();
         assertEquals(1, tests.size());
-        assertEquals("0", tests.get(0).getTestClassId());
+        assertEquals(0, tests.get(0).getTestClassId());
         assertEquals(TestResult.PASSED, tests.get(0).getResult());
-        assertEquals(asList("0"), tests.get(0).getCoveredClassesIds());
+        assertEquals(asList(0), tests.get(0).getCoveredClassesIds());
     }
 
     @Test
@@ -256,13 +256,13 @@ public class TestImpactAnalysisTest {
         var tests = testImpactAnalysis.getAnalyzedTests();
         assertEquals(2, tests.size());
 
-        assertEquals("2", tests.get(0).getTestClassId());
+        assertEquals(2, tests.get(0).getTestClassId());
         assertEquals(TestResult.PASSED, tests.get(0).getResult());
-        assertEquals(asList("0", "2"), tests.get(0).getCoveredClassesIds());
+        assertEquals(asList(0, 2), tests.get(0).getCoveredClassesIds());
 
-        assertEquals("3", tests.get(1).getTestClassId());
+        assertEquals(3, tests.get(1).getTestClassId());
         assertEquals(TestResult.PASSED, tests.get(1).getResult());
-        assertEquals(asList("1", "3"), tests.get(1).getCoveredClassesIds());
+        assertEquals(asList(1, 3), tests.get(1).getCoveredClassesIds());
     }
 
 }

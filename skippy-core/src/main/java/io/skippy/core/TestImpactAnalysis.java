@@ -244,7 +244,7 @@ final class TestImpactAnalysis {
                 analyzedTest.getExecutionId());
     }
 
-    private String remap(String id, ClassFileContainer original, ClassFileContainer merged) {
+    private int remap(int id, ClassFileContainer original, ClassFileContainer merged) {
         var classFile = original.getById(id);
         return merged.getId(classFile);
     }

@@ -55,12 +55,12 @@ import static java.util.stream.Collectors.toMap;
 final class ClassFileContainer {
     private final Set<ClassFile> classFiles = new TreeSet<>();
     private final Map<String, List<ClassFile>> classFilesByClassName = new HashMap<>();
-    private final Map<ClassFile, String> idsByClassFile = new HashMap<>();
-    private final Map<String, List<String>> idsByClassName = new HashMap<>();
+    private final Map<ClassFile, Integer> idsByClassFile = new HashMap<>();
+    private final Map<String, List<Integer>> idsByClassName = new HashMap<>();
 
-    private final Map<String, ClassFile> classFilesById = new HashMap<>();
+    private final Map<Integer, ClassFile> classFilesById = new HashMap<>();
 
-     private ClassFileContainer(Map<String, ClassFile> classFilesById) {
+     private ClassFileContainer(Map<Integer, ClassFile> classFilesById) {
         for (var entry : classFilesById.entrySet()) {
             var id = entry.getKey();
             var classFile = entry.getValue();
@@ -87,7 +87,7 @@ final class ClassFileContainer {
     static ClassFileContainer from(List<ClassFile> classFiles) {
         var sorted = classFiles.stream().sorted().toList();
         return new ClassFileContainer(IntStream.range(0, classFiles.size()).boxed()
-                .collect(toMap(i -> Integer.toString(i), i -> sorted.get(i))));
+                .collect(toMap(i -> i, i -> sorted.get(i))));
     }
 
     /**
@@ -103,7 +103,7 @@ final class ClassFileContainer {
      * @param className a class name
      * @return the ids of the classes that match the provided class name
      */
-    List<String> getIdsByClassName(String className) {
+    List<Integer> getIdsByClassName(String className) {
         if (false == idsByClassName.containsKey(className)) {
             return emptyList();
         }
@@ -120,7 +120,7 @@ final class ClassFileContainer {
      * @param classFile a {@link ClassFile}
      * @return the id for the given {@link ClassFile}
      */
-    String getId(ClassFile classFile) {
+    int getId(ClassFile classFile) {
         return idsByClassFile.get(classFile);
     }
 
@@ -131,7 +131,7 @@ final class ClassFileContainer {
      * @param id an id
      * @return the {@link ClassFile} with the given id
      */
-    ClassFile getById(String id) {
+    ClassFile getById(int id) {
         return classFilesById.get(id);
     }
 
@@ -154,9 +154,9 @@ final class ClassFileContainer {
     static ClassFileContainer parse(Tokenizer tokenizer) {
         return Profiler.profile("ClassFileContainer#parse", () -> {
             tokenizer.skip('{');
-            var classFiles = new HashMap<String, ClassFile>();
+            var classFiles = new HashMap<Integer, ClassFile>();
             while (!tokenizer.peek('}')) {
-                var id = tokenizer.next();
+                var id = Integer.valueOf(tokenizer.next());
                 tokenizer.skip(':');
                 classFiles.put(id, ClassFile.parse(tokenizer));
                 tokenizer.skipIfNext(',');
