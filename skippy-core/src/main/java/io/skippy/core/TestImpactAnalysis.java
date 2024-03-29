@@ -67,14 +67,14 @@ import static java.util.stream.Collectors.joining;
  *      },                                                              ──┘    ids in AnalyzedTest
  *      "tests": [                                                              reference classes
  *          {                                               ──┐                in ClassFileContainer
- *              "class": "1",                                 │                         │
+ *              "class": 1,                                   │                         │
  *              "result": "PASSED",                      AnalyzedTest                   │
- *              "coveredClasses": ["0","1"]                   │                         │
+ *              "coveredClasses": [0,1]                       │                         │
  *          },                                              ──┘                         │
  *          {                                                                           │
- *              "class": "3", ──────────┬───────────────────────────────────────────────┘
- *              "result": "PASSED",     │
- *              "coveredClasses": ["2","3"]
+ *              "class": 3,   ───────┬──────────────────────────────────────────────────┘
+ *              "result": "PASSED",  │
+ *              "coveredClasses": [2,3]
  *          }
  *      ]
  * }

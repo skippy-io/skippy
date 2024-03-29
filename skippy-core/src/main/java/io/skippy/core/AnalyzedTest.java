@@ -28,9 +28,9 @@ import static java.util.stream.Collectors.joining;
  * JSON example:
  * <pre>
  * {
- *      "class": "0",
+ *      "class": 0,
  *      "result": "PASSED",
- *      "coveredClasses": ["0", "1"],
+ *      "coveredClasses": [0, 1],
  *      "executionId": "C57F877F6F9BF164"
  * }
  * </pre>
