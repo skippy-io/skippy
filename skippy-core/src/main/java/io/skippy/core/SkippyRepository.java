@@ -21,12 +21,9 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -42,89 +39,21 @@ import static java.util.Collections.emptyList;
  * </ul>
  * Storage of JaCoCo execution data allows Skippy to generate test coverage reports that are equivalent to the ones
  * generated when running all tests.
- * <br /><br />
- * The default implementation
- * <ul>
- *     <li>stores and retrieves all data in / from the .skippy folder,</li>
- *     <li>only retains the latest {@link TestImpactAnalysis} and </li>
- *     <li>only retains the JaCoCo execution data files that are referenced by the latest {@link TestImpactAnalysis}.</li>
- * </ul>
- * It is intended for small projects that do not care about code coverage reports and thus not need to store JaCoCo
- * execution data files. However, it supports projects of any size and the storage of JaCoCo execution data
- * files. This is useful for experimentation. It is not recommended to be used for large projects and / or
- * projects that want to store JaCoCo execution data files since it will significantly increase the size of your Git
- * repository.
- * <br /><br />
- * Large projects that want to store and more permanently retain {@link TestImpactAnalysis} instances and JaCoCo
- * execution data files can replace
- * <ul>
- *     <li>{@link SkippyRepository#readTestImpactAnalysis()},</li>
- *     <li>{@link SkippyRepository#saveTestImpactAnalysis(TestImpactAnalysis)} and</li>
- *     <li>{@link SkippyRepository#readJacocoExecutionData(String)}</li>
- *     <li>{@link SkippyRepository#saveJacocoExecutionData}</li>
- * </ul>
- * with custom implementations to stores and retain those artefacts outside the project's repository in storage systems
- * like
- * <ul>
- *     <li>databases,</li>
- *     <li>network file systems,</li>
- *     <li>blob storage like AWS S3,</li>
- *     <li>etc.</li>
- * </ul>
- * Projects can implement and register a {@link SkippyRepositoryExtension} implementation to customize the aforementioned
- * methods.
- * <br /><br />
- * Example:
- * <pre>
- * package com.example;
- *
- * public class S3SkippyRepository implements SkippyRepositoryExtension {
- *
- *    {@literal @}Override
- *     public Optional&lt;TestImpactAnalysis&gt; readTestImpactAnalysis() {
- *         // read from S3
- *     }
- *
- *    {@literal @}Override
- *     public void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
- *         // save in S3
- *     }
- *
- *    {@literal @}Override
- *     public Optional&lt;byte[]&gt; readJacocoExecutionData(String executionId) {
- *         // read from S3
- *     }
- *
- *    {@literal @}Override
- *     public String saveJacocoExecutionData(byte[] jacocoExecutionData) {
- *         // save in S3
- *     }
- *
- * }
- * </pre>
- * The custom implementation has to be registered with Skippy's build plugins.
- * <br /><br />
- * Gradle example:
- * <pre>
- * skippy {
- *     ...
- *     repository = 'com.example.S3SkippyRepository'
- * }
- * </pre>
  *
  * @author Florian McKee
  */
-public final class SkippyRepository implements SkippyRepositoryExtension {
+public final class SkippyRepository {
 
     private final Path projectDir;
     private final Path buildDir;
     private final SkippyConfiguration skippyConfiguration;
-    private final Optional<SkippyRepositoryExtension> extension = Optional.empty();
+    private final SkippyRepositoryExtension extension;
 
     private SkippyRepository(SkippyConfiguration skippyConfiguration, Path projectDir, Path buildDir) {
         this.skippyConfiguration = skippyConfiguration;
         this.projectDir = projectDir;
         this.buildDir = buildDir;
+        this.extension = new DefaultSkippyRepositoryExtension(projectDir);
     }
 
     /**
@@ -286,137 +215,16 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
         }
     }
 
-    @Override
-    public Optional<TestImpactAnalysis> readTestImpactAnalysis() {
-        if (extension.isPresent()) {
-            return extension.get().readTestImpactAnalysis();
-        }
+    TestImpactAnalysis readLatestTestImpactAnalysis() {
         try {
-            var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("test-impact-analysis.json"));
-
-            if (false == exists(jsonFile)) {
-                return Optional.empty();
+            var versionFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
+            if (exists(versionFile)) {
+                var id = Files.readString(versionFile, StandardCharsets.UTF_8);
+                return extension.findTestImpactAnalysis(id).orElse(TestImpactAnalysis.NOT_FOUND);
             }
-            return Optional.of(TestImpactAnalysis.parse(Files.readString(jsonFile, StandardCharsets.UTF_8)));
+            return TestImpactAnalysis.NOT_FOUND;
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read test impact analysis: %s.".formatted(e.getMessage()), e);
-        }
-    }
-
-    @Override
-    public Optional<byte[]> readJacocoExecutionData(String executionId) {
-        try {
-            var execFile = SkippyFolder.get(this.projectDir).resolve("%s.exec".formatted(executionId));
-            if (exists(execFile)) {
-                return Optional.of(unzip(readAllBytes(execFile)));
-            }
-            return Optional.empty();
-        } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read JaCoCo execution data %s: %s.".formatted(executionId, e.getMessage()), e);
-        }
-    }
-
-    @Override
-    public void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
-        if (extension.isPresent()) {
-            extension.get().saveTestImpactAnalysis(testImpactAnalysis);
-            return;
-        }
-        try {
-            var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("test-impact-analysis.json"));
-            Files.writeString(jsonFile, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            deleteTemporaryExecutionDataFilesForCurrentBuild();
-            deleteObsoleteExecutionDataFiles(testImpactAnalysis);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save test impact analysis %s: %s.".formatted(testImpactAnalysis.getId(), e.getMessage()), e);
-        }
-    }
-
-
-    /**
-     * Saves Jacoco execution data for usage by subsequent builds.
-     *
-     * @param jacocoExecutionData Jacoco execution data
-     * @return a unique identifier for the execution data (also referred to as execution id)
-     */
-    @Override
-    public String saveJacocoExecutionData(byte[] jacocoExecutionData) {
-        if (extension.isPresent()) {
-            return extension.get().saveJacocoExecutionData(jacocoExecutionData);
-        }
-        try {
-            var executionId = JacocoUtil.getExecutionId(jacocoExecutionData);
-            Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(executionId)), zip(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            return executionId;
-        } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save JaCoCo execution data: %s.".formatted(e.getMessage()), e);
-        }
-    }
-
-    private static byte[] zip(byte[] data) {
-        Deflater deflater = new Deflater();
-        deflater.setInput(data);
-        deflater.finish();
-
-        byte[] buffer = new byte[1024];
-        byte[] result = new byte[0];
-
-        while (!deflater.finished()) {
-            int count = deflater.deflate(buffer);
-            byte[] tmp = new byte[result.length + count];
-            System.arraycopy(result, 0, tmp, 0, result.length);
-            System.arraycopy(buffer, 0, tmp, result.length, count);
-            result = tmp;
-        }
-        deflater.end();
-        return result;
-    }
-
-    private static byte[] unzip(byte[] data) {
-        Inflater inflater = new Inflater();
-        inflater.setInput(data);
-
-        byte[] buffer = new byte[1024];
-        byte[] result = new byte[0];
-
-        try {
-            while (!inflater.finished()) {
-                int count = inflater.inflate(buffer);
-                byte[] tmp = new byte[result.length + count];
-                System.arraycopy(result, 0, tmp, 0, result.length);
-                System.arraycopy(buffer, 0, tmp, result.length, count);
-                result = tmp;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            inflater.end();
-        }
-
-        return result;
-    }
-
-    private void deleteObsoleteExecutionDataFiles(TestImpactAnalysis testImpactAnalysis) {
-        var executions = testImpactAnalysis.getExecutionIds();
-        try (var directoryStream  = Files.newDirectoryStream(SkippyFolder.get(projectDir), path -> path.toString().endsWith(".exec"))) {
-            for (var executionDataFile : directoryStream) {
-                if (false == executions.contains(executionDataFile.getFileName().toString().replaceAll("\\.exec", ""))) {
-                    delete(executionDataFile);
-                }
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException("Deletion of obsolete execution data files failed: %s".formatted(e.getMessage()), e);
-        }
-    }
-
-
-    private void deleteTemporaryExecutionDataFilesForCurrentBuild() {
-        for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
-            try {
-                delete(executionDataFile);
-            } catch (IOException e) {
-                throw new UncheckedIOException("Unable to delete %s.".formatted(executionDataFile), e);
-            }
+            throw new UncheckedIOException("Unable to read latest test impact analysis: %s.".formatted(e.getMessage()), e);
         }
     }
 
@@ -435,4 +243,16 @@ public final class SkippyRepository implements SkippyRepositoryExtension {
         }
     }
 
+
+    void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
+        extension.saveTestImpactAnalysis(testImpactAnalysis);
+    }
+
+    Optional<byte[]> readJacocoExecutionData(String executionId) {
+        return extension.findJacocoExecutionData(executionId);
+    }
+
+    String saveJacocoExecutionData(byte[] jacocoExecutionData) {
+        return extension.saveJacocoExecutionData(jacocoExecutionData);
+    }
 }

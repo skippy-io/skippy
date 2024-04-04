@@ -69,7 +69,7 @@ public final class SkippyApi {
      * Informs Skippy that a build has finished.
      */
     public void buildFinished() {
-        var existingAnalysis = skippyRepository.readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND);
+        var existingAnalysis = skippyRepository.readLatestTestImpactAnalysis();
         var newAnalysis = getTestImpactAnalysis();
         var mergedAnalysis = existingAnalysis.merge(newAnalysis);
         skippyRepository.saveTestImpactAnalysis(mergedAnalysis);

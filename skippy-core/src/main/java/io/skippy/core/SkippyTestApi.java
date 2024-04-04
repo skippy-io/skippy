@@ -55,7 +55,7 @@ public final class SkippyTestApi {
     private static SkippyTestApi getInstance() {
         var skippyConfiguration = SkippyRepository.readConfiguration();
         var skippyRepository = SkippyRepository.getInstance(skippyConfiguration);
-        var tia = skippyRepository.readTestImpactAnalysis().orElse(TestImpactAnalysis.NOT_FOUND);
+        var tia = skippyRepository.readLatestTestImpactAnalysis();
         return new SkippyTestApi(tia, skippyRepository);
     }
 

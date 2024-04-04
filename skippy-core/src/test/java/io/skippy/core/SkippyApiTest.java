@@ -65,7 +65,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(false);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList());
 
@@ -102,7 +102,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(true);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
@@ -166,7 +166,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(false);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
@@ -225,7 +225,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(false);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
@@ -284,7 +284,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(false);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.empty());
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
@@ -345,7 +345,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(false);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -358,7 +358,7 @@ public final class SkippyApiTest {
                 "tests": [
                 ]
             }
-        """)));
+        """));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -393,7 +393,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(false);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -411,7 +411,7 @@ public final class SkippyApiTest {
                     }
                 ]
             }
-        """)));
+        """));
 
         buildApi.buildStarted();
 
@@ -461,7 +461,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(true);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -480,7 +480,7 @@ public final class SkippyApiTest {
                     }
                 ]
             }
-        """)));
+        """));
 
         buildApi.buildStarted();
 
@@ -533,7 +533,7 @@ public final class SkippyApiTest {
         var skippyConfiguration = new SkippyConfiguration(false);
         var buildApi = new SkippyApi(skippyConfiguration, classFileCollector, skippyRepository);
 
-        when(skippyRepository.readTestImpactAnalysis()).thenReturn(Optional.of(TestImpactAnalysis.parse("""
+        when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -574,7 +574,7 @@ public final class SkippyApiTest {
                     }
                 ]
             }
-        """)));
+        """));
 
         buildApi.buildStarted();
 

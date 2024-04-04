@@ -72,9 +72,9 @@ import static java.util.stream.Collectors.joining;
  *              "coveredClasses": [0,1]                       │                         │
  *          },                                              ──┘                         │
  *          {                                                                           │
- *              "class": 3,   ───────┬──────────────────────────────────────────────────┘
- *              "result": "PASSED",  │
- *              "coveredClasses": [2,3]
+ *              "class": 3,   ──────────────┬───────────────────────────────────────────┘
+ *              "result": "PASSED",         │
+ *              "coveredClasses": [2,3]  ───┘
  *          }
  *      ]
  * }
@@ -82,7 +82,7 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Florian McKee
  */
-final class TestImpactAnalysis {
+public final class TestImpactAnalysis {
 
     static final TestImpactAnalysis NOT_FOUND = new TestImpactAnalysis(ClassFileContainer.from(emptyList()), emptyList());
     private final ClassFileContainer classFileContainer;
