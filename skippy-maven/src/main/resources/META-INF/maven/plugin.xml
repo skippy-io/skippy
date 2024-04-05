@@ -43,11 +43,18 @@
           <description></description>
         </parameter>
         <parameter>
-          <name>saveExecutionData</name>
+          <name>coverageForSkippedTests</name>
           <type>boolean</type>
           <required>false</required>
           <editable>true</editable>
-          <description>enables / disables capture of per-test JaCoCo execution data</description>
+          <description>enables / disables generation of test coverage for skipped tests</description>
+        </parameter>
+        <parameter>
+          <name>repositoryClass</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.SkippyRepositoryExtension</description>
         </parameter>
       </parameters>
       <configuration>
@@ -85,11 +92,18 @@
           <description></description>
         </parameter>
         <parameter>
-          <name>saveExecutionData</name>
+          <name>coverageForSkippedTests</name>
           <type>boolean</type>
           <required>false</required>
           <editable>true</editable>
-          <description>enables / disables capture of per-test JaCoCo execution data</description>
+          <description>enables / disables generation of test coverage for skipped tests</description>
+        </parameter>
+        <parameter>
+          <name>repositoryClass</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.SkippyRepositoryExtension</description>
         </parameter>
       </parameters>
       <configuration>
@@ -127,11 +141,18 @@
           <description></description>
         </parameter>
         <parameter>
-          <name>saveExecutionData</name>
+          <name>coverageForSkippedTests</name>
           <type>boolean</type>
           <required>false</required>
           <editable>true</editable>
-          <description>enables / disables capture of per-test JaCoCo execution data</description>
+          <description>enables / disables generation of test coverage for skipped tests</description>
+        </parameter>
+        <parameter>
+          <name>repositoryClass</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.SkippyRepositoryExtension</description>
         </parameter>
       </parameters>
       <configuration>
