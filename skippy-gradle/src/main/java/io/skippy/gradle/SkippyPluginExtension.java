@@ -19,6 +19,8 @@ package io.skippy.gradle;
 import io.skippy.core.SkippyConfiguration;
 import org.gradle.api.provider.Property;
 
+import java.util.Optional;
+
 /**
  * Extension that allows configuration of Skippy in Gradle's build file:
  * <pre>
@@ -33,11 +35,18 @@ import org.gradle.api.provider.Property;
 public interface SkippyPluginExtension  {
 
     /**
-     * Returns the property to enable / disable capture of per-test JaCoCo execution data.
+     * Returns the property to enable / disable coverage generation for skipped tests.
      *
-     * @return the property to enable / disable capture of per-test JaCoCo execution data
+     * @return the property to enable / disable coverage generation for skipped tests
      */
-    Property<Boolean> getSaveExecutionData();
+    Property<Boolean> getCoverageForSkippedTests();
+
+    /**
+     * Returns the property to register a custom {@link io.skippy.core.SkippyRepositoryExtension}.
+     *
+     * @return the property to register a custom {@link io.skippy.core.SkippyRepositoryExtension}
+     */
+    Property<String> getRepository();
 
     /**
      * Converts the extension data into a {@link SkippyConfiguration}
@@ -45,6 +54,6 @@ public interface SkippyPluginExtension  {
      * @return a {@link SkippyConfiguration} derived from the extension data
      */
     default SkippyConfiguration toSkippyConfiguration() {
-        return new SkippyConfiguration(getSaveExecutionData().getOrElse(false));
+        return new SkippyConfiguration(getCoverageForSkippedTests().getOrElse(false), Optional.ofNullable(getRepository().getOrNull()));
     }
 }

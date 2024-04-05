@@ -18,6 +18,7 @@ package io.skippy.core;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,7 +54,7 @@ public final class SkippyRepository {
         this.skippyConfiguration = skippyConfiguration;
         this.projectDir = projectDir;
         this.buildDir = buildDir;
-        this.extension = new DefaultSkippyRepositoryExtension(projectDir);
+        this.extension = createRepositoryExtension(skippyConfiguration, projectDir);
     }
 
     /**
@@ -203,15 +204,15 @@ public final class SkippyRepository {
     }
 
     /**
-     * Saves the merged Jacoco execution data for skipped tests as file named skipped.exec in the Skippy folder
+     * Saves the execution data for skipped tests as file named skipped.exec in the build directory.
      *
-     * @param mergeJacocoExecutionData the merged Jacoco execution data for skipped tests
+     * @param executionDataForSkippedTests Jacoco execution data for skipped tests
      */
-    void saveMergedJacocoExecutionDataForSkippedTest(byte[] mergeJacocoExecutionData) {
+    void saveExecutionDataForSkippedTests(byte[] executionDataForSkippedTests) {
         try {
-            Files.write(buildDir.resolve("skippy.exec"), mergeJacocoExecutionData, CREATE, TRUNCATE_EXISTING);
+            Files.write(buildDir.resolve("skippy.exec"), executionDataForSkippedTests, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save merged execution data file: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to save execution data for skipped tests: %s.".formatted(e.getMessage()), e);
         }
     }
 
@@ -225,6 +226,16 @@ public final class SkippyRepository {
             return TestImpactAnalysis.NOT_FOUND;
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to read latest test impact analysis: %s.".formatted(e.getMessage()), e);
+        }
+    }
+
+    private SkippyRepositoryExtension createRepositoryExtension(SkippyConfiguration skippyConfiguration, Path projectDir) {
+        try {
+            Class<?> clazz = Class.forName(skippyConfiguration.repositoryClass());
+            Constructor<?> constructor = clazz.getConstructor(Path.class);
+            return (SkippyRepositoryExtension) constructor.newInstance(projectDir);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to create repository extension %s: %s.".formatted(skippyConfiguration.repositoryClass(), e.getMessage()), e);
         }
     }
 

@@ -16,9 +16,6 @@
 
 package io.skippy.core;
 
-import io.skippy.core.SkippyFolder;
-import io.skippy.core.SkippyConfiguration;
-import io.skippy.core.SkippyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.readAllBytes;
@@ -45,7 +43,7 @@ public class SkippyRepositoryTest {
     @BeforeEach
     void setUp() throws URISyntaxException {
         projectDir = Paths.get(getClass().getResource(".").toURI());
-        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false), projectDir, null);
+        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false, Optional.empty()), projectDir, null);
         skippyRepository.deleteSkippyFolder();
         skippyFolder = SkippyFolder.get(projectDir);
     }
@@ -60,11 +58,12 @@ public class SkippyRepositoryTest {
     void testSaveConfiguration() throws IOException {
         var configFile = skippyFolder.resolve("config.json");
         assertFalse(exists(skippyFolder.resolve("config.json")));
-        skippyRepository.saveConfiguration(new SkippyConfiguration(true));
+        skippyRepository.saveConfiguration(new SkippyConfiguration(true, Optional.empty()));
         var content = Files.readString(configFile, StandardCharsets.UTF_8);
         assertThat(content).isEqualToIgnoringWhitespace("""
             {
-                "saveExecutionData": "true"
+                "coverageForSkippedTests": "true",
+                "repositoryClass": "io.skippy.core.DefaultRepositoryExtension"
             }
         """);
     }

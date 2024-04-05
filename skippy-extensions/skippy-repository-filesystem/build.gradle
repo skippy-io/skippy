@@ -5,7 +5,7 @@ plugins {
 
 ossrhPublish {
     title = 'skippy-repository-filesystem'
-    description = 'Common functionality for Skippy\'s test and build libraries'
+    description = 'Sample repository extension that stores all data in the filesystem'
 }
 
 dependencies {

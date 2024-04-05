@@ -16,7 +16,6 @@
 
 package io.skippy.core;
 
-
 /**
  * 2-tuple that contains a {@link Prediction} and the {@link Reason} why the prediction was made.
  *

@@ -18,7 +18,6 @@ package io.skippy.core;
 
 import java.util.*;
 
-
 /**
  * API that is used by Skippy's Gradle and Maven plugins to remove the Skippy folder and to inform Skippy about events
  * like
@@ -30,7 +29,7 @@ import java.util.*;
  *
  * @author Florian McKee
  */
-public final class SkippyApi {
+public final class SkippyBuildApi {
 
     private final SkippyConfiguration skippyConfiguration;
     private final ClassFileCollector classFileCollector;
@@ -44,7 +43,7 @@ public final class SkippyApi {
      * @param classFileCollector  the {@link ClassFileCollector}
      * @param skippyRepository    the {@link SkippyRepository}
      */
-    public SkippyApi(SkippyConfiguration skippyConfiguration, ClassFileCollector classFileCollector, SkippyRepository skippyRepository) {
+    public SkippyBuildApi(SkippyConfiguration skippyConfiguration, ClassFileCollector classFileCollector, SkippyRepository skippyRepository) {
         this.skippyConfiguration = skippyConfiguration;
         this.classFileCollector = classFileCollector;
         this.skippyRepository = skippyRepository;
@@ -73,12 +72,12 @@ public final class SkippyApi {
         var newAnalysis = getTestImpactAnalysis();
         var mergedAnalysis = existingAnalysis.merge(newAnalysis);
         skippyRepository.saveTestImpactAnalysis(mergedAnalysis);
-        if (skippyConfiguration.saveExecutionData()) {
-            mergeExecutionDataForSkippedTests(mergedAnalysis);
+        if (skippyConfiguration.generateCoverageForSkippedTests()) {
+            generateCoverageForSkippedTests(mergedAnalysis);
         }
     }
 
-    private void mergeExecutionDataForSkippedTests(TestImpactAnalysis testImpactAnalysis) {
+    private void generateCoverageForSkippedTests(TestImpactAnalysis testImpactAnalysis) {
         var skippedTestClassNames = skippyRepository.readPredictionsLog().stream()
                 .filter(classNameAndPrediction -> classNameAndPrediction.prediction() == Prediction.SKIP)
                 .map(classNameAndPrediction -> classNameAndPrediction.className())
@@ -93,7 +92,7 @@ public final class SkippyApi {
                 .toList();
         byte[] mergeExecutionData = JacocoUtil.mergeExecutionData(executionData);
 
-        skippyRepository.saveMergedJacocoExecutionDataForSkippedTest(mergeExecutionData);
+        skippyRepository.saveExecutionDataForSkippedTests(mergeExecutionData);
     }
 
     /**
@@ -120,7 +119,7 @@ public final class SkippyApi {
     ) {
         var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
         var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
-        var executionId = skippyConfiguration.saveExecutionData() ?
+        var executionId = skippyConfiguration.generateCoverageForSkippedTests() ?
                 Optional.of(skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData())) :
                 Optional.<String>empty();
         return ids.stream()
