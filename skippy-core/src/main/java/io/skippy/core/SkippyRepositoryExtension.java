@@ -58,16 +58,16 @@ public interface SkippyRepositoryExtension {
     /**
      * Retrieves JaCoCo execution data by {@code id}.
      *
-     * @param id must not be null
-     * @return the JaCoCo execution data with the given {@code id} or {@link Optional#empty()} if none found
+     * @param executionId a unique identifier for the execution data
+     * @return the JaCoCo execution data with the given {@code executionId} or {@link Optional#empty()} if none found
      */
-    Optional<byte[]> findJacocoExecutionData(String id);
+    Optional<byte[]> findJacocoExecutionData(String  executionId);
 
     /**
-     * Saves JaCoCo execution data and returns a unique id.
+     * Saves JaCoCo execution data.
      *
+     * @param executionId a unique identifier for the execution data
      * @param jacocoExecutionData must not be null
-     * @return a unique id that can be used to read the execution data at a later point in time via {@link #findJacocoExecutionData(String)}
      */
-    String saveJacocoExecutionData(byte[] jacocoExecutionData);
+    void saveJacocoExecutionData(String executionId, byte[] jacocoExecutionData);
 }

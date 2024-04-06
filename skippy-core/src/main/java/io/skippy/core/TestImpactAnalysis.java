@@ -112,7 +112,7 @@ public final class TestImpactAnalysis {
      *
      * @return a unique identifier for this instance
      */
-    String getId() {
+    public String getId() {
         return hashWith32Digits(toJson().getBytes(StandardCharsets.UTF_8));
     }
 
@@ -166,7 +166,7 @@ public final class TestImpactAnalysis {
         return analyzedTests.stream().flatMap(analyzedTest -> analyzedTest.getExecutionId().stream()).toList();
     }
 
-    static TestImpactAnalysis parse(String string) {
+    public static TestImpactAnalysis parse(String string) {
         return Profiler.profile("TestImpactAnalysis#parse", () -> parse(new Tokenizer(string)));
     }
 
@@ -198,7 +198,7 @@ public final class TestImpactAnalysis {
      *
      * @return this instance as JSON string
      */
-    String toJson() {
+    public String toJson() {
         return """
             {
                 "classes": %s,

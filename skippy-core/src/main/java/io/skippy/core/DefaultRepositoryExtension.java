@@ -87,7 +87,6 @@ final class DefaultRepositoryExtension implements SkippyRepositoryExtension {
         try {
             var jsonFile = SkippyFolder.get(projectDir).resolve(Path.of("test-impact-analysis.json"));
             Files.writeString(jsonFile, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            deleteTemporaryExecutionDataFilesForCurrentBuild();
             deleteObsoleteExecutionDataFiles(testImpactAnalysis);
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to save test impact analysis %s: %s.".formatted(testImpactAnalysis.getId(), e.getMessage()), e);
@@ -95,13 +94,11 @@ final class DefaultRepositoryExtension implements SkippyRepositoryExtension {
     }
 
     @Override
-    public String saveJacocoExecutionData(byte[] jacocoExecutionData) {
+    public void saveJacocoExecutionData(String executionId, byte[] jacocoExecutionData) {
         try {
-            var executionId = JacocoUtil.getExecutionId(jacocoExecutionData);
             Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(executionId)), zip(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            return executionId;
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save JaCoCo execution data: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to save JaCoCo execution data %s: %s.".formatted(executionId, e.getMessage()), e);
         }
     }
 
@@ -128,32 +125,6 @@ final class DefaultRepositoryExtension implements SkippyRepositoryExtension {
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Deletion of obsolete execution data files failed: %s".formatted(e.getMessage()), e);
-        }
-    }
-
-
-    private void deleteTemporaryExecutionDataFilesForCurrentBuild() {
-        for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
-            try {
-                delete(executionDataFile);
-            } catch (IOException e) {
-                throw new UncheckedIOException("Unable to delete %s.".formatted(executionDataFile), e);
-            }
-        }
-    }
-
-    private List<Path> getTemporaryExecutionDataFilesForCurrentBuild() {
-        try {
-            var result = new ArrayList<Path>();
-            try (var directoryStream  = Files.newDirectoryStream(SkippyFolder.get(projectDir),
-                    file -> file.getFileName().toString().endsWith(".exec") && false == file.getFileName().toString().matches("[A-Z0-9]{32}\\.exec"))) {
-                for (var executionDataFile : directoryStream) {
-                    result.add(executionDataFile);
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            throw new UncheckedIOException("Unable to retrieve temporary execution data files for current build: %s".formatted(e), e);
         }
     }
 

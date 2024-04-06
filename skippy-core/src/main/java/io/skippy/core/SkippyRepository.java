@@ -256,7 +256,14 @@ public final class SkippyRepository {
 
 
     void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
-        extension.saveTestImpactAnalysis(testImpactAnalysis);
+        try {
+            var versionFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
+            Files.writeString(versionFile, testImpactAnalysis.getId(), StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
+            extension.saveTestImpactAnalysis(testImpactAnalysis);
+            deleteTemporaryExecutionDataFilesForCurrentBuild();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to save TestImpactAnalysis %s: %s".formatted(testImpactAnalysis.getId(), e), e);
+        }
     }
 
     Optional<byte[]> readJacocoExecutionData(String executionId) {
@@ -264,6 +271,19 @@ public final class SkippyRepository {
     }
 
     String saveJacocoExecutionData(byte[] jacocoExecutionData) {
-        return extension.saveJacocoExecutionData(jacocoExecutionData);
+        var executionId = JacocoUtil.getExecutionId(jacocoExecutionData);
+        extension.saveJacocoExecutionData(executionId, jacocoExecutionData);
+        return executionId;
     }
+
+    private void deleteTemporaryExecutionDataFilesForCurrentBuild() {
+        for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
+            try {
+                delete(executionDataFile);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Unable to delete %s.".formatted(executionDataFile), e);
+            }
+        }
+    }
+
 }
