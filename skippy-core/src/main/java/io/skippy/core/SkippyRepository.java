@@ -47,11 +47,9 @@ public final class SkippyRepository {
 
     private final Path projectDir;
     private final Path buildDir;
-    private final SkippyConfiguration skippyConfiguration;
     private final SkippyRepositoryExtension extension;
 
     private SkippyRepository(SkippyConfiguration skippyConfiguration, Path projectDir, Path buildDir) {
-        this.skippyConfiguration = skippyConfiguration;
         this.projectDir = projectDir;
         this.buildDir = buildDir;
         this.extension = createRepositoryExtension(skippyConfiguration, projectDir);

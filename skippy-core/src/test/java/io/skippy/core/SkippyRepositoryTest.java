@@ -107,4 +107,12 @@ public class SkippyRepositoryTest {
         assertArrayEquals(readAllBytes(execFile), result.jacocoExecutionData());
     }
 
+    @Test
+    void testSaveAndReadJaCoCoExecutionData() throws Exception {
+        var executionData = Files.readAllBytes(Paths.get(getClass().getResource("com.example.LeftPadderTest.exec").toURI()));
+        var id = skippyRepository.saveJacocoExecutionData(executionData);
+        assertEquals("D40016DC6B856D89EA17DB14F370D026", id);
+        assertArrayEquals(executionData, skippyRepository.readJacocoExecutionData(id).get());
+    }
+
 }
