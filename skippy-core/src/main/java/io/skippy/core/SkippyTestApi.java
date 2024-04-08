@@ -45,18 +45,20 @@ public final class SkippyTestApi {
 
     private final TestImpactAnalysis testImpactAnalysis;
     private final SkippyRepository skippyRepository;
+    private final SkippyConfiguration skippyConfiguration;
     private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();
 
-    private SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyRepository skippyRepository) {
+    private SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyConfiguration skippyConfiguration, SkippyRepository skippyRepository) {
         this.testImpactAnalysis = testImpactAnalysis;
         this.skippyRepository = skippyRepository;
+        this.skippyConfiguration = skippyConfiguration;
     }
 
     private static SkippyTestApi getInstance() {
         var skippyConfiguration = SkippyRepository.readConfiguration();
         var skippyRepository = SkippyRepository.getInstance(skippyConfiguration);
         var tia = skippyRepository.readLatestTestImpactAnalysis();
-        return new SkippyTestApi(tia, skippyRepository);
+        return new SkippyTestApi(tia, skippyConfiguration, skippyRepository);
     }
 
     /**
@@ -71,7 +73,7 @@ public final class SkippyTestApi {
                 if (predictions.containsKey(test.getName())) {
                     return predictions.get(test.getName()) == Prediction.EXECUTE;
                 }
-                var predictionWithReason = testImpactAnalysis.predict(test.getName());
+                var predictionWithReason = testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository);
                 if (predictionWithReason.reason().details().isPresent()) {
                     Files.writeString(
                         SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),

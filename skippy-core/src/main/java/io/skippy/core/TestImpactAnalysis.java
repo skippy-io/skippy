@@ -120,9 +120,11 @@ public final class TestImpactAnalysis {
      * Makes a skip-or-execute prediction for the test identified by the {@code testClassName}.
      *
      * @param testClassName the test's fully-qualified class name (e.g., com.example.FooTest)
+     * @param configuration the {@link SkippyConfiguration}, must not be null
+     * @param skippyRepository the {@link SkippyRepository}, must no tbe null
      * @return a skip-or-execute prediction for the test identified by the {@code testClassName}
      */
-    PredictionWithReason predict(String testClassName) {
+    PredictionWithReason predict(String testClassName, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
             var maybeAnalyzedTest = analyzedTests.stream()
                     .filter(test -> classFileContainer.getById(test.getTestClassId()).getClassName().equals(testClassName))
@@ -143,6 +145,15 @@ public final class TestImpactAnalysis {
 
             if (testClass.hasChanged()) {
                 return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
+            }
+            if (configuration.generateCoverageForSkippedTests()) {
+                if (analyzedTest.getExecutionId().isEmpty()) {
+                        return PredictionWithReason.execute(new Reason(MISSING_EXECUTION_ID, Optional.empty()));
+                } else {
+                    if (skippyRepository.readJacocoExecutionData(analyzedTest.getExecutionId().get()).isEmpty()) {
+                        return PredictionWithReason.execute(new Reason(UNABLE_TO_READ_EXECUTION_DATA, Optional.empty()));
+                    }
+                }
             }
             for (var coveredClassId : analyzedTest.getCoveredClassesIds()) {
                 var coveredClass = classFileContainer.getById(coveredClassId);

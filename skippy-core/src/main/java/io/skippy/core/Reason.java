@@ -59,7 +59,19 @@ record Reason(Category category, Optional<String> details) {
         /**
          * The class file of a covered class  was not found on the file system.
          */
-        COVERED_CLASS_CLASS_FILE_NOT_FOUND
+        COVERED_CLASS_CLASS_FILE_NOT_FOUND,
+
+        /**
+         * Coverage for skipped tests is enabled but the test has no execution id. The test needs to be re-run in order
+         * to capture coverage for skipped tests.
+         */
+        MISSING_EXECUTION_ID,
+
+        /**
+         * Coverage for skipped tests is enabled and the test has an execution id. However, Skippy is unable to read the
+         * execution data. The test needs to be re-run in order to capture coverage for skipped tests.
+         */
+        UNABLE_TO_READ_EXECUTION_DATA
     }
 
 }

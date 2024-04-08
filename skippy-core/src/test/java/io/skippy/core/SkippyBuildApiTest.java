@@ -98,7 +98,7 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testEmptySkippyFolderWithTwoExecFilesExecutionDataPersistenceEnabled() throws JSONException {
+    void testEmptySkippyFolderWithTwoExecFilesCoverageForSkippedTestsEnabled() throws JSONException {
         var skippyConfiguration = new SkippyConfiguration(true, Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
@@ -625,4 +625,5 @@ public final class SkippyBuildApiTest {
         """;
         JSONAssert.assertEquals(expected, tia.toJson(), JSONCompareMode.LENIENT);
     }
+
 }
