@@ -27,8 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import static java.nio.file.Files.exists;
-import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.Files.*;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,6 +46,7 @@ public class SkippyRepositoryTest {
         skippyRepository.deleteSkippyFolder();
         skippyFolder = SkippyFolder.get(projectDir);
     }
+
     @Test
     void testDeleteSkippyFolder() {
         assertTrue(exists(skippyFolder));
@@ -59,7 +59,7 @@ public class SkippyRepositoryTest {
         var configFile = skippyFolder.resolve("config.json");
         assertFalse(exists(skippyFolder.resolve("config.json")));
         skippyRepository.saveConfiguration(new SkippyConfiguration(true, Optional.empty()));
-        var content = Files.readString(configFile, StandardCharsets.UTF_8);
+        var content = readString(configFile, StandardCharsets.UTF_8);
         assertThat(content).isEqualToIgnoringWhitespace("""
             {
                 "coverageForSkippedTests": "true",
@@ -113,6 +113,102 @@ public class SkippyRepositoryTest {
         var id = skippyRepository.saveJacocoExecutionData(executionData);
         assertEquals("D40016DC6B856D89EA17DB14F370D026", id);
         assertArrayEquals(executionData, skippyRepository.readJacocoExecutionData(id).get());
+    }
+
+    @Test
+    void testSaveTestImpactAnalysis() throws IOException {
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.FooTest",
+                        "path": "com/example/FooTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "0",
+                        "result": "PASSED",
+                        "coveredClasses": ["0"]
+                    }
+                ]
+            }
+        """);
+        skippyRepository.saveTestImpactAnalysis(testImpactAnalysis);
+
+        var tiaJson = skippyFolder.resolve("test-impact-analysis.json");
+        assertTrue(exists(tiaJson));
+        assertThat(readString(tiaJson, StandardCharsets.UTF_8)).isEqualToIgnoringWhitespace(testImpactAnalysis.toJson());
+
+        var latest = skippyFolder.resolve("LATEST");
+        assertTrue(exists(latest));
+        assertThat(readString(latest, StandardCharsets.UTF_8)).isEqualTo("D013368C0DD441D819DEA78640F4EC1A");
+    }
+
+    @Test
+    void readLatestTestImpactAnalysis_latest_file_not_found() {
+        var testImpactAnalysis = skippyRepository.readLatestTestImpactAnalysis();
+        assertEquals(testImpactAnalysis, TestImpactAnalysis.NOT_FOUND);
+    }
+
+    @Test
+    void readLatestTestImpactAnalysis_json_file_not_found() throws IOException {
+        writeString(skippyFolder.resolve("LATEST"), "D013368C0DD441D819DEA78640F4EC1A", StandardCharsets.UTF_8);
+        var testImpactAnalysis = skippyRepository.readLatestTestImpactAnalysis();
+        assertEquals(testImpactAnalysis, TestImpactAnalysis.NOT_FOUND);
+    }
+
+    @Test
+    void readLatestTestImpactAnalysis_json_file_does_not_match_version_in_latest() throws IOException {
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.FooTest",
+                        "path": "com/example/FooTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "0",
+                        "result": "PASSED",
+                        "coveredClasses": ["0"]
+                    }
+                ]
+            }
+        """);
+        writeString(skippyFolder.resolve("LATEST"), "00000000000000000000000000000000", StandardCharsets.UTF_8);
+        writeString(skippyFolder.resolve("test-impact-analysis.json"), testImpactAnalysis.toJson(), StandardCharsets.UTF_8);
+        assertEquals(TestImpactAnalysis.NOT_FOUND, skippyRepository.readLatestTestImpactAnalysis());
+    }
+    @Test
+    void readLatestTestImpactAnalysis_json_file_does_match_version_in_latest() throws IOException {
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.FooTest",
+                        "path": "com/example/FooTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "ZT0GoiWG8Az5TevH9/JwBg=="
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "0",
+                        "result": "PASSED",
+                        "coveredClasses": ["0"]
+                    }
+                ]
+            }
+        """);
+        writeString(skippyFolder.resolve("LATEST"), testImpactAnalysis.getId(), StandardCharsets.UTF_8);
+        writeString(skippyFolder.resolve("test-impact-analysis.json"), testImpactAnalysis.toJson(), StandardCharsets.UTF_8);
+        assertEquals(testImpactAnalysis, skippyRepository.readLatestTestImpactAnalysis());
     }
 
 }

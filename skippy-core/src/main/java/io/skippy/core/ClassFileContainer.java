@@ -183,4 +183,16 @@ final class ClassFileContainer {
         return ClassFileContainer.from(new ArrayList<>(result));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClassFileContainer that = (ClassFileContainer) o;
+        return Objects.equals(classFilesById, that.classFilesById);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(classFilesById);
+    }
 }

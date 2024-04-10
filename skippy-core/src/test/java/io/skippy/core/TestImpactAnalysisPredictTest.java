@@ -35,6 +35,14 @@ public class TestImpactAnalysisPredictTest {
     class ScenariosWithCoverageForSkippedTestsDisabled {
 
         @Test
+        void testNoTestImpactAnalysisFound() {
+            var testImpactAnalysis = TestImpactAnalysis.NOT_FOUND;
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(TEST_IMPACT_ANALYSIS_NOT_FOUND, predictionWithReason.reason().category());
+        }
+
+        @Test
         void testPredictNoChange() {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
@@ -69,13 +77,19 @@ public class TestImpactAnalysisPredictTest {
         @Test
         void testPredictUnknownTest() {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
-            {
-                "classes": {
-                },
-                "tests": [
-                ]
-            }
-        """);
+                {
+                    "classes": {
+                        "0": {
+                            "name": "com.example.LeftPadder",
+                            "path": "io/skippy/core/LeftPadder.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "8E994DD8"
+                        }
+                    },
+                    "tests": [
+                    ]
+                }
+            """);
             var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(NO_DATA_FOUND_FOR_TEST, predictionWithReason.reason().category());

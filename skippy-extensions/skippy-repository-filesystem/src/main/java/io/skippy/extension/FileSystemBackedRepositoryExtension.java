@@ -14,10 +14,24 @@ import java.util.Optional;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.exists;
 
+/**
+ * Custom {@link SkippyRepositoryExtension} that
+ * <ul>
+ *     <li>stores and retrieves all data in / from the .skippy folder in the user's home directory,</li>
+ *     <li>permanently retains all {@link TestImpactAnalysis} instances and </li>
+ *     <li>permanently retains all JaCoCo execution data files.</li>
+ * </ul>
+ * This implementation serves as simple example for how to implement of a custom {@link SkippyRepositoryExtension}.
+ */
 public class FileSystemBackedRepositoryExtension implements SkippyRepositoryExtension  {
 
     private final Path storageFolder = Path.of(System.getProperty("user.home")).resolve(".skippy");
 
+    /**
+     * Constructor used by Skippy.
+     *
+     * @param projectDir the project directory
+     */
     public FileSystemBackedRepositoryExtension(Path projectDir) {
         try {
             if (false == exists(storageFolder)) {

@@ -27,27 +27,22 @@ public class TestImpactAnalysisMergeTest {
     void testEmptyBaseline() {
         var baseline = TestImpactAnalysis.parse("""
             {
-                "classes": {
-                },
-                "tests": [
-                ]
+                "classes": {},
+                "tests": []
             }
         """);
         var newAnalysis = TestImpactAnalysis.parse("""
             {
-                "classes": {
-                },
-                "tests": [
-                ]
+                "classes": {},
+                "tests": []
             }
         """);
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "classes": {
-                },
-                "tests": [
-                ]
+                "id": "F8D85DB143EC3F06FAD5D0E0C730E1E9",
+                "classes": {},
+                "tests": []
             }
         """);
     }
@@ -56,10 +51,8 @@ public class TestImpactAnalysisMergeTest {
     void testEmptyBaselineNewClassAndNewTest() {
         var baseline = TestImpactAnalysis.parse("""
             {
-                "classes": {
-                },
-                "tests": [
-                ]
+                "classes": {},
+                "tests": []
             }
         """);
         var newAnalysis = TestImpactAnalysis.parse("""
@@ -84,6 +77,7 @@ public class TestImpactAnalysisMergeTest {
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
+                "id": "2DF824AB81F8E6FB957D5E16DA86B981",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -146,6 +140,7 @@ public class TestImpactAnalysisMergeTest {
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
+                "id": "11354F8AC8619304F48F36FB5D4458C3",
                 "classes": {
                     "0": {
                         "name": "com.example.BarTest",
@@ -219,6 +214,7 @@ public class TestImpactAnalysisMergeTest {
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
+                "id": "316A0F66B5E6E1C3993C60575ECA82FD",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -283,6 +279,7 @@ public class TestImpactAnalysisMergeTest {
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
+                "id": "021C7D48FCEF65129C3F898D3DA393D3",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",

@@ -26,6 +26,12 @@ import java.util.Optional;
 record Reason(Category category, Optional<String> details) {
 
     enum Category {
+
+        /**
+         * Skippy was unable to retrieve an existing Test Impact Analysis to make a skip-or-execute decision.
+         */
+        TEST_IMPACT_ANALYSIS_NOT_FOUND,
+
         /**
          * Neither the test nor any of the covered classes have changed.
          */

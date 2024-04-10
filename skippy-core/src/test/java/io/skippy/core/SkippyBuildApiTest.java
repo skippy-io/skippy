@@ -90,8 +90,7 @@ public final class SkippyBuildApiTest {
                         "name": "com.example.FooTest"
                     }
                 },
-                "tests": [
-                ]
+                "tests": []
             }
         """;
         JSONAssert.assertEquals(expected, tia.toJson(), JSONCompareMode.LENIENT);

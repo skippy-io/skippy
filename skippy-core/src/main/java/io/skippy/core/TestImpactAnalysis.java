@@ -96,7 +96,7 @@ public final class TestImpactAnalysis {
      */
     TestImpactAnalysis(ClassFileContainer classFileContainer, List<AnalyzedTest> analyzedTests) {
         this.classFileContainer = classFileContainer;
-        this.analyzedTests = analyzedTests;
+        this.analyzedTests = analyzedTests.stream().sorted().toList();
     }
 
     ClassFileContainer getClassFileContainer() {
@@ -113,7 +113,12 @@ public final class TestImpactAnalysis {
      * @return a unique identifier for this instance
      */
     public String getId() {
-        return hashWith32Digits(toJson().getBytes(StandardCharsets.UTF_8));
+        var builder = new StringBuilder();
+        builder.append(classFileContainer.toJson());
+        for (var analyzedTest : analyzedTests) {
+            builder.append(analyzedTest.toJson());
+        }
+        return hashWith32Digits(builder.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -126,6 +131,9 @@ public final class TestImpactAnalysis {
      */
     PredictionWithReason predict(String testClassName, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
+            if (NOT_FOUND.equals(this)) {
+                return PredictionWithReason.execute(new Reason(TEST_IMPACT_ANALYSIS_NOT_FOUND, Optional.empty()));
+            }
             var maybeAnalyzedTest = analyzedTests.stream()
                     .filter(test -> classFileContainer.getById(test.getTestClassId()).getClassName().equals(testClassName))
                     .findFirst();
@@ -177,8 +185,14 @@ public final class TestImpactAnalysis {
         return analyzedTests.stream().flatMap(analyzedTest -> analyzedTest.getExecutionId().stream()).toList();
     }
 
-    public static TestImpactAnalysis parse(String string) {
-        return Profiler.profile("TestImpactAnalysis#parse", () -> parse(new Tokenizer(string)));
+    /**
+     * Creates a {@link TestImpactAnalysis} from a JSON string.
+     *
+     * @param jsonString the JSON representation of a {@link TestImpactAnalysis}
+     * @return the {@link TestImpactAnalysis} represented by the JSON string.
+     */
+    public static TestImpactAnalysis parse(String jsonString) {
+        return Profiler.profile("TestImpactAnalysis#parse", () -> parse(new Tokenizer(jsonString)));
     }
 
     private static TestImpactAnalysis parse(Tokenizer tokenizer) {
@@ -189,6 +203,9 @@ public final class TestImpactAnalysis {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
+                case "id":
+                    tokenizer.next();
+                    break;
                 case "classes":
                     classFileContainer = ClassFileContainer.parse(tokenizer);
                     break;
@@ -212,13 +229,15 @@ public final class TestImpactAnalysis {
     public String toJson() {
         return """
             {
+                "id": "%s",
                 "classes": %s,
                 "tests": [
             %s
                 ]
             }""".formatted(
+                getId(),
                 classFileContainer.toJson(),
-                analyzedTests.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator())
+                analyzedTests.stream().map(c -> c.toJson()).collect(joining("," + lineSeparator())
             )
         );
     }
@@ -260,4 +279,16 @@ public final class TestImpactAnalysis {
         return merged.getId(classFile);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TestImpactAnalysis that = (TestImpactAnalysis) o;
+        return Objects.equals(classFileContainer, that.classFileContainer) && Objects.equals(analyzedTests, that.analyzedTests);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(classFileContainer, analyzedTests);
+    }
 }

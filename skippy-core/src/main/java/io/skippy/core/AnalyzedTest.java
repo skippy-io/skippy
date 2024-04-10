@@ -180,16 +180,18 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (other instanceof AnalyzedTest a) {
-            return Objects.equals(testClassId, a.testClassId);
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AnalyzedTest that = (AnalyzedTest) o;
+        return testClassId == that.testClassId &&
+                result == that.result &&
+                Objects.equals(coveredClassesIds, that.coveredClassesIds) &&
+                Objects.equals(executionId, that.executionId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(testClassId);
+        return Objects.hash(testClassId, result, coveredClassesIds, executionId);
     }
-
 }

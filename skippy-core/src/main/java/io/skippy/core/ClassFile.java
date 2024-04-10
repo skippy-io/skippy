@@ -157,23 +157,25 @@ public final class ClassFile implements Comparable<ClassFile> {
     @Override
     public int compareTo(ClassFile other) {
         return comparing(ClassFile::getClassName)
+                .thenComparing(ClassFile::getPath)
                 .thenComparing(ClassFile::getOutputFolder)
                 .compare(this, other);
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (other instanceof ClassFile c) {
-            return Objects.equals(getClassName() + getOutputFolder(), c.getClassName()  + c.getOutputFolder());
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClassFile classFile = (ClassFile) o;
+        return Objects.equals(className, classFile.className) &&
+                Objects.equals(path, classFile.path) &&
+                Objects.equals(outputFolder, classFile.outputFolder);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClassName(), getOutputFolder());
+        return Objects.hash(className, path, outputFolder);
     }
-
 
     boolean hasChanged() {
         return ! hash.equals(HashUtil.debugAgnosticHash(outputFolder.resolve(path)));
