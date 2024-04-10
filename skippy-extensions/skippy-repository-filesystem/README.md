@@ -1,3 +1,3 @@
-# skippy-core
+# skippy-repository-filesystem
 
-Internal library that contains common functionality for Skippy's test and build libraries.
+Sample repository extension that stores all data in the filesystem

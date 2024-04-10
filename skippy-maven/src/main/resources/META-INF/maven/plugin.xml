@@ -50,7 +50,7 @@
           <description>enables / disables generation of test coverage for skipped tests</description>
         </parameter>
         <parameter>
-          <name>repositoryClass</name>
+          <name>repository</name>
           <type>string</type>
           <required>false</required>
           <editable>true</editable>
@@ -99,7 +99,7 @@
           <description>enables / disables generation of test coverage for skipped tests</description>
         </parameter>
         <parameter>
-          <name>repositoryClass</name>
+          <name>repository</name>
           <type>string</type>
           <required>false</required>
           <editable>true</editable>
@@ -148,7 +148,7 @@
           <description>enables / disables generation of test coverage for skipped tests</description>
         </parameter>
         <parameter>
-          <name>repositoryClass</name>
+          <name>repository</name>
           <type>string</type>
           <required>false</required>
           <editable>true</editable>

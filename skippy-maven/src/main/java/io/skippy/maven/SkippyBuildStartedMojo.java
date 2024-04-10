@@ -42,8 +42,8 @@ public class SkippyBuildStartedMojo extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "coverageForSkippedTests", required = false)
     private boolean coverageForSkippedTests;
 
-    @Parameter(defaultValue = "false", property = "repositoryClass", required = false)
-    private String repositoryClass;
+    @Parameter(defaultValue = "false", property = "repository", required = false)
+    private String repository;
 
     @Component
     private MavenSession session;
@@ -51,7 +51,7 @@ public class SkippyBuildStartedMojo extends AbstractMojo {
     @Override
     public void execute() {
         var projectDir = project.getBasedir().toPath();
-        var skippyConfiguration = new SkippyConfiguration(coverageForSkippedTests, Optional.ofNullable(repositoryClass));
+        var skippyConfiguration = new SkippyConfiguration(coverageForSkippedTests, Optional.ofNullable(repository));
         var skippyApi = new SkippyBuildApi(
                 skippyConfiguration,
                 new MavenClassFileCollector(project),

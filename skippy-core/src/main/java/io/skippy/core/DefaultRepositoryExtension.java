@@ -54,10 +54,15 @@ import static java.nio.file.Files.*;
  *
  * @author Florian McKee
  */
-final class DefaultRepositoryExtension implements SkippyRepositoryExtension {
+public final class DefaultRepositoryExtension implements SkippyRepositoryExtension {
 
     private final Path projectDir;
 
+    /**
+     * Constructor that will be invoked via reflection.
+     *
+     * @param projectDir the project directory (e.g., ~/repo)
+     */
     public DefaultRepositoryExtension(Path projectDir) {
         this.projectDir = projectDir;
     }
