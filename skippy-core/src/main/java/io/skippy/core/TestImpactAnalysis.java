@@ -72,9 +72,9 @@ import static java.util.stream.Collectors.joining;
  *              "coveredClasses": [0,1]                       │                         │
  *          },                                              ──┘                         │
  *          {                                                                           │
- *              "class": 3,   ───────┬──────────────────────────────────────────────────┘
- *              "result": "PASSED",  │
- *              "coveredClasses": [2,3]
+ *              "class": 3,   ──────────────┬───────────────────────────────────────────┘
+ *              "result": "PASSED",         │
+ *              "coveredClasses": [2,3]  ───┘
  *          }
  *      ]
  * }
@@ -82,7 +82,7 @@ import static java.util.stream.Collectors.joining;
  *
  * @author Florian McKee
  */
-final class TestImpactAnalysis {
+public final class TestImpactAnalysis {
 
     static final TestImpactAnalysis NOT_FOUND = new TestImpactAnalysis(ClassFileContainer.from(emptyList()), emptyList());
     private final ClassFileContainer classFileContainer;
@@ -96,7 +96,7 @@ final class TestImpactAnalysis {
      */
     TestImpactAnalysis(ClassFileContainer classFileContainer, List<AnalyzedTest> analyzedTests) {
         this.classFileContainer = classFileContainer;
-        this.analyzedTests = analyzedTests;
+        this.analyzedTests = analyzedTests.stream().sorted().toList();
     }
 
     ClassFileContainer getClassFileContainer() {
@@ -112,18 +112,28 @@ final class TestImpactAnalysis {
      *
      * @return a unique identifier for this instance
      */
-    String getId() {
-        return hashWith32Digits(toJson().getBytes(StandardCharsets.UTF_8));
+    public String getId() {
+        var builder = new StringBuilder();
+        builder.append(classFileContainer.toJson());
+        for (var analyzedTest : analyzedTests) {
+            builder.append(analyzedTest.toJson());
+        }
+        return hashWith32Digits(builder.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
      * Makes a skip-or-execute prediction for the test identified by the {@code testClassName}.
      *
      * @param testClassName the test's fully-qualified class name (e.g., com.example.FooTest)
+     * @param configuration the {@link SkippyConfiguration}, must not be null
+     * @param skippyRepository the {@link SkippyRepository}, must no tbe null
      * @return a skip-or-execute prediction for the test identified by the {@code testClassName}
      */
-    PredictionWithReason predict(String testClassName) {
+    PredictionWithReason predict(String testClassName, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
+            if (NOT_FOUND.equals(this)) {
+                return PredictionWithReason.execute(new Reason(TEST_IMPACT_ANALYSIS_NOT_FOUND, Optional.empty()));
+            }
             var maybeAnalyzedTest = analyzedTests.stream()
                     .filter(test -> classFileContainer.getById(test.getTestClassId()).getClassName().equals(testClassName))
                     .findFirst();
@@ -143,6 +153,15 @@ final class TestImpactAnalysis {
 
             if (testClass.hasChanged()) {
                 return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
+            }
+            if (configuration.generateCoverageForSkippedTests()) {
+                if (analyzedTest.getExecutionId().isEmpty()) {
+                        return PredictionWithReason.execute(new Reason(MISSING_EXECUTION_ID, Optional.empty()));
+                } else {
+                    if (skippyRepository.readJacocoExecutionData(analyzedTest.getExecutionId().get()).isEmpty()) {
+                        return PredictionWithReason.execute(new Reason(UNABLE_TO_READ_EXECUTION_DATA, Optional.empty()));
+                    }
+                }
             }
             for (var coveredClassId : analyzedTest.getCoveredClassesIds()) {
                 var coveredClass = classFileContainer.getById(coveredClassId);
@@ -166,8 +185,14 @@ final class TestImpactAnalysis {
         return analyzedTests.stream().flatMap(analyzedTest -> analyzedTest.getExecutionId().stream()).toList();
     }
 
-    static TestImpactAnalysis parse(String string) {
-        return Profiler.profile("TestImpactAnalysis#parse", () -> parse(new Tokenizer(string)));
+    /**
+     * Creates a {@link TestImpactAnalysis} from a JSON string.
+     *
+     * @param jsonString the JSON representation of a {@link TestImpactAnalysis}
+     * @return the {@link TestImpactAnalysis} represented by the JSON string.
+     */
+    public static TestImpactAnalysis parse(String jsonString) {
+        return Profiler.profile("TestImpactAnalysis#parse", () -> parse(new Tokenizer(jsonString)));
     }
 
     private static TestImpactAnalysis parse(Tokenizer tokenizer) {
@@ -178,6 +203,9 @@ final class TestImpactAnalysis {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
+                case "id":
+                    tokenizer.next();
+                    break;
                 case "classes":
                     classFileContainer = ClassFileContainer.parse(tokenizer);
                     break;
@@ -198,16 +226,18 @@ final class TestImpactAnalysis {
      *
      * @return this instance as JSON string
      */
-    String toJson() {
+    public String toJson() {
         return """
             {
+                "id": "%s",
                 "classes": %s,
                 "tests": [
             %s
                 ]
             }""".formatted(
+                getId(),
                 classFileContainer.toJson(),
-                analyzedTests.stream().sorted().map(c -> c.toJson()).collect(joining("," + lineSeparator())
+                analyzedTests.stream().map(c -> c.toJson()).collect(joining("," + lineSeparator())
             )
         );
     }
@@ -249,4 +279,16 @@ final class TestImpactAnalysis {
         return merged.getId(classFile);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TestImpactAnalysis that = (TestImpactAnalysis) o;
+        return Objects.equals(classFileContainer, that.classFileContainer) && Objects.equals(analyzedTests, that.analyzedTests);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(classFileContainer, analyzedTests);
+    }
 }

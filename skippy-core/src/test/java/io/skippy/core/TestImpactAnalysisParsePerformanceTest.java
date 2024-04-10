@@ -16,8 +16,6 @@
 
 package io.skippy.core;
 
-import io.skippy.core.TestImpactAnalysis;
-import io.skippy.core.Profiler;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

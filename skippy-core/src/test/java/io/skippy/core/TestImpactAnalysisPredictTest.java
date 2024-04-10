@@ -16,19 +16,35 @@
 
 package io.skippy.core;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+
+import java.util.Optional;
 
 import static io.skippy.core.Prediction.EXECUTE;
 import static io.skippy.core.Prediction.SKIP;
 import static io.skippy.core.Reason.Category.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestImpactAnalysisPredictTest {
 
-    @Test
-    void testPredictNoChange() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
+    @Nested
+    class ScenariosWithCoverageForSkippedTestsDisabled {
+
+        @Test
+        void testNoTestImpactAnalysisFound() {
+            var testImpactAnalysis = TestImpactAnalysis.NOT_FOUND;
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(TEST_IMPACT_ANALYSIS_NOT_FOUND, predictionWithReason.reason().category());
+        }
+
+        @Test
+        void testPredictNoChange() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -53,29 +69,35 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
-        assertEquals(SKIP, predictionWithReason.prediction());
-        assertEquals(NO_CHANGE, predictionWithReason.reason().category());
-    }
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(SKIP, predictionWithReason.prediction());
+            assertEquals(NO_CHANGE, predictionWithReason.reason().category());
+        }
 
-    @Test
-    void testPredictUnknownTest() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
-            {
-                "classes": {
-                },
-                "tests": [
-                ]
-            }
-        """);
-        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
-        assertEquals(EXECUTE, predictionWithReason.prediction());
-        assertEquals(NO_DATA_FOUND_FOR_TEST, predictionWithReason.reason().category());
-    }
+        @Test
+        void testPredictUnknownTest() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
+                {
+                    "classes": {
+                        "0": {
+                            "name": "com.example.LeftPadder",
+                            "path": "io/skippy/core/LeftPadder.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "8E994DD8"
+                        }
+                    },
+                    "tests": [
+                    ]
+                }
+            """);
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(NO_DATA_FOUND_FOR_TEST, predictionWithReason.reason().category());
+        }
 
-    @Test
-    void testPredictBytecodeChangeInTest() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
+        @Test
+        void testPredictBytecodeChangeInTest() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -100,14 +122,14 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
-        assertEquals(EXECUTE, predictionWithReason.prediction());
-        assertEquals(BYTECODE_CHANGE_IN_TEST, predictionWithReason.reason().category());
-    }
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(BYTECODE_CHANGE_IN_TEST, predictionWithReason.reason().category());
+        }
 
-    @Test
-    void testPredictBytecodeChangeInCoveredClass() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
+        @Test
+        void testPredictBytecodeChangeInCoveredClass() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -132,15 +154,15 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
-        assertEquals(EXECUTE, predictionWithReason.prediction());
-        assertEquals(BYTECODE_CHANGE_IN_COVERED_CLASS, predictionWithReason.reason().category());
-        assertEquals("com.example.LeftPadder", predictionWithReason.reason().details().get());
-    }
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(BYTECODE_CHANGE_IN_COVERED_CLASS, predictionWithReason.reason().category());
+            assertEquals("com.example.LeftPadder", predictionWithReason.reason().details().get());
+        }
 
-    @Test
-    void testPredictFailedTest() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
+        @Test
+        void testPredictFailedTest() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -165,14 +187,14 @@ public class TestImpactAnalysisPredictTest {
                 ]                      
             }
         """);
-        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
-        assertEquals(EXECUTE, predictionWithReason.prediction());
-        assertEquals(TEST_FAILED_PREVIOUSLY, predictionWithReason.reason().category());
-    }
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(TEST_FAILED_PREVIOUSLY, predictionWithReason.reason().category());
+        }
 
-    @Test
-    void testPredictTestClassFileNotFound() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
+        @Test
+        void testPredictTestClassFileNotFound() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
@@ -197,15 +219,15 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
-        assertEquals(EXECUTE, predictionWithReason.prediction());
-        assertEquals(TEST_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
-        assertEquals("io/skippy/core/LeftPadderTest$Bla.class", predictionWithReason.reason().details().get());
-    }
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(TEST_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
+            assertEquals("io/skippy/core/LeftPadderTest$Bla.class", predictionWithReason.reason().details().get());
+        }
 
-    @Test
-    void testPredictCoveredClassClassFileNotFound() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
+        @Test
+        void testPredictCoveredClassClassFileNotFound() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
              {
                 "classes": {
                     "0": {
@@ -230,10 +252,104 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest");
-        assertEquals(EXECUTE, predictionWithReason.prediction());
-        assertEquals(COVERED_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
-        assertEquals("io/skippy/core/LeftPadder$Bla.class", predictionWithReason.reason().details().get());
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(COVERED_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
+            assertEquals("io/skippy/core/LeftPadder$Bla.class", predictionWithReason.reason().details().get());
+        }
+
+    }
+
+    @Nested
+    class ScenariosWithCoverageForSkippedTestsEnabled {
+
+        @Test
+        void testHappyPath() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
+                {
+                    "classes": {
+                        "0": {
+                            "name": "com.example.LeftPadderTest",
+                            "path": "io/skippy/core/LeftPadderTest.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "83A72152"
+                        }
+                    },
+                    "tests": [
+                        {
+                            "class": "0",
+                            "result": "PASSED",
+                            "coveredClasses": ["0"],
+                            "executionId": "00000000000000000000000000000000"
+                        }
+                    ]
+                }
+            """);
+            var configuration = new SkippyConfiguration(true, Optional.empty());
+            var repository = mock(SkippyRepository.class);
+            when(repository.readJacocoExecutionData("00000000000000000000000000000000")).thenReturn(Optional.of(new byte[]{}));
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
+            assertEquals(SKIP, predictionWithReason.prediction());
+        }
+
+
+        @Test
+        void testMissingExecutionId() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
+                {
+                    "classes": {
+                        "0": {
+                            "name": "com.example.LeftPadderTest",
+                            "path": "io/skippy/core/LeftPadderTest.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "83A72152"
+                        }
+                    },
+                    "tests": [
+                        {
+                            "class": "0",
+                            "result": "PASSED",
+                            "coveredClasses": ["0"]
+                        }
+                    ]
+                }
+            """);
+            var configuration = new SkippyConfiguration(true, Optional.empty());
+            var repository = SkippyRepository.getInstance(configuration);
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(MISSING_EXECUTION_ID, predictionWithReason.reason().category());
+        }
+
+        @Test
+        void testUnableToReadExecutionData() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
+                {
+                    "classes": {
+                        "0": {
+                            "name": "com.example.LeftPadderTest",
+                            "path": "io/skippy/core/LeftPadderTest.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "83A72152"
+                        }
+                    },
+                    "tests": [
+                        {
+                            "class": "0",
+                            "result": "PASSED",
+                            "coveredClasses": ["0"],
+                            "executionId": "00000000000000000000000000000000"
+                        }
+                    ]
+                }
+            """);
+            var configuration = new SkippyConfiguration(true, Optional.empty());
+            var repository = SkippyRepository.getInstance(configuration);
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(UNABLE_TO_READ_EXECUTION_DATA, predictionWithReason.reason().category());
+        }
+
     }
 
 }

@@ -16,7 +16,7 @@
 
 package io.skippy.maven;
 
-import io.skippy.core.SkippyApi;
+import io.skippy.core.SkippyBuildApi;
 import io.skippy.core.SkippyConfiguration;
 import io.skippy.core.SkippyRepository;
 import org.apache.maven.execution.MavenSession;
@@ -28,6 +28,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * Clears the skippy folder.
@@ -42,8 +43,11 @@ public class SkippyCleanMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     MavenProject project;
 
-    @Parameter(defaultValue = "false", property = "saveExecutionData", required = false)
-    private boolean saveExecutionData;
+    @Parameter(defaultValue = "false", property = "coverageForSkippedTests", required = false)
+    private boolean coverageForSkippedTests;
+
+    @Parameter(defaultValue = "false", property = "repository", required = false)
+    private String repository;
 
     @Component
     private MavenSession session;
@@ -51,8 +55,8 @@ public class SkippyCleanMojo extends AbstractMojo {
     @Override
     public void execute() {
         var projectDir = project.getBasedir().toPath();
-        var skippyConfiguration = new SkippyConfiguration(saveExecutionData);
-        var skippyApi = new SkippyApi(
+        var skippyConfiguration = new SkippyConfiguration(coverageForSkippedTests, Optional.ofNullable(repository));
+        var skippyApi = new SkippyBuildApi(
                 skippyConfiguration,
                 new MavenClassFileCollector(project),
                 SkippyRepository.getInstance(skippyConfiguration, projectDir, projectDir.resolve(Path.of(project.getBuild().getOutputDirectory()).getParent()))

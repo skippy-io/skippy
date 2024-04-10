@@ -17,37 +17,50 @@
 package io.skippy.core;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
- * Skippy configuration.
+ * Skippy configuration that is used both by Skippy's build plugins and Skippy's JUnit libaries.
  *
  * @author Florian McKee
  */
 public class SkippyConfiguration {
 
-    static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false);
+    static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false, Optional.empty());
 
-    private final boolean saveExecutionData;
+    private final boolean generateCoverageForSkippedTests;
+    private final String repositoryClass;
 
     /**
      * C'tor.
      *
-     * @param saveExecutionData {@code true} to save JaCoCo execution data for individual tests, {@code false}
+     * @param generateCoverageForSkippedTests {@code true} to generate coverage for skipped tests, {@code false} otherwise
+     * @param repositoryClass the fully-qualified class name of the {@link SkippyRepositoryExtension} implementation for
+     *                        this build or {@link Optional#empty()} if Skippy should use its default implementation
      */
-    public SkippyConfiguration(boolean saveExecutionData) {
-        this.saveExecutionData = saveExecutionData;
+    public SkippyConfiguration(boolean generateCoverageForSkippedTests, Optional<String> repositoryClass) {
+        this.generateCoverageForSkippedTests = generateCoverageForSkippedTests;
+        this.repositoryClass = repositoryClass.orElse(DefaultRepositoryExtension.class.getName());
     }
 
     /**
-     * Returns {@code true} if JaCoCo execution data for individual tests will be saved, {@code false} otherwise.
-     * <br /><br />
-     * The purpose of this feature is to generate accurate test coverage reports despite tests being skipped.
+     * Returns {@code true} if Skippy should generate coverage for skipped tests, {@code false} otherwise.
      *
-     * @return {@code true} if JaCoCo execution data for individual tests will be saved, {@code false} otherwise
+     * @return {@code true} if Skippy should generate coverage for skipped tests, {@code false} otherwise
      */
-    boolean saveExecutionData() {
-        return saveExecutionData;
+    boolean generateCoverageForSkippedTests() {
+        return generateCoverageForSkippedTests;
     }
+
+    /**
+     * Returns the fully-qualified class name of the {@link SkippyRepositoryExtension} implementation for this build.
+     *
+     * @return the fully-qualified class name of the {@link SkippyRepositoryExtension} implementation for this build
+     */
+    String repositoryClass() {
+        return repositoryClass;
+    }
+
 
     /**
      * Creates a new instance from JSON.
@@ -58,13 +71,17 @@ public class SkippyConfiguration {
     static SkippyConfiguration parse(String json) {
         var tokenizer = new Tokenizer(json);
         tokenizer.skip('{');
-        boolean executionData = false;
+        boolean coverageForSkippedTests = false;
+        Optional<String> repositoryClass = Optional.empty();
         while (true) {
             var key = tokenizer.next();
             tokenizer.skip(':');
             switch (key) {
-                case "saveExecutionData":
-                    executionData = Boolean.valueOf(tokenizer.next());
+                case "coverageForSkippedTests":
+                    coverageForSkippedTests = Boolean.valueOf(tokenizer.next());
+                    break;
+                case "repositoryClass":
+                    repositoryClass = Optional.of(tokenizer.next());
                     break;
             }
             tokenizer.skipIfNext(',');
@@ -73,7 +90,7 @@ public class SkippyConfiguration {
                 break;
             }
         }
-        return new SkippyConfiguration(executionData);
+        return new SkippyConfiguration(coverageForSkippedTests, repositoryClass);
     }
 
     /**
@@ -84,9 +101,10 @@ public class SkippyConfiguration {
     String toJson() {
         return """
         {
-            "saveExecutionData": "%s"
+            "coverageForSkippedTests": "%s",
+            "repositoryClass": "%s"
         }
-        """.formatted(saveExecutionData);
+        """.formatted(generateCoverageForSkippedTests, repositoryClass);
     }
 
     @Override
@@ -94,11 +112,11 @@ public class SkippyConfiguration {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SkippyConfiguration that = (SkippyConfiguration) o;
-        return saveExecutionData == that.saveExecutionData;
+        return generateCoverageForSkippedTests == that.generateCoverageForSkippedTests && Objects.equals(repositoryClass, that.repositoryClass);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(saveExecutionData);
+        return Objects.hash(generateCoverageForSkippedTests, repositoryClass);
     }
 }

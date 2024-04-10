@@ -35,10 +35,9 @@ public class TestImpactAnalysisTest {
         var testImpactAnalysis = new TestImpactAnalysis(ClassFileContainer.from(emptyList()), emptyList());
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "classes": {
-                },
-                "tests": [
-                ]
+                "id": "F8D85DB143EC3F06FAD5D0E0C730E1E9",
+                "classes": {},
+                "tests": []
             }
         """);
     }
@@ -57,6 +56,7 @@ public class TestImpactAnalysisTest {
         );
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
+                "id": "D013368C0DD441D819DEA78640F4EC1A",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -111,6 +111,7 @@ public class TestImpactAnalysisTest {
         );
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
+                "id": "4473271405D844F7E9F969057E7FA479",
                 "classes": {
                     "0": {
                         "name": "com.example.Class1",
@@ -157,10 +158,9 @@ public class TestImpactAnalysisTest {
     void testParseNoClassesNoTests() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
-                "classes": {
-                },
-                "tests": [
-                ]
+                "id": "00000000000000000000000000000000",
+                "classes": {},
+                "tests": []
             }
         """);
 
@@ -172,6 +172,7 @@ public class TestImpactAnalysisTest {
     void testParseOneTestOneClass() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
+                "id": "00000000000000000000000000000000",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -205,6 +206,7 @@ public class TestImpactAnalysisTest {
     void testParseTwoTestsFourClasses() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
+                "id": "00000000000000000000000000000000",
                 "classes": {
                     "0": {
                         "name": "com.example.Class1",

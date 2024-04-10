@@ -16,8 +16,9 @@
 
 package io.skippy.core;
 
-import io.skippy.core.SkippyConfiguration;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,11 +26,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SkippyConfigurationTest {
 
     @Test
-    void testToJson() {
-        var configuration = new SkippyConfiguration(true);
+    void testToJson1() {
+        var configuration = new SkippyConfiguration(true, Optional.empty());
         assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "saveExecutionData": "true"
+                "coverageForSkippedTests": "true",
+                "repositoryClass": "io.skippy.core.DefaultRepositoryExtension"
+            }
+        """);
+    }
+
+    @Test
+    void testToJson2() {
+        var configuration = new SkippyConfiguration(true, Optional.of("com.example.CustomRepository"));
+        assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
+            {
+                "coverageForSkippedTests": "true",
+                "repositoryClass": "com.example.CustomRepository"
             }
         """);
     }
@@ -38,10 +51,13 @@ public class SkippyConfigurationTest {
     void testParse() {
         var json = """
             {
-                "saveExecutionData": "true"
+                "coverageForSkippedTests": "true"
             }
         """;
-        assertEquals(new SkippyConfiguration(true), SkippyConfiguration.parse(json));
+        var configuration = SkippyConfiguration.parse(json);
+        assertEquals(true, configuration.generateCoverageForSkippedTests());
+        assertEquals(true, configuration.generateCoverageForSkippedTests());
+
     }
 
 
