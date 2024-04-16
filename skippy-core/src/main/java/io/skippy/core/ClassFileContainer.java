@@ -137,11 +137,10 @@ final class ClassFileContainer {
 
     String toJson() {
         StringBuilder result = new StringBuilder();
-        var classFilesAsList = new ArrayList<>(classFiles);
         result.append("{" + lineSeparator());
         for (int i = 0; i < classFiles.size(); i++) {
-            result.append("\t\t\"%s\": ".formatted(idsByClassFile.get(classFilesAsList.get(i))));
-            result.append(classFilesAsList.get(i).toJson());
+            result.append("\t\t\"%s\": ".formatted(i));
+            result.append(classFilesById.get(i).toJson());
             if (i < classFiles.size() - 1) {
                 result.append("," + lineSeparator());
             }

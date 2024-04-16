@@ -66,7 +66,6 @@ public class ClassFileTest {
         assertEquals("ZT0GoiWG8Az5TevH9/JwBg==", classFile.getHash());
     }
 
-
     @ParameterizedTest
     @CsvSource(value = {
             "LeftPadder.class:com.example.LeftPadder",

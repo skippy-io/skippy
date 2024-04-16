@@ -158,12 +158,13 @@ public class TestImpactAnalysisTest {
     void testParseNoClassesNoTests() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
-                "id": "00000000000000000000000000000000",
+                "id": "F8D85DB143EC3F06FAD5D0E0C730E1E9",
                 "classes": {},
                 "tests": []
             }
         """);
 
+        assertEquals("F8D85DB143EC3F06FAD5D0E0C730E1E9", testImpactAnalysis.getId());
         assertEquals(emptyList(), testImpactAnalysis.getAnalyzedTests());
         assertEquals(emptySet(), testImpactAnalysis.getClassFileContainer().getClassFiles());
     }
@@ -172,7 +173,7 @@ public class TestImpactAnalysisTest {
     void testParseOneTestOneClass() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
-                "id": "00000000000000000000000000000000",
+                "id": "D013368C0DD441D819DEA78640F4EC1A",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -191,6 +192,8 @@ public class TestImpactAnalysisTest {
             }
         """);
 
+        assertEquals("D013368C0DD441D819DEA78640F4EC1A", testImpactAnalysis.getId());
+
         var classFiles = new ArrayList<>(testImpactAnalysis.getClassFileContainer().getClassFiles());
         assertEquals(1, classFiles.size());
         assertEquals("com.example.FooTest", classFiles.get(0).getClassName());
@@ -206,7 +209,7 @@ public class TestImpactAnalysisTest {
     void testParseTwoTestsFourClasses() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
-                "id": "00000000000000000000000000000000",
+                "id": "40F512FD02B1EEBF932622C51AFB5268",
                 "classes": {
                     "0": {
                         "name": "com.example.Class1",
@@ -247,6 +250,8 @@ public class TestImpactAnalysisTest {
                 ]
             }
         """);
+
+        assertEquals("40F512FD02B1EEBF932622C51AFB5268", testImpactAnalysis.getId());
 
         var classFiles = new ArrayList<>(testImpactAnalysis.getClassFileContainer().getClassFiles());
         assertEquals(4, classFiles.size());

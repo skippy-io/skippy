@@ -32,7 +32,7 @@ final class Tokenizer {
     private final int tail;
 
     Tokenizer(String input) {
-        this.stream = input.replaceAll("\\s+","").toCharArray();
+        this.stream = input.replaceAll("[\\s&&[^ ]]", "").toCharArray();
         this.head = 0;
         this.tail = stream.length;
     }
@@ -47,6 +47,7 @@ final class Tokenizer {
     }
 
     void skip(char c) {
+        skipLeadingWhitespaces();
         if (head == tail || stream[head] != c) {
              throw new IllegalStateException("Can't skip over '%s' in residual characters '%s'.".formatted(c, asString()));
         }
@@ -54,6 +55,7 @@ final class Tokenizer {
     }
 
     String next() {
+        skipLeadingWhitespaces();
         if (peek('{')) {
             head++;
             return "{";
@@ -83,6 +85,7 @@ final class Tokenizer {
     }
 
     boolean peek(char c) {
+        skipLeadingWhitespaces();
         if (head == tail) {
             return false;
         }
@@ -90,6 +93,7 @@ final class Tokenizer {
     }
 
     boolean peekDigit() {
+        skipLeadingWhitespaces();
         if (head == tail) {
             return false;
         }
@@ -97,10 +101,16 @@ final class Tokenizer {
     }
 
     void skipIfNext(char c) {
+        skipLeadingWhitespaces();
         if (head == tail) {
             return;
         }
         if (stream[head] == c) {
+            head++;
+        }
+    }
+    private void skipLeadingWhitespaces() {
+        while (head != tail && stream[head] == ' ') {
             head++;
         }
     }
