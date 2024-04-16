@@ -27,13 +27,13 @@ public class TokenizerTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "ab",
-            "    ab"
+            "[{",
+            "    [{"
     }, delimiter = ':')
     void testSkip(String stream) {
         var tokenizer = new Tokenizer(stream);
-        tokenizer.skip('a');
-        assertEquals("b", tokenizer.asString());
+        tokenizer.skip('[');
+        assertEquals("{", tokenizer.asString());
     }
 
     @Test
@@ -45,9 +45,9 @@ public class TokenizerTest {
 
     @Test
     void testSkipConsumesLeadingWhitespaces() {
-        var tokenizer = new Tokenizer("   ab");
-        tokenizer.skip('a');
-        assertEquals("b", tokenizer.asString());
+        var tokenizer = new Tokenizer("  [ foo");
+        tokenizer.skip('[');
+        assertEquals(" foo", tokenizer.asString());
     }
 
     @ParameterizedTest
@@ -71,6 +71,16 @@ public class TokenizerTest {
     void testPeek(String stream, char search, boolean expected) {
         var tokenizer = new Tokenizer(stream);
         assertEquals(expected, tokenizer.peek(search));
+    }
+
+    @Test
+    void testTokenWithWhitespace() {
+        var tokenizer = new Tokenizer("""
+            "name": "foo bar"
+        """);
+        assertEquals("name", tokenizer.next());
+        tokenizer.skip(':');
+        assertEquals("foo bar", tokenizer.next());
     }
 
 }

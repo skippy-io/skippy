@@ -16,7 +16,6 @@
 
 package io.skippy.core;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -25,14 +24,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class TestImpactAnalysisParsePerformanceTest {
 
     @Test
-    @Disabled
     void testParse() throws URISyntaxException, IOException {
         var jsonFile = Paths.get(getClass().getResource("test-impact-analysis.json").toURI());
-        TestImpactAnalysis.parse(Files.readString(jsonFile, StandardCharsets.UTF_8));
+        var testImpactAnalysis = TestImpactAnalysis.parse(Files.readString(jsonFile, StandardCharsets.UTF_8));
         Profiler.printResults();
+        assertEquals("ACB10843996699388C4DD7A841D42BD9", testImpactAnalysis.getId());
+        assertEquals(2510, testImpactAnalysis.getClassFileContainer().getClassFiles().size());
+        assertEquals(400, testImpactAnalysis.getAnalyzedTests().size());
     }
 
 }
