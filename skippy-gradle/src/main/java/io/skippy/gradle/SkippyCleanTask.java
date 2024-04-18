@@ -17,6 +17,7 @@
 package io.skippy.gradle;
 
 import org.gradle.api.DefaultTask;
+
 import javax.inject.Inject;
 
 import static io.skippy.gradle.SkippyGradleUtils.*;
@@ -33,9 +34,11 @@ class SkippyCleanTask extends DefaultTask {
     @Inject
     public SkippyCleanTask() {
         setGroup("skippy");
-        ifBuildSupportsSkippy(getProject(), skippyBuildApi ->
-            doLast((project) -> skippyBuildApi.deleteSkippyFolder())
-        );
+        doLast(task -> {
+            ifBuildSupportsSkippy(getProject(), skippyBuildApi -> {
+                skippyBuildApi.deleteSkippyFolder();
+            });
+        });
     }
 
 }
