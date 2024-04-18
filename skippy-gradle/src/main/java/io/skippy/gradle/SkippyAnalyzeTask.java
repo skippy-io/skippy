@@ -25,7 +25,8 @@ import org.gradle.api.tasks.testing.TestDescriptor;
 import org.gradle.api.tasks.testing.TestListener;
 import org.gradle.api.tasks.testing.TestResult;
 
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.skippy.gradle.SkippyGradleUtils.*;
 
@@ -37,19 +38,20 @@ class SkippyAnalyzeTask extends DefaultTask {
     @Inject
     public SkippyAnalyzeTask() {
         setGroup("skippy");
-        ifBuildSupportsSkippy(getProject(), skippyBuildApi -> {
-            var testFailedListener = new TestFailedListener((className) -> skippyBuildApi.testFailed(className));
-            getProject().getTasks().withType(Test.class, testTask -> testTask.addTestListener(testFailedListener));
-            doLast(task -> skippyBuildApi.buildFinished());
+        var testFailedListener = new TestFailedListener();
+        getProject().getTasks().withType(Test.class, testTask -> testTask.addTestListener(testFailedListener));
+        doLast(task -> {
+            ifBuildSupportsSkippy(getProject(), skippyBuildApi -> {
+                for (var failedTest : testFailedListener.failedTests) {
+                    skippyBuildApi.testFailed(failedTest.getClassName());
+                }
+                skippyBuildApi.buildFinished();
+            });
         });
     }
 
     static private class TestFailedListener implements TestListener {
-        private final Consumer<String> testFailedAction;
-
-        TestFailedListener(Consumer<String> testFailedAction) {
-            this.testFailedAction = testFailedAction;
-        }
+        private final List<TestDescriptor> failedTests = new ArrayList<>();
 
         @Override
         public void beforeSuite(TestDescriptor testDescriptor) {
@@ -66,7 +68,7 @@ class SkippyAnalyzeTask extends DefaultTask {
         @Override
         public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
             if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
-                testFailedAction.accept(testDescriptor.getClassName());
+                failedTests.add(testDescriptor);
             }
         }
     }
