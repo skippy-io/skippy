@@ -49,11 +49,11 @@ Let's take a whirlwind tour of Skippy, Gradle & JUnit 5. The concepts are simila
 
 ```groovy
      plugins {
-+        id 'io.skippy' version '0.0.16'
++        id 'io.skippy' version '0.0.20'
      }
     
      dependencies {
-+        testImplementation 'io.skippy:skippy-junit5:0.0.16'
++        testImplementation 'io.skippy:skippy-junit5:0.0.20'
      }
 ```
 
