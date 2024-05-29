@@ -42,11 +42,20 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         Profiler.clear();
         project.getPlugins().apply(JacocoPlugin.class);
         project.getExtensions().create("skippy", SkippyPluginExtension.class);
-        project.getTasks().register("skippyClean", SkippyCleanTask.class);
-        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
-        project.getTasks().withType(Test.class, testTask -> testTask.finalizedBy("skippyAnalyze"));
+        project.getTasks().register("skippyClean", SkippyCleanTask.class, task ->
+                task.getSettings().set(CachableProperties.from(project))
+        );
+        var testFailedListener = new TestFailedListener();
+        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class, task -> {
+            task.getSettings().set(CachableProperties.from(project));
+            task.getTestFailedListener().set(testFailedListener);
+        });
+        project.getTasks().withType(Test.class, testTask -> {
+            testTask.finalizedBy("skippyAnalyze");
+            testTask.addTestListener(testFailedListener);
+        });
         project.afterEvaluate(action ->
-            ifBuildSupportsSkippy(action.getProject(), skippyBuildApi -> skippyBuildApi.buildStarted())
+            ifBuildSupportsSkippy(CachableProperties.from(project), skippyBuildApi -> skippyBuildApi.buildStarted())
         );
     }
 
