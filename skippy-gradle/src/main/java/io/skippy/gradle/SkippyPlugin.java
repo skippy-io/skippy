@@ -19,6 +19,9 @@ package io.skippy.gradle;
 import io.skippy.core.Profiler;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
+import org.gradle.api.tasks.testing.TestDescriptor;
+import org.gradle.api.tasks.testing.TestListener;
+import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
 import static io.skippy.gradle.SkippyGradleUtils.*;
@@ -39,20 +42,40 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        var testResultServiceProvider = project.getGradle().getSharedServices()
+                .registerIfAbsent("testResultService", TestResultService.class, spec -> {});
         Profiler.clear();
         project.getPlugins().apply(JacocoPlugin.class);
         project.getExtensions().create("skippy", SkippyPluginExtension.class);
         project.getTasks().register("skippyClean", SkippyCleanTask.class, task ->
                 task.getSettings().set(CachableProperties.from(project))
         );
-        var testFailedListener = new TestFailedListener();
         project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class, task -> {
             task.getSettings().set(CachableProperties.from(project));
-            task.getTestFailedListener().set(testFailedListener);
+            task.usesService(testResultServiceProvider);
         });
         project.getTasks().withType(Test.class, testTask -> {
             testTask.finalizedBy("skippyAnalyze");
-            testTask.addTestListener(testFailedListener);
+            testTask.addTestListener(new TestListener() {
+                @Override
+                public void beforeSuite(TestDescriptor testDescriptor) {
+                }
+
+                @Override
+                public void afterSuite(TestDescriptor testDescriptor, TestResult testResult) {
+
+                }
+
+                @Override
+                public void beforeTest(TestDescriptor testDescriptor) {
+
+                }
+
+                @Override
+                public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
+                    testResultServiceProvider.get().afterTest(testDescriptor, testResult);
+                }
+            });
         });
         project.afterEvaluate(action ->
             ifBuildSupportsSkippy(CachableProperties.from(project), skippyBuildApi -> skippyBuildApi.buildStarted())
