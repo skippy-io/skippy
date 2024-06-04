@@ -17,6 +17,8 @@
 package io.skippy.gradle;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
 
 import javax.inject.Inject;
 
@@ -29,13 +31,16 @@ import static io.skippy.gradle.SkippyGradleUtils.*;
  *
  * @author Florian McKee
  */
-class SkippyCleanTask extends DefaultTask {
+abstract class SkippyCleanTask extends DefaultTask {
+
+    @Input
+    abstract Property<CachableProperties> getSettings();
 
     @Inject
     public SkippyCleanTask() {
         setGroup("skippy");
         doLast(task -> {
-            ifBuildSupportsSkippy(getProject(), skippyBuildApi -> {
+            ifBuildSupportsSkippy(getSettings().get(), skippyBuildApi -> {
                 skippyBuildApi.deleteSkippyFolder();
             });
         });
