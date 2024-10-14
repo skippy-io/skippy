@@ -57,6 +57,7 @@ final class ClassFileContainer {
     private final Map<String, List<ClassFile>> classFilesByClassName = new HashMap<>();
     private final Map<ClassFile, Integer> idsByClassFile = new HashMap<>();
     private final Map<String, List<Integer>> idsByClassName = new HashMap<>();
+    private final Map<String, List<Integer>> nestedIdsByClassName = new HashMap<>();
 
     private final Map<Integer, ClassFile> classFilesById = new HashMap<>();
 
@@ -75,6 +76,11 @@ final class ClassFileContainer {
                 classFilesByClassName.put(classFile.getClassName(), new ArrayList<>());
             }
             classFilesByClassName.get(classFile.getClassName()).add(classFile);
+
+            String topLevelClass = toTopLevelClass(classFile.getClassName());
+            if (!topLevelClass.equals(classFile.getClassName())) {
+                nestedIdsByClassName.computeIfAbsent(topLevelClass, __ -> new ArrayList<>()).add(id);
+            }
         }
     }
 
@@ -108,6 +114,31 @@ final class ClassFileContainer {
             return emptyList();
         }
         return idsByClassName.get(className);
+    }
+
+    /**
+     * Returns the ids of the classes nested inside the one matching the provided class name.
+     * <br /><br />
+     * Note that class names might not be unique within a project:
+     * <pre>
+     *     src/integration-test/java/com.example.FooTest$Nested
+     *     src/functional-test/java/com.example.FooTest$Nested
+     * </pre>
+     * That's why this method returns a list.
+     *
+     * @param className a class name
+     * @return the ids of the classes nested inside the one matching the provided class name
+     */
+    List<Integer> getNestedIdsByClassName(String className) {
+        return nestedIdsByClassName.getOrDefault(toTopLevelClass(className), emptyList());
+    }
+
+    private static String toTopLevelClass(String className) {
+        int dollarIndex = className.indexOf('$');
+        if (dollarIndex > -1) {
+            return className.substring(0, dollarIndex);
+        }
+        return className;
     }
 
     Set<ClassFile> getClassFiles() {

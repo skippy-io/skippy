@@ -134,46 +134,60 @@ public final class TestImpactAnalysis {
             if (NOT_FOUND.equals(this)) {
                 return PredictionWithReason.execute(new Reason(TEST_IMPACT_ANALYSIS_NOT_FOUND, Optional.empty()));
             }
-            var maybeAnalyzedTest = analyzedTests.stream()
-                    .filter(test -> classFileContainer.getById(test.getTestClassId()).getClassName().equals(testClassName))
-                    .findFirst();
-            if (maybeAnalyzedTest.isEmpty()) {
+
+            var testClassIds = getTestClassIds(testClassName);
+            var maybeAnalyzedTests = analyzedTests.stream()
+                    .filter(test -> testClassIds.contains(test.getTestClassId()))
+                    .toList();
+
+            if (maybeAnalyzedTests.isEmpty()) {
                 return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));
             }
-            var analyzedTest = maybeAnalyzedTest.get();
-            var testClass = classFileContainer.getById(analyzedTest.getTestClassId());
 
-            if (analyzedTest.getResult() == TestResult.FAILED) {
-                return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
-            }
+            for (var analyzedTest: maybeAnalyzedTests) {
 
-            if (testClass.classFileNotFound()) {
-                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(testClass.getPath().toString())));
-            }
+                if (analyzedTest.getResult() == TestResult.FAILED) {
+                    return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
+                }
 
-            if (testClass.hasChanged()) {
-                return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
-            }
-            if (configuration.generateCoverageForSkippedTests()) {
-                if (analyzedTest.getExecutionId().isEmpty()) {
+                var testClass = classFileContainer.getById(analyzedTest.getTestClassId());
+                if (testClass.classFileNotFound()) {
+                    return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(testClass.getPath().toString())));
+                }
+
+                if (testClass.hasChanged()) {
+                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
+                }
+                if (configuration.generateCoverageForSkippedTests()) {
+                    if (analyzedTest.getExecutionId().isEmpty()) {
                         return PredictionWithReason.execute(new Reason(MISSING_EXECUTION_ID, Optional.empty()));
-                } else {
-                    if (skippyRepository.readJacocoExecutionData(analyzedTest.getExecutionId().get()).isEmpty()) {
-                        return PredictionWithReason.execute(new Reason(UNABLE_TO_READ_EXECUTION_DATA, Optional.empty()));
+                    } else {
+                        if (skippyRepository.readJacocoExecutionData(analyzedTest.getExecutionId().get()).isEmpty()) {
+                            return PredictionWithReason.execute(new Reason(UNABLE_TO_READ_EXECUTION_DATA, Optional.empty()));
+                        }
                     }
                 }
-            }
-            for (var coveredClassId : analyzedTest.getCoveredClassesIds()) {
-                var coveredClass = classFileContainer.getById(coveredClassId);
-                if (coveredClass.classFileNotFound()) {
-                    return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(coveredClass.getPath().toString())));
-                }
-                if (coveredClass.hasChanged()) {
-                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of(coveredClass.getClassName())));
+                for (var coveredClassId : analyzedTest.getCoveredClassesIds()) {
+                    var coveredClass = classFileContainer.getById(coveredClassId);
+                    if (coveredClass.classFileNotFound()) {
+                        return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(coveredClass.getPath().toString())));
+                    }
+                    if (coveredClass.hasChanged()) {
+                        return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of(coveredClass.getClassName())));
+                    }
                 }
             }
             return PredictionWithReason.skip(new Reason(NO_CHANGE, Optional.empty()));
         });
+    }
+
+    private Set<Integer> getTestClassIds(String testClassName) {
+        var testClassId = classFileContainer.getIdsByClassName(testClassName);
+        var nestedTestClassIds = classFileContainer.getNestedIdsByClassName(testClassName);
+        var testClassIds = new HashSet<Integer>(testClassId.size() + nestedTestClassIds.size());
+        testClassIds.addAll(testClassId);
+        testClassIds.addAll(nestedTestClassIds);
+        return testClassIds;
     }
 
     /**

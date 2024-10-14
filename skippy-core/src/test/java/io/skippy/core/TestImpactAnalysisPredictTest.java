@@ -352,4 +352,111 @@ public class TestImpactAnalysisPredictTest {
 
     }
 
+    @Nested
+    class ScenariosWithNestedTestClasses {
+
+        @Test
+        void testHappyPath() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
+                {
+                    "classes": {
+                        "0": {
+                            "name": "com.example.LeftPadder",
+                            "path": "io/skippy/core/LeftPadder.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "8E994DD8"
+                        },
+                        "1": {
+                            "name": "com.example.StringUtils",
+                            "path": "io/skippy/core/StringUtils.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "ECE5D94D"
+                        },
+                        "2": {
+                            "name": "com.example.LeftPadderTest",
+                            "path": "io/skippy/core/LeftPadderTest.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "83A72152"
+                        },
+                        "3": {
+                            "name": "com.example.LeftPadderTest$Nested",
+                            "path": "io/skippy/core/LeftPadderTest.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "83A72152"
+                        }
+                    },
+                    "tests": [
+                        {
+                            "class": "2",
+                            "result": "PASSED",
+                            "coveredClasses": ["0", "2"]
+                        },
+                        {
+                            "class": "3",
+                            "result": "PASSED",
+                            "coveredClasses": ["0", "1", "2"]
+                        }
+                    ]
+                }
+            """);
+            var configuration = new SkippyConfiguration(false, Optional.empty());
+            var repository = mock(SkippyRepository.class);
+            when(repository.readJacocoExecutionData("00000000000000000000000000000000")).thenReturn(Optional.of(new byte[]{}));
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
+            assertEquals(SKIP, predictionWithReason.prediction());
+        }
+
+        @Test
+        void changeInStringUtilsOnlyPickedUpByNestedTestClass() {
+            var testImpactAnalysis = TestImpactAnalysis.parse("""
+                {
+                    "classes": {
+                        "0": {
+                            "name": "com.example.LeftPadder",
+                            "path": "io/skippy/core/LeftPadder.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "8E994DD8"
+                        },
+                        "1": {
+                            "name": "com.example.StringUtils",
+                            "path": "io/skippy/core/StringUtils.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "ABCD1234"
+                        },
+                        "2": {
+                            "name": "com.example.LeftPadderTest",
+                            "path": "io/skippy/core/LeftPadderTest.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "83A72152"
+                        },
+                        "3": {
+                            "name": "com.example.LeftPadderTest$Nested",
+                            "path": "io/skippy/core/LeftPadderTest.class",
+                            "outputFolder": "src/test/resources",
+                            "hash": "83A72152"
+                        }
+                    },
+                    "tests": [
+                        {
+                            "class": "2",
+                            "result": "PASSED",
+                            "coveredClasses": ["0", "2"]
+                        },
+                        {
+                            "class": "3",
+                            "result": "PASSED",
+                            "coveredClasses": ["0", "1", "2"]
+                        }
+                    ]
+                }
+            """);
+            var configuration = new SkippyConfiguration(false, Optional.empty());
+            var repository = mock(SkippyRepository.class);
+            when(repository.readJacocoExecutionData("00000000000000000000000000000000")).thenReturn(Optional.of(new byte[]{}));
+            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
+            assertEquals(EXECUTE, predictionWithReason.prediction());
+            assertEquals(BYTECODE_CHANGE_IN_COVERED_CLASS, predictionWithReason.reason().category());
+            assertEquals("com.example.StringUtils", predictionWithReason.reason().details().get());
+        }
+    }
 }

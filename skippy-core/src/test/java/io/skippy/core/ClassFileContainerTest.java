@@ -18,6 +18,7 @@ package io.skippy.core;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import static java.util.Arrays.asList;
@@ -176,4 +177,49 @@ public class ClassFileContainerTest {
         """);
     }
 
+    @Test
+    void testNestedClass() {
+        var baseline = ClassFileContainer.parse(new Tokenizer(
+                """
+                    {
+                        "0": {
+                            "name": "com.example.Foo",
+                            "path": "com.example.Foo.class",
+                            "outputFolder": "src/main/java",
+                            "hash": "Foo#hash"
+                        }
+                    }
+                """));
+        var other = ClassFileContainer.parse(new Tokenizer(
+                """
+                    {
+                        "1": {
+                            "name": "com.example.Foo$Nested",
+                            "path": "com.example.Foo$Nested.class",
+                            "outputFolder": "src/main/java",
+                            "hash": "Foo#hash"
+                        }
+                    }
+                """));
+
+        var merged = baseline.merge(other);
+        assertThat(merged.toJson()).isEqualToIgnoringWhitespace("""
+             {
+                 "0": {
+                     "name": "com.example.Foo",
+                     "path": "com.example.Foo.class",
+                     "outputFolder": "src/main/java",
+                     "hash": "Foo#hash"
+                 },
+                 "1": {
+                     "name": "com.example.Foo$Nested",
+                     "path": "com.example.Foo$Nested.class",
+                     "outputFolder": "src/main/java",
+                     "hash": "Foo#hash"
+                 }
+             }
+        """);
+        assertThat(merged.getIdsByClassName("com.example.Foo")).containsExactly(0);
+        assertThat(merged.getNestedIdsByClassName("com.example.Foo")).containsExactly(1);
+    }
 }
