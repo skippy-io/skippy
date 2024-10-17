@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.skippy.core.JacocoUtil.mergeExecutionData;
@@ -53,9 +50,8 @@ public final class SkippyTestApi {
     private final SkippyConfiguration skippyConfiguration;
     private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();
 
-
     /**
-     * Stack that keeps track of the execution of nested test classes:
+     * Stack that keeps track of the execution data across nested test classes.
      *
      * Example:
      * <pre>
@@ -75,18 +71,14 @@ public final class SkippyTestApi {
      *
      *  By the time <code>testSomething</code> is executed, the stack would look as follows:
      *  <pre>
-     *  Level1$Level2$Level3.class
-     *  Level1$Level2.class
-     *  Level1.class
+     *  { execution data for Level1$Level2$Level3.class }
+     *  { execution data for Level1$Level2.class }
+     *  { execution data for Level1.class }
      *  </pre>
      *
+     *  Nested test classes contribute their execution data "back" to their parents using this stack.
      */
-    private final Stack<Class<?>> testClassStack = new Stack<>();
-
-    /**
-     * Map that is used by nested test classes to share their execution data with their parents.
-     */
-    private final Map<Class<?>, byte[]> executionDataFromNestedTests = new HashMap<>();
+    private final Stack<List<byte[]>> executionDataStack = new Stack<>();
 
     private SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyConfiguration skippyConfiguration, SkippyRepository skippyRepository) {
         this.testImpactAnalysis = testImpactAnalysis;
@@ -154,18 +146,12 @@ public final class SkippyTestApi {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 // Is testClass a nested test? Yes: Store the execution data that was generated for the parent before resetting the agent.
-                if ( ! testClassStack.isEmpty()) {
-                    var parentTestClass = testClassStack.lastElement();
-                    var parentExecutionData = executionDataFromNestedTests.get(parentTestClass);
-                    executionDataFromNestedTests.put(parentTestClass, mergeExecutionData(asList(agent.getExecutionData(false), parentExecutionData)));
-                }
+                addExecutionDataToParent(asList(agent.getExecutionData(false)));
                 agent.reset();
-                testClassStack.push(testClass);
-                executionDataFromNestedTests.put(testClass, agent.getExecutionData(false));
+                executionDataStack.push(new ArrayList<>(asList(agent.getExecutionData(false))));
             });
         });
     }
-
 
     /**
      * Writes a JaCoCo execution data file after all tests in for {@code testClass} have been executed.
@@ -176,17 +162,21 @@ public final class SkippyTestApi {
         Profiler.profile("SkippyTestApi#writeExecFile", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
-                var executionData = mergeExecutionData(asList(executionDataFromNestedTests.remove(testClass), agent.getExecutionData(true)));
-                skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild(testClass.getName(), executionData);
-                testClassStack.pop();
-                // Is testClass a nested test? Yes: Propagate the execution data to the parent.
-                if ( ! testClassStack.isEmpty()) {
-                    var parentTestClass = testClassStack.lastElement();
-                    var parentExecutionData = executionDataFromNestedTests.get(parentTestClass);
-                    executionDataFromNestedTests.put(parentTestClass, mergeExecutionData(asList(executionData, parentExecutionData)));
-                }
+                var executionData = executionDataStack.lastElement();
+                executionData.add(agent.getExecutionData(true));
+                skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild(testClass.getName(), mergeExecutionData(executionData));
+                executionDataStack.pop();
+                // propagate execution data of nested test class to the parent
+                addExecutionDataToParent(executionData);
             });
         });
+    }
+
+    private void addExecutionDataToParent(List<byte[]> executionData) {
+        if ( ! executionDataStack.isEmpty()) {
+            var parent = executionDataStack.lastElement();
+            parent.addAll(executionData);
+        }
     }
 
 }
