@@ -69,8 +69,8 @@ public class OssrhPublishPlugin implements Plugin<Project> {
                         repo.setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/");
                     }
                     repo.credentials(credentials -> {
-                        credentials.setUsername(System.getenv("OSSRH_USERNAME"));
-                        credentials.setPassword(System.getenv("OSSRH_PASSWORD"));
+                        credentials.setUsername(System.getenv("OSSRH_TOKEN"));
+                        credentials.setPassword(System.getenv("OSSRH_TOKEN_SECRET"));
                     });
             });
 
