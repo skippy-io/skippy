@@ -20,13 +20,10 @@ import io.skippy.core.ClassFileCollector;
 import io.skippy.core.ClassFile;
 import io.skippy.core.Profiler;
 import org.gradle.api.tasks.SourceSet;
-import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
-
-import static java.util.Comparator.comparing;
 
 /**
  * Collects {@link ClassFile}s across all {@link SourceSet}s in a project.
@@ -36,16 +33,11 @@ import static java.util.Comparator.comparing;
 final class GradleClassFileCollector implements ClassFileCollector {
 
     private final Path projectDir;
-    private final SourceSetContainer sourceSetContainer;
+    private final List<File> classesDirs;
 
-    /**
-     * C'tor
-     *
-     * @param sourceSetContainer a {@link SourceSetContainer}
-     */
-    GradleClassFileCollector(Path projectDir, SourceSetContainer sourceSetContainer) {
+    GradleClassFileCollector(Path projectDir, List<File> classesDirs) {
         this.projectDir = projectDir;
-        this.sourceSetContainer = sourceSetContainer;
+        this.classesDirs = classesDirs;
     }
 
     /**
@@ -57,20 +49,11 @@ final class GradleClassFileCollector implements ClassFileCollector {
     public List<ClassFile> collect() {
         return Profiler.profile("GradleClassFileCollector#collect", () -> {
             var result = new ArrayList<ClassFile>();
-            for (var sourceSet : sourceSetContainer) {
-                result.addAll(collect(sourceSet));
+            for (var classesDir : classesDirs) {
+                result.addAll(sort(collect(classesDir, classesDir)));
             }
             return result;
         });
-    }
-
-     private List<ClassFile> collect(SourceSet sourceSet) {
-        var classesDirs = sourceSet.getOutput().getClassesDirs().getFiles();
-        var result = new ArrayList<ClassFile>();
-        for (var classesDir : classesDirs) {
-            result.addAll(sort(collect(classesDir, classesDir)));
-        }
-        return result;
     }
 
     private List<ClassFile> collect(File outputFolder, File directory) {

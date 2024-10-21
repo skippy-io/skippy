@@ -26,6 +26,8 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,10 +46,11 @@ public class GradleClassFileCollectorTest {
     void testCollect() throws URISyntaxException {
 
         var sourceSetContainer = mockSourceSetContainer("main", "test");
+        var classesDirs = sourceSetContainer.stream().flatMap(sourceSet -> sourceSet.getOutput().getClassesDirs().getFiles().stream()).toList();
 
         var projectDir = Paths.get(GradleClassFileCollectorTest.class.getResource("build").toURI()).getParent();
 
-        var classFileCollector = new GradleClassFileCollector(projectDir, sourceSetContainer);
+        var classFileCollector = new GradleClassFileCollector(projectDir, classesDirs);
 
         var classFiles = classFileCollector.collect();
 
@@ -115,7 +118,7 @@ public class GradleClassFileCollectorTest {
         for (int i = 0; i < sourceSets.size(); i++) {
             when(sourceSetContainer.getByName(sourceSetDirectories[i])).thenReturn(sourceSets.get(i));
         }
-        when(sourceSetContainer.iterator()).thenReturn(sourceSets.iterator());
+        when(sourceSetContainer.stream()).thenReturn(sourceSets.stream());
         return sourceSetContainer;
     }
 
