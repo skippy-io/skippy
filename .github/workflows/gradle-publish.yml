@@ -42,8 +42,8 @@ jobs:
       with:
         arguments: publish -PpublishToGradlePluginPortal=false
       env:
-        OSSRH_USERNAME: ${{ vars.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+        OSSRH_TOKEN_SECRET: ${{ secrets.OSSRH_TOKEN_SECRET }}
         SKIPPY_PRIVATE_KEY: ${{ secrets.SKIPPY_PRIVATE_KEY }}
         SKIPPY_PRIVATE_KEY_SECRET: ${{ secrets.SKIPPY_PRIVATE_KEY_SECRET }}
 
