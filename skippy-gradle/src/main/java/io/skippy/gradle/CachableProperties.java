@@ -29,12 +29,16 @@ class CachableProperties {
 
     static CachableProperties from(Project project) {
         var sourceSetContainer = project.getExtensions().findByType(SourceSetContainer.class);
-        // new ArrayList<>() is a workaround for https://github.com/gradle/gradle/issues/26942
-        var classesDirs = new ArrayList<>(sourceSetContainer.stream().flatMap(sourceSet -> sourceSet.getOutput().getClassesDirs().getFiles().stream()).toList());
-        var skippyExtension = project.getExtensions().getByType(SkippyPluginExtension.class);
-        var projectDir = project.getProjectDir().toPath();
-        var buildDir = project.getLayout().getBuildDirectory().getAsFile().get().toPath();
-        return new CachableProperties(sourceSetContainer != null, classesDirs, skippyExtension, projectDir, buildDir);
+        if (sourceSetContainer != null) {
+            // new ArrayList<>() is a workaround for https://github.com/gradle/gradle/issues/26942
+            var classesDirs = new ArrayList<>(sourceSetContainer.stream().flatMap(sourceSet -> sourceSet.getOutput().getClassesDirs().getFiles().stream()).toList());
+            var skippyExtension = project.getExtensions().getByType(SkippyPluginExtension.class);
+            var projectDir = project.getProjectDir().toPath();
+            var buildDir = project.getLayout().getBuildDirectory().getAsFile().get().toPath();
+            return new CachableProperties(sourceSetContainer != null, classesDirs, skippyExtension, projectDir, buildDir);
+        } else {
+            return new CachableProperties(false, null, null, null, null);
+        }
     }
 
 }

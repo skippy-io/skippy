@@ -34,7 +34,6 @@ public final class SkippyBuildApi {
     private final SkippyConfiguration skippyConfiguration;
     private final ClassFileCollector classFileCollector;
     private final SkippyRepository skippyRepository;
-    private final Set<String> failedTests = new HashSet<>();
 
     /**
      * C'tor.
@@ -61,6 +60,7 @@ public final class SkippyBuildApi {
      */
     public void buildStarted() {
         skippyRepository.deleteLogFiles();
+        skippyRepository.deleteListOfFailedTests();
         skippyRepository.saveConfiguration(skippyConfiguration);
     }
 
@@ -101,7 +101,7 @@ public final class SkippyBuildApi {
      * @param className the class name of the failed tests
      */
     public void testFailed(String className) {
-        failedTests.add(className);
+        skippyRepository.recordFailedTest(className);
     }
 
     private TestImpactAnalysis getTestImpactAnalysis() {
@@ -117,6 +117,7 @@ public final class SkippyBuildApi {
             TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData,
             ClassFileContainer classFileContainer
     ) {
+        var failedTests = skippyRepository.readListOfFailedTests();
         var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
         var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
         var executionId = skippyConfiguration.generateCoverageForSkippedTests() ?

@@ -18,7 +18,6 @@ package io.skippy.gradle;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
-import org.gradle.api.services.ServiceReference;
 import org.gradle.api.tasks.Internal;
 
 import javax.inject.Inject;
@@ -33,17 +32,11 @@ abstract class SkippyAnalyzeTask extends DefaultTask {
     @Internal
     abstract Property<CachableProperties> getSettings();
 
-    @ServiceReference
-    abstract Property<TestResultService> getTestResultService();
-
     @Inject
     public SkippyAnalyzeTask() {
         setGroup("skippy");
         doLast(task -> {
             ifBuildSupportsSkippy(getSettings().get(), skippyBuildApi -> {
-                for (var failedTest : getTestResultService().get().failedTests) {
-                    skippyBuildApi.testFailed(failedTest.getClassName());
-                }
                 skippyBuildApi.buildFinished();
             });
         });

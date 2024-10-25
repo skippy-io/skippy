@@ -24,7 +24,7 @@ import org.gradle.api.tasks.testing.TestListener;
 import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
-import static io.skippy.gradle.SkippyGradleUtils.*;
+import static io.skippy.gradle.SkippyGradleUtils.ifBuildSupportsSkippy;
 
 /**
  * The Skippy plugin adds the
@@ -42,44 +42,47 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        var testResultServiceProvider = project.getGradle().getSharedServices()
-                .registerIfAbsent("testResultService", TestResultService.class, spec -> {});
         Profiler.clear();
+
         project.getPlugins().apply(JacocoPlugin.class);
         project.getExtensions().create("skippy", SkippyPluginExtension.class);
-        project.getTasks().register("skippyClean", SkippyCleanTask.class, task ->
-                task.getSettings().set(CachableProperties.from(project))
-        );
-        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class, task -> {
-            task.getSettings().set(CachableProperties.from(project));
-            task.usesService(testResultServiceProvider);
-        });
-        project.getTasks().withType(Test.class, testTask -> {
-            testTask.finalizedBy("skippyAnalyze");
-            testTask.addTestListener(new TestListener() {
-                @Override
-                public void beforeSuite(TestDescriptor testDescriptor) {
-                }
+        project.getTasks().register("skippyClean", SkippyCleanTask.class);
+        project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
 
-                @Override
-                public void afterSuite(TestDescriptor testDescriptor, TestResult testResult) {
+        project.afterEvaluate(action -> {
 
-                }
+            var cachableProperties = CachableProperties.from(action);
 
-                @Override
-                public void beforeTest(TestDescriptor testDescriptor) {
+            project.getTasks().withType(SkippyCleanTask.class).forEach( task -> task.getSettings().set(cachableProperties));
+            project.getTasks().withType(SkippyAnalyzeTask.class).forEach( task -> task.getSettings().set(cachableProperties));
 
-                }
+            action.getTasks().withType(Test.class, testTask -> {
+                testTask.finalizedBy("skippyAnalyze");
+                testTask.addTestListener(new TestListener() {
+                    @Override
+                    public void beforeSuite(TestDescriptor testDescriptor) {
+                    }
 
-                @Override
-                public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
-                    testResultServiceProvider.get().afterTest(testDescriptor, testResult);
-                }
+                    @Override
+                    public void afterSuite(TestDescriptor testDescriptor, TestResult testResult) {
+                    }
+
+                    @Override
+                    public void beforeTest(TestDescriptor testDescriptor) {
+                    }
+
+                    @Override
+                    public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
+                        if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
+                            ifBuildSupportsSkippy(cachableProperties,
+                                    skippyBuildApi -> skippyBuildApi.testFailed(testDescriptor.getClassName()));
+                        }
+                    }
+                });
             });
+
+            ifBuildSupportsSkippy(cachableProperties, skippyBuildApi -> skippyBuildApi.buildStarted());
         });
-        project.afterEvaluate(action ->
-            ifBuildSupportsSkippy(CachableProperties.from(project), skippyBuildApi -> skippyBuildApi.buildStarted())
-        );
     }
 
 }
