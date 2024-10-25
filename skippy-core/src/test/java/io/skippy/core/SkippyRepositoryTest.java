@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import static java.nio.file.Files.*;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -209,6 +210,23 @@ public class SkippyRepositoryTest {
         writeString(skippyFolder.resolve("LATEST"), testImpactAnalysis.getId(), StandardCharsets.UTF_8);
         writeString(skippyFolder.resolve("test-impact-analysis.json"), testImpactAnalysis.toJson(), StandardCharsets.UTF_8);
         assertEquals(testImpactAnalysis, skippyRepository.readLatestTestImpactAnalysis());
+    }
+
+    @Test
+    void testDeleteListOfFailedTests() {
+        skippyRepository.recordFailedTest("com.example.FooTest");
+        assertTrue(exists(skippyFolder.resolve("failed-tests.txt")));
+        skippyRepository.deleteListOfFailedTests();;
+        assertFalse(exists(skippyFolder.resolve("failed-tests.txt")));
+    }
+
+    @Test
+    void testRecordAndReadListOfFailedTest() throws IOException {
+        assertEquals(emptyList(), skippyRepository.readListOfFailedTests());
+        skippyRepository.recordFailedTest("com.example.Test1");
+        assertEquals(asList("com.example.Test1"), skippyRepository.readListOfFailedTests());
+        skippyRepository.recordFailedTest("com.example.Test2");
+        assertEquals(asList("com.example.Test1", "com.example.Test2"), skippyRepository.readListOfFailedTests());
     }
 
 }

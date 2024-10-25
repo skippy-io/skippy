@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 /**
@@ -284,4 +286,38 @@ public final class SkippyRepository {
         }
     }
 
+    void deleteListOfFailedTests() {
+        var failedTestsFile = SkippyFolder.get(projectDir).resolve("failed-tests.txt");
+        if (exists(failedTestsFile)) {
+            try {
+                delete(failedTestsFile);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Unable to delete %s.".formatted(failedTestsFile), e);
+            }
+        }
+
+    }
+
+    void recordFailedTest(String className) {
+        var failedTestsFile = SkippyFolder.get(projectDir).resolve("failed-tests.txt");
+        try {
+            Files.write(failedTestsFile, asList(className), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable record failed test %s in %s: %s.".formatted(className, failedTestsFile, e.getMessage()), e);
+        }
+    }
+
+    List<String> readListOfFailedTests() {
+        var failedTestsFile = SkippyFolder.get(projectDir).resolve("failed-tests.txt");
+        try {
+            if (false == exists(failedTestsFile)) {
+                return emptyList();
+            }
+            return Files.readAllLines(failedTestsFile, StandardCharsets.UTF_8);
+
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to read %s: %s.".formatted(failedTestsFile, e.getMessage()), e);
+        }
+    }
 }
+

@@ -300,6 +300,8 @@ public final class SkippyBuildApiTest {
         ));
 
         buildApi.testFailed("com.example.FooTest");
+        verify(skippyRepository).recordFailedTest("com.example.FooTest");
+        when(skippyRepository.readListOfFailedTests()).thenReturn(asList("com.example.FooTest"));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -586,6 +588,8 @@ public final class SkippyBuildApiTest {
         ));
 
         buildApi.testFailed("com.example.FooTest");
+        verify(skippyRepository).recordFailedTest("com.example.FooTest");
+        when(skippyRepository.readListOfFailedTests()).thenReturn(asList("com.example.FooTest"));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
