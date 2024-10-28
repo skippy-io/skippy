@@ -24,8 +24,6 @@ import org.gradle.api.tasks.testing.TestListener;
 import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
-import static io.skippy.gradle.SkippyGradleUtils.ifBuildSupportsSkippy;
-
 /**
  * The Skippy plugin adds the
  * <ul>
@@ -51,10 +49,10 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
         project.afterEvaluate(action -> {
 
-            var cachableProperties = CachableProperties.from(action);
+            var projectSettings = ProjectSettings.from(action);
 
-            project.getTasks().withType(SkippyCleanTask.class).forEach( task -> task.getSettings().set(cachableProperties));
-            project.getTasks().withType(SkippyAnalyzeTask.class).forEach( task -> task.getSettings().set(cachableProperties));
+            project.getTasks().withType(SkippyCleanTask.class).forEach( task -> task.getProjectSettings().set(projectSettings));
+            project.getTasks().withType(SkippyAnalyzeTask.class).forEach( task -> task.getProjectSettings().set(projectSettings));
 
             action.getTasks().withType(Test.class, testTask -> {
                 testTask.finalizedBy("skippyAnalyze");
@@ -74,14 +72,20 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
                     @Override
                     public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
                         if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
-                            ifBuildSupportsSkippy(cachableProperties,
-                                    skippyBuildApi -> skippyBuildApi.testFailed(testDescriptor.getClassName()));
+                            projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> {
+                               var test = testDescriptor;
+                               while (test != null && test.getClassName() != null) {
+                                   skippyBuildApi.testFailed(test.getClassName());
+                                   // mark nested tests and all of their parents as failed
+                                   test = test.getParent();
+                               }
+                            });
                         }
                     }
                 });
             });
 
-            ifBuildSupportsSkippy(cachableProperties, skippyBuildApi -> skippyBuildApi.buildStarted());
+            projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> skippyBuildApi.buildStarted());
         });
     }
 
