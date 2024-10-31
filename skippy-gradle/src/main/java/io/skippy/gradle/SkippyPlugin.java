@@ -73,12 +73,7 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
                     public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
                         if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
                             projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> {
-                               var test = testDescriptor;
-                               while (test != null && test.getClassName() != null) {
-                                   skippyBuildApi.testFailed(test.getClassName());
-                                   // mark nested tests and all of their parents as failed
-                                   test = test.getParent();
-                               }
+                                   skippyBuildApi.testFailed(testDescriptor.getClassName());
                             });
                         }
                     }

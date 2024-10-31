@@ -58,6 +58,11 @@ record Reason(Category category, Optional<String> details) {
         TEST_FAILED_PREVIOUSLY,
 
         /**
+         * A covered test failed previously. This is relevant for JUnit 5's @Nested tests.
+         */
+        COVERED_TEST_FAILED_PREVIOUSLY,
+
+        /**
          * The class file of the test was not found on the file system.
          */
         TEST_CLASS_CLASS_FILE_NOT_FOUND,
