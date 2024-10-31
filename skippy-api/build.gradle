@@ -4,20 +4,15 @@ plugins {
 }
 
 ossrhPublish {
-    title = 'skippy-core'
-    description = 'Common functionality for Skippy\'s test and build libraries'
+    title = 'skippy-api'
+    description = 'Skippy\'s public API'
 }
 
 dependencies {
-    implementation project(':skippy-api')
-    implementation "org.ow2.asm:asm-tree:" + versions.asm
-    implementation 'org.jacoco:org.jacoco.core:' + versions.jacoco
-    compileOnly 'org.jacoco:org.jacoco.agent:' + versions.jacoco + ':runtime'
     testImplementation "org.junit.jupiter:junit-jupiter-api:" + versions.junit5
     testImplementation "org.junit.jupiter:junit-jupiter-params:" + versions.junit5
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:" + versions.junit5
     testImplementation 'org.assertj:assertj-core:' + versions.assertj
-    testImplementation 'org.skyscreamer:jsonassert:1.5.1'
     testImplementation 'org.mockito:mockito-core:' + versions.mockito
 }
 

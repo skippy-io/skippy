@@ -16,6 +16,8 @@
 
 package io.skippy.core;
 
+import java.lang.reflect.Constructor;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -26,21 +28,26 @@ import java.util.Optional;
  */
 public class SkippyConfiguration {
 
-    static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false, Optional.empty());
+    static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
 
     private final boolean generateCoverageForSkippedTests;
-    private final String repositoryClass;
+    private final String repositoryExtensionClass;
+    private final String predictionModifierClass;
 
     /**
      * C'tor.
      *
      * @param generateCoverageForSkippedTests {@code true} to generate coverage for skipped tests, {@code false} otherwise
-     * @param repositoryClass the fully-qualified class name of the {@link SkippyRepositoryExtension} implementation for
-     *                        this build or {@link Optional#empty()} if Skippy should use its default implementation
+     * @param repositoryExtensionClass the fully-qualified class name of the {@link SkippyRepositoryExtension} implementation for
+     *          this build
+     @param predictionModifierClass the fully-qualified class name of the {@link PredictionModifier} implementation for
+      *          this build
      */
-    public SkippyConfiguration(boolean generateCoverageForSkippedTests, Optional<String> repositoryClass) {
+    public SkippyConfiguration(boolean generateCoverageForSkippedTests,
+                               Optional<String> repositoryExtensionClass, Optional<String> predictionModifierClass) {
         this.generateCoverageForSkippedTests = generateCoverageForSkippedTests;
-        this.repositoryClass = repositoryClass.orElse(DefaultRepositoryExtension.class.getName());
+        this.repositoryExtensionClass = repositoryExtensionClass.orElse(DefaultRepositoryExtension.class.getName());
+        this.predictionModifierClass = predictionModifierClass.orElse(DefaultPredictionModifier.class.getName());
     }
 
     /**
@@ -53,14 +60,34 @@ public class SkippyConfiguration {
     }
 
     /**
-     * Returns the fully-qualified class name of the {@link SkippyRepositoryExtension} implementation for this build.
+     * Returns the {@link SkippyRepositoryExtension} for this build.
      *
-     * @return the fully-qualified class name of the {@link SkippyRepositoryExtension} implementation for this build
+     * @return the {@link SkippyRepositoryExtension} for this build
      */
-    String repositoryClass() {
-        return repositoryClass;
+    SkippyRepositoryExtension repositoryExtension(Path projectDir) {
+        try {
+            Class<?> clazz = Class.forName(repositoryExtensionClass);
+            Constructor<?> constructor = clazz.getConstructor(Path.class);
+            return (SkippyRepositoryExtension) constructor.newInstance(projectDir);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to create repository extension %s: %s.".formatted(repositoryExtensionClass, e.getMessage()), e);
+        }
     }
 
+    /**
+     * Returns the {@link PredictionModifier} for this build.
+     *
+     * @return the {@link PredictionModifier} for this build
+     */
+    PredictionModifier predictionModifier() {
+        try {
+            Class<?> clazz = Class.forName(predictionModifierClass);
+            Constructor<?> constructor = clazz.getConstructor();
+            return (PredictionModifier) constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to create prediction modifier %s: %s.".formatted(predictionModifierClass, e.getMessage()), e);
+        }
+    }
 
     /**
      * Creates a new instance from JSON.
@@ -72,7 +99,8 @@ public class SkippyConfiguration {
         var tokenizer = new Tokenizer(json);
         tokenizer.skip('{');
         boolean coverageForSkippedTests = false;
-        Optional<String> repositoryClass = Optional.empty();
+        Optional<String> repositoryExtension = Optional.empty();
+        Optional<String> predictionModifier = Optional.empty();
         while (true) {
             var key = tokenizer.next();
             tokenizer.skip(':');
@@ -80,8 +108,11 @@ public class SkippyConfiguration {
                 case "coverageForSkippedTests":
                     coverageForSkippedTests = Boolean.valueOf(tokenizer.next());
                     break;
-                case "repositoryClass":
-                    repositoryClass = Optional.of(tokenizer.next());
+                case "repositoryExtension":
+                    repositoryExtension = Optional.of(tokenizer.next());
+                    break;
+                case "predictionModifier":
+                    predictionModifier = Optional.of(tokenizer.next());
                     break;
             }
             tokenizer.skipIfNext(',');
@@ -90,7 +121,7 @@ public class SkippyConfiguration {
                 break;
             }
         }
-        return new SkippyConfiguration(coverageForSkippedTests, repositoryClass);
+        return new SkippyConfiguration(coverageForSkippedTests, repositoryExtension, predictionModifier);
     }
 
     /**
@@ -102,9 +133,10 @@ public class SkippyConfiguration {
         return """
         {
             "coverageForSkippedTests": "%s",
-            "repositoryClass": "%s"
+            "repositoryExtension": "%s",
+            "predictionModifier": "%s"
         }
-        """.formatted(generateCoverageForSkippedTests, repositoryClass);
+        """.formatted(generateCoverageForSkippedTests, repositoryExtensionClass, predictionModifierClass);
     }
 
     @Override
@@ -112,11 +144,13 @@ public class SkippyConfiguration {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SkippyConfiguration that = (SkippyConfiguration) o;
-        return generateCoverageForSkippedTests == that.generateCoverageForSkippedTests && Objects.equals(repositoryClass, that.repositoryClass);
+        return generateCoverageForSkippedTests == that.generateCoverageForSkippedTests
+                && Objects.equals(repositoryExtensionClass, that.repositoryExtensionClass)
+                && Objects.equals(predictionModifierClass, that.predictionModifierClass);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(generateCoverageForSkippedTests, repositoryClass);
+        return Objects.hash(generateCoverageForSkippedTests, repositoryExtensionClass, predictionModifierClass);
     }
 }

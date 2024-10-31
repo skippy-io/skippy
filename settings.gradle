@@ -1,3 +1,4 @@
+include 'skippy-api'
 include 'skippy-core'
 include 'skippy-gradle'
 include 'skippy-maven'

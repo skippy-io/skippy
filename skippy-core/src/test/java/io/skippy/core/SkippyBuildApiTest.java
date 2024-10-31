@@ -54,15 +54,15 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testBuildStartedSavesSkippyConfiguration() {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
         buildApi.buildStarted();
-        verify(skippyRepository).saveConfiguration(new SkippyConfiguration(false, Optional.empty()));
+        verify(skippyRepository).saveConfiguration(new SkippyConfiguration(false, Optional.empty(), Optional.empty()));
     }
 
     @Test
     void testEmptySkippyFolderWithoutExecFiles() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
@@ -98,7 +98,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesCoverageForSkippedTestsEnabled() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(true, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
@@ -162,7 +162,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFiles() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
@@ -221,7 +221,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesAndTwoExecFiles() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
@@ -280,7 +280,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesOneFailedTests() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
@@ -343,7 +343,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileNoExecFile() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
@@ -391,7 +391,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileUpdatedExecFile() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
@@ -459,7 +459,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileUpdatedExecFileExecutionDataEnabled() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(true, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
@@ -531,7 +531,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileNewTestFailure() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""

@@ -77,7 +77,13 @@ record Reason(Category category, Optional<String> details) {
          * Coverage for skipped tests is enabled and the test has an execution id. However, Skippy is unable to read the
          * execution data. The test needs to be re-run in order to capture coverage for skipped tests.
          */
-        UNABLE_TO_READ_EXECUTION_DATA
+        UNABLE_TO_READ_EXECUTION_DATA,
+
+
+        /**
+         * The default prediction was overridden by a {@link PredictionModifier}.
+         */
+        OVERRIDE_BY_PREDICTION_MODIFIER
     }
 
 }

@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import static io.skippy.core.JacocoUtil.mergeExecutionData;
 import static io.skippy.core.JacocoUtil.swallowJacocoExceptions;
@@ -48,6 +47,7 @@ public final class SkippyTestApi {
 
     private final TestImpactAnalysis testImpactAnalysis;
     private final SkippyRepository skippyRepository;
+    private final PredictionModifier predictionModifier;
     private final SkippyConfiguration skippyConfiguration;
     private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();
 
@@ -95,6 +95,7 @@ public final class SkippyTestApi {
     private SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyConfiguration skippyConfiguration, SkippyRepository skippyRepository) {
         this.testImpactAnalysis = testImpactAnalysis;
         this.skippyRepository = skippyRepository;
+        this.predictionModifier = skippyConfiguration.predictionModifier();
         this.skippyConfiguration = skippyConfiguration;
     }
 
@@ -117,7 +118,7 @@ public final class SkippyTestApi {
                 if (predictions.containsKey(test.getName())) {
                     return predictions.get(test.getName()) == Prediction.EXECUTE;
                 }
-                var predictionWithReason = testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository);
+                var predictionWithReason = predictionModifier.apply(test, testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository));
                 if (predictionWithReason.reason().details().isPresent()) {
                     Files.writeString(
                         SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),

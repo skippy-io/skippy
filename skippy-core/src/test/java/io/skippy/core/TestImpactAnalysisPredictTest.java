@@ -285,7 +285,7 @@ public class TestImpactAnalysisPredictTest {
                     ]
                 }
             """);
-            var configuration = new SkippyConfiguration(true, Optional.empty());
+            var configuration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
             var repository = mock(SkippyRepository.class);
             when(repository.readJacocoExecutionData("00000000000000000000000000000000")).thenReturn(Optional.of(new byte[]{}));
             var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
@@ -314,7 +314,7 @@ public class TestImpactAnalysisPredictTest {
                     ]
                 }
             """);
-            var configuration = new SkippyConfiguration(true, Optional.empty());
+            var configuration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
             var repository = SkippyRepository.getInstance(configuration);
             var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
             assertEquals(EXECUTE, predictionWithReason.prediction());
@@ -343,7 +343,7 @@ public class TestImpactAnalysisPredictTest {
                     ]
                 }
             """);
-            var configuration = new SkippyConfiguration(true, Optional.empty());
+            var configuration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
             var repository = SkippyRepository.getInstance(configuration);
             var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
             assertEquals(EXECUTE, predictionWithReason.prediction());

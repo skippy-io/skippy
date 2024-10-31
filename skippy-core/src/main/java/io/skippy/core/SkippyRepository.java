@@ -54,7 +54,7 @@ public final class SkippyRepository {
     private SkippyRepository(SkippyConfiguration skippyConfiguration, Path projectDir, Path buildDir) {
         this.projectDir = projectDir;
         this.buildDir = buildDir;
-        this.extension = createRepositoryExtension(skippyConfiguration, projectDir);
+        this.extension = skippyConfiguration.repositoryExtension(projectDir);
     }
 
     /**
@@ -226,16 +226,6 @@ public final class SkippyRepository {
             return TestImpactAnalysis.NOT_FOUND;
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to read latest test impact analysis: %s.".formatted(e.getMessage()), e);
-        }
-    }
-
-    private SkippyRepositoryExtension createRepositoryExtension(SkippyConfiguration skippyConfiguration, Path projectDir) {
-        try {
-            Class<?> clazz = Class.forName(skippyConfiguration.repositoryClass());
-            Constructor<?> constructor = clazz.getConstructor(Path.class);
-            return (SkippyRepositoryExtension) constructor.newInstance(projectDir);
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to create repository extension %s: %s.".formatted(skippyConfiguration.repositoryClass(), e.getMessage()), e);
         }
     }
 

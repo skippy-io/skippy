@@ -69,7 +69,7 @@ public class CustomRepositoryExtensionTest {
     @BeforeEach
     void setUp() throws URISyntaxException {
         projectDir = Paths.get(getClass().getResource(".").toURI());
-        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false, Optional.of(Extension.class.getName())), projectDir, null);
+        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false, Optional.of(Extension.class.getName()), Optional.empty()), projectDir, null);
         skippyRepository.deleteSkippyFolder();
         skippyFolder = SkippyFolder.get(projectDir);
         reset(extensionMock);
