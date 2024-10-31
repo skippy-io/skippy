@@ -171,6 +171,16 @@ public final class TestImpactAnalysis {
                 if (coveredClass.hasChanged()) {
                     return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of(coveredClass.getClassName())));
                 }
+                var maybeCoveredTest = analyzedTests.stream()
+                        .filter(test -> test.getTestClassId() == coveredClassId)
+                        .findFirst();
+                if (maybeCoveredTest.isPresent() && maybeCoveredTest.get().getResult() == TestResult.FAILED) {
+                    var coveredTest = classFileContainer.getById(coveredClassId);
+                    return PredictionWithReason.execute(new Reason(COVERED_TEST_FAILED_PREVIOUSLY, Optional.of(coveredTest.getClassName())));
+                }
+                if (maybeAnalyzedTest.isEmpty()) {
+                    return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));
+                }
             }
             return PredictionWithReason.skip(new Reason(NO_CHANGE, Optional.empty()));
         });
