@@ -9,7 +9,6 @@ ossrhPublish {
 }
 
 dependencies {
-    implementation project(':skippy-api')
     implementation "org.ow2.asm:asm-tree:" + versions.asm
     implementation 'org.jacoco:org.jacoco.core:' + versions.jacoco
     compileOnly 'org.jacoco:org.jacoco.agent:' + versions.jacoco + ':runtime'
