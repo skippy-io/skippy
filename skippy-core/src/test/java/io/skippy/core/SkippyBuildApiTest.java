@@ -144,13 +144,13 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": 1,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1],
                         "executionId": "BAR"
                     },
                     {
                         "class": 3,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [2,3],
                         "executionId": "FOO"
                     }
@@ -205,12 +205,12 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": 1,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1]
                     },
                     {
                         "class": 3,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [2,3]
                     }
                 ]
@@ -264,12 +264,12 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": 1,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1]
                     },
                     {
                         "class": 3,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [2,3]
                     }
                 ]
@@ -327,12 +327,12 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": 1,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0]
                     },
                     {
                         "class": 3,
-                        "result": "FAILED",
+                        "tags": ["FAILED"],
                         "coveredClasses": [2]
                     }
                 ]
@@ -407,7 +407,7 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": 0,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0]
                     }
                 ]
@@ -448,7 +448,7 @@ public final class SkippyBuildApiTest {
              "tests": [
                 {
                     "class": 3,
-                    "result": "PASSED",
+                    "tags": ["PASSED"],
                     "coveredClasses": [2,3]
                 }
              ]
@@ -475,7 +475,7 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"],
                         "executionId": "00000000000000000000000000000000"
                     }
@@ -519,7 +519,7 @@ public final class SkippyBuildApiTest {
              "tests": [
                 {
                     "class": 3,
-                    "result": "PASSED",
+                    "tags": ["PASSED"],
                     "coveredClasses": [2,3],
                     "executionId": "11111111111111111111111111111111"
                 }
@@ -565,12 +565,12 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": 1,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1]
                     },
                     {
                         "class": 3,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [2,3]
                     }
                 ]
@@ -615,12 +615,12 @@ public final class SkippyBuildApiTest {
                 "tests": [
                     {
                         "class": 1,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1]
                     },
                     {
                         "class": 3,
-                        "result": "FAILED",
+                        "tags": ["FAILED"],
                         "coveredClasses": [2,3]
                     }
                 ]

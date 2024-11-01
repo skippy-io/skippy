@@ -10,7 +10,7 @@ ossrhPublish {
 
 dependencies {
     api 'org.junit.jupiter:junit-jupiter-api:' + versions.junit5
-    implementation project(':skippy-core')
+    api project(':skippy-core')
     implementation 'org.junit.jupiter:junit-jupiter-engine:' + versions.junit5
     testImplementation 'org.mockito:mockito-core:5.4.0'
 }

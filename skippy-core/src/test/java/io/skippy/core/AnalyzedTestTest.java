@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -30,12 +31,12 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonNoCoveredClasses() throws JSONException {
-        var analyzedTest = new AnalyzedTest(0, TestResult.PASSED, asList(), Optional.empty());
+        var analyzedTest = new AnalyzedTest(0, List.of(TestTag.PASSED), asList(), Optional.empty());
 
         var expected = """
             {
                 "class": 0,
-                "result": "PASSED",
+                "tags": ["PASSED"],
                 "coveredClasses": []
             }
         """;
@@ -44,11 +45,11 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonOneCoveredClass() throws JSONException {
-        var analyzedTest = new AnalyzedTest(0, TestResult.PASSED, asList(0), Optional.empty());
+        var analyzedTest = new AnalyzedTest(0, List.of(TestTag.PASSED), asList(0), Optional.empty());
         var expected = """
             {
                 "class": 0,
-                "result": "PASSED",
+                "tags": ["PASSED"],
                 "coveredClasses": [0]
             }
         """;
@@ -56,11 +57,11 @@ public class AnalyzedTestTest {
     }
     @Test
     void testToJsonTwoCoveredClasses() throws JSONException {
-        var analyzedTest = new AnalyzedTest(0, TestResult.PASSED, asList(0, 1), Optional.empty());
+        var analyzedTest = new AnalyzedTest(0, List.of(TestTag.PASSED), asList(0, 1), Optional.empty());
         var expected = """
             {
                 "class": 0,
-                "result": "PASSED",
+                "tags": ["PASSED"],
                 "coveredClasses": [0, 1]
             }
         """;
@@ -69,11 +70,11 @@ public class AnalyzedTestTest {
 
     @Test
     void testToJsonFailedTest() throws JSONException {
-        var analyzedTest = new AnalyzedTest(0, TestResult.FAILED, asList(), Optional.empty());
+        var analyzedTest = new AnalyzedTest(0, List.of(TestTag.FAILED), asList(), Optional.empty());
         var expected = """
             {
                 "class": 0,
-                "result": "FAILED",
+                "tags": ["FAILED"],
                 "coveredClasses": []
             }
         """;
@@ -85,13 +86,13 @@ public class AnalyzedTestTest {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
                 "class": 0,
-                "result": "PASSED",
+                "tags": ["PASSED"],
                 "coveredClasses": []
             }
         """));
 
         assertEquals(0, analyzedTest.getTestClassId());
-        assertEquals(TestResult.PASSED, analyzedTest.getResult());
+        assertEquals(List.of(TestTag.PASSED), analyzedTest.getTags());
         assertEquals(asList(), analyzedTest.getCoveredClassesIds());
     }
 
@@ -100,7 +101,7 @@ public class AnalyzedTestTest {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
                 "class": 0,
-                "result": "PASSED",
+                "tags": ["PASSED"],
                 "coveredClasses": [0]
             }
         """));
@@ -112,7 +113,7 @@ public class AnalyzedTestTest {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
                 "class": 0,
-                "result": "PASSED",
+                "tags": ["PASSED"],
                 "coveredClasses": [0, 1]
             }
         """));
@@ -124,11 +125,11 @@ public class AnalyzedTestTest {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
                 "class": 0,
-                "result": "FAILED",
+                "tags": ["FAILED"],
                 "coveredClasses": []
             }
         """));
-        assertEquals(TestResult.FAILED, analyzedTest.getResult());
+        assertEquals(List.of(TestTag.FAILED), analyzedTest.getTags());
     }
 
     @Test
@@ -136,7 +137,7 @@ public class AnalyzedTestTest {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
                 "class": 0,
-                "result": "FAILED",
+                "tags": ["FAILED"],
                 "coveredClasses": []
             }
         """));
@@ -148,7 +149,7 @@ public class AnalyzedTestTest {
         var analyzedTest = AnalyzedTest.parse(new Tokenizer("""
             {
                 "class": 0,
-                "result": "FAILED",
+                "tags": ["FAILED"],
                 "coveredClasses": [],
                 "executionId":  "00000000000000000000000000000000"
             }

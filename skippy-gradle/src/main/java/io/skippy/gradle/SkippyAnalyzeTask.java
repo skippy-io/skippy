@@ -34,9 +34,7 @@ abstract class SkippyAnalyzeTask extends DefaultTask {
     @Inject
     public SkippyAnalyzeTask() {
         setGroup("skippy");
-        doLast(task -> {
-            getProjectSettings().get().ifBuildSupportsSkippy(SkippyBuildApi::buildFinished);
-        });
+        doLast(task -> getProjectSettings().get().ifBuildSupportsSkippy(SkippyBuildApi::buildFinished));
     }
 
 }

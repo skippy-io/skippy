@@ -84,22 +84,22 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                 "tests": [
                     {
                         "class": 4,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1,2,3,4,5,6,7]
                     },
                     {
                         "class": 5,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [3,4,5]
                     },
                     {
                         "class": 6,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [1,2,4,6,7]
                     },
                     {
                         "class": 7,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [2,4,6,7]
                     }
                 ]
@@ -169,22 +169,22 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                 "tests": [
                     {
                         "class": 4,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1,2,3,4,5,6,7]
                     },
                     {
                         "class": 5,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [3,4,5]
                     },
                     {
                         "class": 6,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [1,2,4,6,7]
                     },
                     {
                         "class": 7,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [2,4,6,7]
                     }
                 ]
@@ -254,22 +254,22 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                 "tests": [
                     {
                         "class": 4,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1,2,3,4,5,6,7]
                     },
                     {
                         "class": 5,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [3,4,5]
                     },
                     {
                         "class": 6,
-                        "result": "FAILED",
+                        "tags": ["FAILED"],
                         "coveredClasses": [1,2,4,6,7]
                     },
                     {
                         "class": 7,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [2,4,6,7]
                     }
                 ]

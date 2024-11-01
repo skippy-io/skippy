@@ -16,7 +16,6 @@
 
 package io.skippy.core;
 
-import io.skippy.core.TestImpactAnalysis;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,7 +67,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -77,7 +76,7 @@ public class TestImpactAnalysisMergeTest {
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "id": "2DF824AB81F8E6FB957D5E16DA86B981",
+                "id": "970D9D0978DB0BAF340049B33BBA910E",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -89,7 +88,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": 0,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0]
                     }
                 ]
@@ -112,7 +111,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -131,7 +130,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -140,7 +139,7 @@ public class TestImpactAnalysisMergeTest {
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "id": "11354F8AC8619304F48F36FB5D4458C3",
+                "id": "2621510E3BE5204ED1221A9A2AE54B96",
                 "classes": {
                     "0": {
                         "name": "com.example.BarTest",
@@ -158,12 +157,12 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": 0,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0]
                     },
                     {
                         "class": 1,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [1]
                     }
                 ]
@@ -186,7 +185,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "FAILED",
+                        "tags": ["FAILED"],
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -205,7 +204,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "FAILED",
+                        "tags": ["FAILED"],
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -214,7 +213,7 @@ public class TestImpactAnalysisMergeTest {
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "id": "316A0F66B5E6E1C3993C60575ECA82FD",
+                "id": "1393708557C3A0F60803918BBEBE9506",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -226,7 +225,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": 0,
-                        "result": "FAILED",
+                        "tags": ["FAILED"],
                         "coveredClasses": [0]
                     }
                 ]
@@ -249,7 +248,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": 0,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0],
                         "executionId": "00000000000000000000000000000000"
                     }
@@ -269,7 +268,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": 0,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0],
                         "executionId": "11111111111111111111111111111111"
                     }
@@ -279,7 +278,7 @@ public class TestImpactAnalysisMergeTest {
         var mergedAnalysis = baseline.merge(newAnalysis);
         assertThat(mergedAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "id": "021C7D48FCEF65129C3F898D3DA393D3",
+                "id": "67A2F64F515FF7CD5B961FB7E690105B",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -291,7 +290,7 @@ public class TestImpactAnalysisMergeTest {
                 "tests": [
                     {
                         "class": 0,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0],
                         "executionId": "11111111111111111111111111111111"
                     }
