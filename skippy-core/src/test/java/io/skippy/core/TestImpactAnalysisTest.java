@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -43,6 +44,63 @@ public class TestImpactAnalysisTest {
     }
 
     @Test
+    void name() {
+        var bla = """
+                {
+                      "id": "15C768A83561FFE231A035724FAFC300",
+                      "classes": {
+                  		"0": {
+                  			"name": "com.example.LeftPadder",
+                  			"path": "com/example/LeftPadder.class",
+                  			"outputFolder": "target/classes",
+                  			"hash": "8E994DD8"
+                  		},
+                  		"1": {
+                  			"name": "com.example.LeftPadderTest",
+                  			"path": "com/example/LeftPadderTest.class",
+                  			"outputFolder": "target/test-classes",
+                  			"hash": "2B1B85DB"
+                  		},
+                  		"2": {
+                  			"name": "com.example.RightPadder",
+                  			"path": "com/example/RightPadder.class",
+                  			"outputFolder": "target/classes",
+                  			"hash": "F7F27006"
+                  		},
+                  		"3": {
+                  			"name": "com.example.RightPadderTest",
+                  			"path": "com/example/RightPadderTest.class",
+                  			"outputFolder": "target/test-classes",
+                  			"hash": "245F22AE"
+                  		},
+                  		"4": {
+                  			"name": "com.example.StringUtils",
+                  			"path": "com/example/StringUtils.class",
+                  			"outputFolder": "target/classes",
+                  			"hash": "ECE5D94D"
+                  		}
+                  	},
+                      "tests": [
+                  		{
+                  			"class": 1,
+                  			"tags": ["PASSED"],
+                  			"coveredClasses": [0,1,4],
+                  			"executionId": "BB30AAC28F561485DA50077608E01EC3"
+                  		},
+                  		{
+                  			"class": 3,
+                  			"tags": ["PASSED"],
+                  			"coveredClasses": [2,3,4],
+                  			"executionId": "A28FF0B13BADDBE5598B2AC084E205D8"
+                  		}
+                      ]
+                  }
+                """;
+        var tia = TestImpactAnalysis.parse(bla);
+        System.out.println(tia.getId());
+    }
+
+    @Test
     void testToJsonOneTestOneClass() {
         var fooTest = new ClassFile(
                 "com.example.FooTest",
@@ -52,11 +110,11 @@ public class TestImpactAnalysisTest {
         );
         var testImpactAnalysis = new TestImpactAnalysis(
                 ClassFileContainer.from(asList(fooTest)),
-                asList(new AnalyzedTest(0, TestResult.PASSED, asList(0), Optional.empty()))
+                asList(new AnalyzedTest(0, List.of(TestTag.PASSED), asList(0), Optional.empty()))
         );
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "id": "D013368C0DD441D819DEA78640F4EC1A",
+                "id": "4BF8006482E1196644540C5E3979F3B2",
                 "classes": {
                     "0": {
                         "name": "com.example.FooTest",
@@ -68,7 +126,7 @@ public class TestImpactAnalysisTest {
                 "tests": [
                     {
                         "class": 0,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0]
                     }
                 ]
@@ -105,13 +163,13 @@ public class TestImpactAnalysisTest {
         var testImpactAnalysis = new TestImpactAnalysis(
                 ClassFileContainer.from(asList(class1, class2, class1Test, class2Test)),
                 asList(
-                        new AnalyzedTest(1, TestResult.PASSED, asList(0, 1), Optional.empty()),
-                        new AnalyzedTest(2, TestResult.PASSED, asList(2, 3), Optional.empty())
+                        new AnalyzedTest(1, List.of(TestTag.PASSED), asList(0, 1), Optional.empty()),
+                        new AnalyzedTest(2, List.of(TestTag.PASSED), asList(2, 3), Optional.empty())
                 )
         );
         assertThat(testImpactAnalysis.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "id": "4473271405D844F7E9F969057E7FA479",
+                "id": "2D555759FBE733F963F31F095495B6A4",
                 "classes": {
                     "0": {
                         "name": "com.example.Class1",
@@ -141,12 +199,12 @@ public class TestImpactAnalysisTest {
                 "tests": [
                     {
                         "class": 1,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [0,1]
                     },
                     {
                         "class": 2,
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": [2,3]
                     }
                 ]
@@ -185,14 +243,14 @@ public class TestImpactAnalysisTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]
             }
         """);
 
-        assertEquals("D013368C0DD441D819DEA78640F4EC1A", testImpactAnalysis.getId());
+        assertEquals("4BF8006482E1196644540C5E3979F3B2", testImpactAnalysis.getId());
 
         var classFiles = new ArrayList<>(testImpactAnalysis.getClassFileContainer().getClassFiles());
         assertEquals(1, classFiles.size());
@@ -201,7 +259,7 @@ public class TestImpactAnalysisTest {
         var tests = testImpactAnalysis.getAnalyzedTests();
         assertEquals(1, tests.size());
         assertEquals(0, tests.get(0).getTestClassId());
-        assertEquals(TestResult.PASSED, tests.get(0).getResult());
+        assertEquals(asList(TestTag.PASSED), tests.get(0).getTags());
         assertEquals(asList(0), tests.get(0).getCoveredClassesIds());
     }
 
@@ -239,19 +297,19 @@ public class TestImpactAnalysisTest {
                 "tests": [
                     {
                         "class": "2",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0","2"]
                     },
                     {
                         "class": "3",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["1","3"]
                     }
                 ]
             }
         """);
 
-        assertEquals("40F512FD02B1EEBF932622C51AFB5268", testImpactAnalysis.getId());
+        assertEquals("038F492123FDC5E103679C2FA7AF3E6B", testImpactAnalysis.getId());
 
         var classFiles = new ArrayList<>(testImpactAnalysis.getClassFileContainer().getClassFiles());
         assertEquals(4, classFiles.size());
@@ -264,11 +322,11 @@ public class TestImpactAnalysisTest {
         assertEquals(2, tests.size());
 
         assertEquals(2, tests.get(0).getTestClassId());
-        assertEquals(TestResult.PASSED, tests.get(0).getResult());
+        assertEquals(asList(TestTag.PASSED), tests.get(0).getTags());
         assertEquals(asList(0, 2), tests.get(0).getCoveredClassesIds());
 
         assertEquals(3, tests.get(1).getTestClassId());
-        assertEquals(TestResult.PASSED, tests.get(1).getResult());
+        assertEquals(asList(TestTag.PASSED), tests.get(1).getTags());
         assertEquals(asList(1, 3), tests.get(1).getCoveredClassesIds());
     }
 

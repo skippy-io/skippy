@@ -118,13 +118,13 @@ public final class SkippyBuildApi {
             ClassFileContainer classFileContainer
     ) {
         var failedTests = skippyRepository.readListOfFailedTests();
-        var testResult = failedTests.contains(testWithExecutionData.testClassName()) ? TestResult.FAILED : TestResult.PASSED;
+        var tags = failedTests.contains(testWithExecutionData.testClassName()) ? List.of(TestTag.FAILED) : List.of(TestTag.PASSED);
         var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
         var executionId = skippyConfiguration.generateCoverageForSkippedTests() ?
                 Optional.of(skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData())) :
                 Optional.<String>empty();
         return ids.stream()
-                .map(id -> new AnalyzedTest(id, testResult, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), executionId))
+                .map(id -> new AnalyzedTest(id, tags, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), executionId))
                 .toList();
     }
 

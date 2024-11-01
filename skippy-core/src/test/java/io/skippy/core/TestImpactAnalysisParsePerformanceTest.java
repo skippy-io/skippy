@@ -33,7 +33,7 @@ public class TestImpactAnalysisParsePerformanceTest {
         var jsonFile = Paths.get(getClass().getResource("test-impact-analysis.json").toURI());
         var testImpactAnalysis = TestImpactAnalysis.parse(Files.readString(jsonFile, StandardCharsets.UTF_8));
         Profiler.printResults();
-        assertEquals("ACB10843996699388C4DD7A841D42BD9", testImpactAnalysis.getId());
+        assertEquals("55AB349797F1169672E84163857DCB06", testImpactAnalysis.getId());
         assertEquals(2510, testImpactAnalysis.getClassFileContainer().getClassFiles().size());
         assertEquals(400, testImpactAnalysis.getAnalyzedTests().size());
     }

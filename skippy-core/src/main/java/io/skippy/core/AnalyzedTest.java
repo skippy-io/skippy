@@ -29,7 +29,7 @@ import static java.util.stream.Collectors.joining;
  * <pre>
  * {
  *      "class": 0,
- *      "result": "PASSED",
+ *      "tags": ["PASSED"],
  *      "coveredClasses": [0, 1],
  *      "executionId": "C57F877F...."
  * }
@@ -42,7 +42,7 @@ import static java.util.stream.Collectors.joining;
 final class AnalyzedTest implements Comparable<AnalyzedTest> {
 
     private final int testClassId;
-    private final TestResult result;
+    private final List<TestTag> tags;
     private final List<Integer> coveredClassesIds;
     private final Optional<String> executionId;
 
@@ -50,13 +50,13 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
      * C'tor.
      *
      * @param testClassId the id of the test class in the {@link ClassFileContainer}
-     * @param result the {@link TestResult}
+     * @param tags a list of {@link TestTag}s
      * @param coveredClassesIds the ids of the covered classes in the {@link ClassFileContainer}
      * @param executionId a unique identifier for the test's JaCoCo execution data if capture of execution data is enabled
      */
-    AnalyzedTest(int testClassId, TestResult result, List<Integer> coveredClassesIds, Optional<String> executionId) {
+    AnalyzedTest(int testClassId, List<TestTag> tags, List<Integer> coveredClassesIds, Optional<String> executionId) {
         this.testClassId = testClassId;
-        this.result = result;
+        this.tags = tags;
         this.coveredClassesIds = coveredClassesIds;
         this.executionId = executionId;
     }
@@ -70,14 +70,6 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
         return testClassId;
     }
 
-    /**
-     * Returns the {@link TestResult}.
-     *
-     * @return the {@link TestResult}
-     */
-    TestResult getResult() {
-        return result;
-    }
 
     /**
      * Returns the ids of the covered classes in the {@link ClassFileContainer}.
@@ -114,7 +106,7 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
         tokenizer.skip('{');
         Integer clazz = null;
         List<Integer> coveredClasses = null;
-        TestResult testResult = null;
+        List<TestTag> testTags = null;
         Optional<String> executionId = Optional.empty();
         while (true) {
             var key = tokenizer.next();
@@ -126,8 +118,8 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
                 case "coveredClasses":
                     coveredClasses = parseCoveredClasses(tokenizer);
                     break;
-                case "result":
-                    testResult = TestResult.valueOf(tokenizer.next());
+                case "tags":
+                    testTags = TestTag.parseList(tokenizer);
                     break;
                 case "executionId":
                     executionId = Optional.of(tokenizer.next());
@@ -139,7 +131,7 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
                 break;
             }
         }
-        return new AnalyzedTest(clazz, testResult, coveredClasses, executionId);
+        return new AnalyzedTest(clazz, testTags, coveredClasses, executionId);
     }
 
     static List<Integer> parseCoveredClasses(Tokenizer tokenizer) {
@@ -153,12 +145,23 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
         return coveredClasses;
     }
 
+    List<TestTag> getTags() {
+        return tags;
+    }
+
+    boolean isTaggedAs(TestTag tag) {
+        return tags.contains(tag);
+    }
+
     String toJson() {
         var result = new StringBuilder();
         result.append("\t\t{" + lineSeparator());
         result.append("\t\t\t\"class\": %s".formatted(getTestClassId()));
         result.append(",%s".formatted(lineSeparator()));
-        result.append("\t\t\t\"result\": \"%s\"".formatted(getResult()));
+        result.append("\t\t\t\"tags\": [%s]".formatted(tags.stream()
+                .sorted()
+                .map(tag -> "\"%s\"".formatted(tag.name()))
+                .collect(joining(","))));
         result.append(",%s".formatted(lineSeparator()));
         result.append("\t\t\t\"coveredClasses\": [%s]".formatted(getCoveredClassesIds().stream()
                 .map(Integer::valueOf)
@@ -185,13 +188,13 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
         if (o == null || getClass() != o.getClass()) return false;
         AnalyzedTest that = (AnalyzedTest) o;
         return testClassId == that.testClassId &&
-                result == that.result &&
+                Objects.equals(tags, that.tags) &&
                 Objects.equals(coveredClassesIds, that.coveredClassesIds) &&
                 Objects.equals(executionId, that.executionId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(testClassId, result, coveredClassesIds, executionId);
+        return Objects.hash(testClassId, tags, coveredClassesIds, executionId);
     }
 }

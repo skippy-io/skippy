@@ -38,9 +38,7 @@ abstract class SkippyCleanTask extends DefaultTask {
     @Inject
     public SkippyCleanTask() {
         setGroup("skippy");
-        doLast(task -> {
-            getProjectSettings().get().ifBuildSupportsSkippy(SkippyBuildApi::deleteSkippyFolder);
-        });
+        doLast(task -> getProjectSettings().get().ifBuildSupportsSkippy(SkippyBuildApi::deleteSkippyFolder));
     }
 
 }
