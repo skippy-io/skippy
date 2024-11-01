@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Skippy configuration that is used both by Skippy's build plugins and Skippy's JUnit libaries.
+ * Skippy's configuration that is used both by Skippy's build plugins and Skippy's JUnit libaries.
  *
  * @author Florian McKee
  */

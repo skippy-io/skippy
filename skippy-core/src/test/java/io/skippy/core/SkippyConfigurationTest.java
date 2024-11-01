@@ -81,7 +81,7 @@ public class SkippyConfigurationTest {
         }
 
         @Override
-        public PredictionWithReason apply(Class<?> test, PredictionWithReason prediction) {
+        public PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction) {
             return null;
         }
     }

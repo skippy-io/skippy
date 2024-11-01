@@ -118,7 +118,7 @@ public final class SkippyTestApi {
                 if (predictions.containsKey(test.getName())) {
                     return predictions.get(test.getName()) == Prediction.EXECUTE;
                 }
-                var predictionWithReason = predictionModifier.apply(test, testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository));
+                var predictionWithReason = predictionModifier.passThruOrModify(test, testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository));
                 if (predictionWithReason.reason().details().isPresent()) {
                     Files.writeString(
                         SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),

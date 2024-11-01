@@ -16,12 +16,10 @@
 
 package io.skippy.core;
 
-import io.skippy.api.DisableSkippy;
-
 import java.util.Optional;
 
 /**
- * {@link PredictionModifier} that defaults to {@link Prediction#SKIP} if a test (or one of it's superclasses or
+ * {@link PredictionModifier} that defaults to {@link Prediction#EXECUTE} if a test (or one of it's superclasses or
  * interfaces it implements is annotated with @{@link DisableSkippy}.
  *
  * @author Florian McKee
@@ -32,7 +30,7 @@ final class DefaultPredictionModifier implements PredictionModifier {
     }
 
     @Override
-    public PredictionWithReason apply(Class<?> test, PredictionWithReason prediction) {
+    public PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction) {
         if (isAnnotatedWithDisableSkippy(test)) {
             return PredictionWithReason.execute(new Reason(
                     Reason.Category.OVERRIDE_BY_PREDICTION_MODIFIER,

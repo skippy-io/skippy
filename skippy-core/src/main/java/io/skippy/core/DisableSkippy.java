@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.skippy.api;
+package io.skippy.core;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

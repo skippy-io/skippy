@@ -19,6 +19,13 @@ package io.skippy.core;
 /**
  * Extension point that allows projects to customize predictions made by Skippy.
  *
+ * Example use cases:
+ * <ul>
+ *     <li>disable Skippy for all tests that carry a custom annotation,</li>
+ *     <li>disable Skippy for all tests within a package,</li>
+ *     <li>etc.</li>
+ * </ul>
+ *
  * <br /><br />
  * Custom implementations must be registered using Skippy's build plugins.
  * <br /><br />
@@ -26,7 +33,7 @@ package io.skippy.core;
  * <pre>
  * skippy {
  *     ...
- *     predictionModifier = 'com.example.S3SkippyRepository'
+ *     predictionModifier = 'com.example.CustomPredictionModifier'
  * }
  * </pre>
  *
@@ -41,6 +48,6 @@ public interface PredictionModifier {
      * @param prediction the prediction made by Skippy.
      * @return the modified or unmodified prediction
      */
-    PredictionWithReason apply(Class<?> test, PredictionWithReason prediction);
+    PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction);
 
 }
