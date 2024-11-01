@@ -132,7 +132,7 @@ public class SkippyRepositoryTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -146,7 +146,7 @@ public class SkippyRepositoryTest {
 
         var latest = skippyFolder.resolve("LATEST");
         assertTrue(exists(latest));
-        assertThat(readString(latest, StandardCharsets.UTF_8)).isEqualTo("D013368C0DD441D819DEA78640F4EC1A");
+        assertThat(readString(latest, StandardCharsets.UTF_8)).isEqualTo("4BF8006482E1196644540C5E3979F3B2");
     }
 
     @Test
@@ -177,7 +177,7 @@ public class SkippyRepositoryTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -202,7 +202,7 @@ public class SkippyRepositoryTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]

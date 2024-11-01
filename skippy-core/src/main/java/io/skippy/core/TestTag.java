@@ -16,12 +16,15 @@
 
 package io.skippy.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Test result.
+ * Tags that can be associated with a test.
  *
  * @author Florian McKee
  */
-enum TestResult {
+enum TestTag {
 
     /**
      * The test was successful.
@@ -29,7 +32,20 @@ enum TestResult {
     PASSED,
 
     /**
-     * The test was failed.
+     * The test failed.
      */
     FAILED;
+
+    static List<TestTag> parseList(Tokenizer tokenizer) {
+        return Profiler.profile("TestTag#parseList", () -> {
+            var testTags = new ArrayList<TestTag>();
+            tokenizer.skip('[');
+            while (!tokenizer.peek(']')) {
+                tokenizer.skipIfNext(',');
+                testTags.add(TestTag.valueOf(tokenizer.next()));
+            }
+            tokenizer.skip(']');
+            return testTags;
+        });
+    }
 }

@@ -68,12 +68,12 @@ import static java.util.stream.Collectors.joining;
  *      "tests": [                                                              reference classes
  *          {                                               ──┐                in ClassFileContainer
  *              "class": 1,                                   │                         │
- *              "result": "PASSED",                      AnalyzedTest                   │
+ *              "tags": ["PASSED"],                      AnalyzedTest                   │
  *              "coveredClasses": [0,1]                       │                         │
  *          },                                              ──┘                         │
  *          {                                                                           │
  *              "class": 3,   ──────────────┬───────────────────────────────────────────┘
- *              "result": "PASSED",         │
+ *              "tags": ["PASSED"],         │
  *              "coveredClasses": [2,3]  ───┘
  *          }
  *      ]
@@ -143,7 +143,7 @@ public final class TestImpactAnalysis {
             var analyzedTest = maybeAnalyzedTest.get();
             var testClass = classFileContainer.getById(analyzedTest.getTestClassId());
 
-            if (analyzedTest.getResult() == TestResult.FAILED) {
+            if (analyzedTest.isTaggedAs(TestTag.FAILED)) {
                 return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
             }
 
@@ -174,7 +174,7 @@ public final class TestImpactAnalysis {
                 var maybeCoveredTest = analyzedTests.stream()
                         .filter(test -> test.getTestClassId() == coveredClassId)
                         .findFirst();
-                if (maybeCoveredTest.isPresent() && maybeCoveredTest.get().getResult() == TestResult.FAILED) {
+                if (maybeCoveredTest.isPresent() && maybeCoveredTest.get().isTaggedAs(TestTag.FAILED)) {
                     var coveredTest = classFileContainer.getById(coveredClassId);
                     return PredictionWithReason.execute(new Reason(COVERED_TEST_FAILED_PREVIOUSLY, Optional.of(coveredTest.getClassName())));
                 }
@@ -279,7 +279,7 @@ public final class TestImpactAnalysis {
     private AnalyzedTest remap(AnalyzedTest analyzedTest, ClassFileContainer original, ClassFileContainer merged) {
         return new AnalyzedTest(
                 remap(analyzedTest.getTestClassId(), original, merged),
-                analyzedTest.getResult(),
+                analyzedTest.getTags(),
                 analyzedTest.getCoveredClassesIds().stream().map(id -> remap(id, original, merged)).toList(),
                 analyzedTest.getExecutionId());
     }

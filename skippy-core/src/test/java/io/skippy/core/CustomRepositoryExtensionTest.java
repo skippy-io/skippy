@@ -90,7 +90,7 @@ public class CustomRepositoryExtensionTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]
@@ -118,7 +118,7 @@ public class CustomRepositoryExtensionTest {
                 "tests": [
                     {
                         "class": "0",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0"]
                     }
                 ]

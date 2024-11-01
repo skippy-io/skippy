@@ -10,8 +10,7 @@ ossrhPublish {
 
 dependencies {
     api 'junit:junit:' + versions.junit4
-    api project(':skippy-api')
-    implementation project(':skippy-core')
+    api project(':skippy-core')
     testImplementation 'org.mockito:mockito-core:' + versions.mockito
 }
 

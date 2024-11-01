@@ -63,7 +63,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0", "1"]
                     }
                 ]
@@ -116,7 +116,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0", "1"]
                     }
                 ]
@@ -148,7 +148,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0", "1"]
                     }
                 ]
@@ -181,7 +181,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
-                        "result": "FAILED",
+                        "tags": ["FAILED"],
                         "coveredClasses": ["0", "1"]
                     }
                 ]                      
@@ -213,7 +213,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0", "1"]
                     }
                 ]
@@ -246,7 +246,7 @@ public class TestImpactAnalysisPredictTest {
                 "tests": [
                     {
                         "class": "1",
-                        "result": "PASSED",
+                        "tags": ["PASSED"],
                         "coveredClasses": ["0", "1"]
                     }
                 ]
@@ -278,7 +278,7 @@ public class TestImpactAnalysisPredictTest {
                     "tests": [
                         {
                             "class": "0",
-                            "result": "PASSED",
+                            "tags": ["PASSED"],
                             "coveredClasses": ["0"],
                             "executionId": "00000000000000000000000000000000"
                         }
@@ -308,7 +308,7 @@ public class TestImpactAnalysisPredictTest {
                     "tests": [
                         {
                             "class": "0",
-                            "result": "PASSED",
+                            "tags": ["PASSED"],
                             "coveredClasses": ["0"]
                         }
                     ]
@@ -336,7 +336,7 @@ public class TestImpactAnalysisPredictTest {
                     "tests": [
                         {
                             "class": "0",
-                            "result": "PASSED",
+                            "tags": ["PASSED"],
                             "coveredClasses": ["0"],
                             "executionId": "00000000000000000000000000000000"
                         }
