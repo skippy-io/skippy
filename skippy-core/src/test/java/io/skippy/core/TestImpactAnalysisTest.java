@@ -44,63 +44,6 @@ public class TestImpactAnalysisTest {
     }
 
     @Test
-    void name() {
-        var bla = """
-                {
-                      "id": "15C768A83561FFE231A035724FAFC300",
-                      "classes": {
-                  		"0": {
-                  			"name": "com.example.LeftPadder",
-                  			"path": "com/example/LeftPadder.class",
-                  			"outputFolder": "target/classes",
-                  			"hash": "8E994DD8"
-                  		},
-                  		"1": {
-                  			"name": "com.example.LeftPadderTest",
-                  			"path": "com/example/LeftPadderTest.class",
-                  			"outputFolder": "target/test-classes",
-                  			"hash": "2B1B85DB"
-                  		},
-                  		"2": {
-                  			"name": "com.example.RightPadder",
-                  			"path": "com/example/RightPadder.class",
-                  			"outputFolder": "target/classes",
-                  			"hash": "F7F27006"
-                  		},
-                  		"3": {
-                  			"name": "com.example.RightPadderTest",
-                  			"path": "com/example/RightPadderTest.class",
-                  			"outputFolder": "target/test-classes",
-                  			"hash": "245F22AE"
-                  		},
-                  		"4": {
-                  			"name": "com.example.StringUtils",
-                  			"path": "com/example/StringUtils.class",
-                  			"outputFolder": "target/classes",
-                  			"hash": "ECE5D94D"
-                  		}
-                  	},
-                      "tests": [
-                  		{
-                  			"class": 1,
-                  			"tags": ["PASSED"],
-                  			"coveredClasses": [0,1,4],
-                  			"executionId": "BB30AAC28F561485DA50077608E01EC3"
-                  		},
-                  		{
-                  			"class": 3,
-                  			"tags": ["PASSED"],
-                  			"coveredClasses": [2,3,4],
-                  			"executionId": "A28FF0B13BADDBE5598B2AC084E205D8"
-                  		}
-                      ]
-                  }
-                """;
-        var tia = TestImpactAnalysis.parse(bla);
-        System.out.println(tia.getId());
-    }
-
-    @Test
     void testToJsonOneTestOneClass() {
         var fooTest = new ClassFile(
                 "com.example.FooTest",
