@@ -213,20 +213,19 @@ public class SkippyRepositoryTest {
     }
 
     @Test
-    void testDeleteListOfFailedTests() {
-        skippyRepository.recordFailedTest("com.example.FooTest");
-        assertTrue(exists(skippyFolder.resolve("failed-tests.txt")));
-        skippyRepository.deleteListOfFailedTests();;
-        assertFalse(exists(skippyFolder.resolve("failed-tests.txt")));
+    void testDeleteTags() {
+        skippyRepository.tagTest("com.example.FooTest", TestTag.FAILED);
+        assertTrue(exists(skippyFolder.resolve("tags.txt")));
+        skippyRepository.deleteTestTags();
+        assertFalse(exists(skippyFolder.resolve("tags.txt")));
     }
 
     @Test
-    void testRecordAndReadListOfFailedTest() throws IOException {
-        assertEquals(emptyList(), skippyRepository.readListOfFailedTests());
-        skippyRepository.recordFailedTest("com.example.Test1");
-        assertEquals(asList("com.example.Test1"), skippyRepository.readListOfFailedTests());
-        skippyRepository.recordFailedTest("com.example.Test2");
-        assertEquals(asList("com.example.Test1", "com.example.Test2"), skippyRepository.readListOfFailedTests());
+    void testTagging()  {
+        // a test is considered PASSED until it is tagged as FAILED
+        assertEquals(asList(TestTag.PASSED), skippyRepository.getTestTags("com.example.Test1"));
+        skippyRepository.tagTest("com.example.Test1", TestTag.FAILED);
+        assertEquals(asList(TestTag.FAILED), skippyRepository.getTestTags("com.example.Test1"));
     }
 
 }
