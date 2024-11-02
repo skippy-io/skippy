@@ -17,6 +17,7 @@
 package io.skippy.gradle;
 
 import io.skippy.core.Profiler;
+import io.skippy.core.TestTag;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.api.tasks.testing.TestDescriptor;
@@ -71,11 +72,11 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
 
                     @Override
                     public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
-                        if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
-                            projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> {
-                                   skippyBuildApi.testFailed(testDescriptor.getClassName());
-                            });
-                        }
+                        projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> {
+                            if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
+                                skippyBuildApi.tagTest(testDescriptor.getClassName(), TestTag.FAILED);
+                            }
+                        });
                     }
                 });
             });

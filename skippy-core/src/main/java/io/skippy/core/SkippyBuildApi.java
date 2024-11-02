@@ -60,7 +60,7 @@ public final class SkippyBuildApi {
      */
     public void buildStarted() {
         skippyRepository.deleteLogFiles();
-        skippyRepository.deleteListOfFailedTests();
+        skippyRepository.deleteTestTags();
         skippyRepository.saveConfiguration(skippyConfiguration);
     }
 
@@ -96,12 +96,13 @@ public final class SkippyBuildApi {
     }
 
     /**
-     * Informs Skippy that a test has failed.
+     * Tags a test.
      *
-     * @param className the class name of the failed tests
+     * @param className a test's class name
+     * @param tag a {@link TestTag}
      */
-    public void testFailed(String className) {
-        skippyRepository.recordFailedTest(className);
+    public void tagTest(String className, TestTag tag) {
+        skippyRepository.tagTest(className, tag);
     }
 
     private TestImpactAnalysis getTestImpactAnalysis() {
@@ -117,9 +118,8 @@ public final class SkippyBuildApi {
             TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData,
             ClassFileContainer classFileContainer
     ) {
-        var failedTests = skippyRepository.readListOfFailedTests();
-        var tags = failedTests.contains(testWithExecutionData.testClassName()) ? List.of(TestTag.FAILED) : List.of(TestTag.PASSED);
         var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
+        var tags = skippyRepository.getTestTags(testWithExecutionData.testClassName());
         var executionId = skippyConfiguration.generateCoverageForSkippedTests() ?
                 Optional.of(skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData())) :
                 Optional.<String>empty();

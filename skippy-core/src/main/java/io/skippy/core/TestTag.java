@@ -24,12 +24,17 @@ import java.util.List;
  *
  * @author Florian McKee
  */
-enum TestTag {
+public enum TestTag {
 
     /**
      * The test was successful.
      */
     PASSED,
+
+    /**
+     * The test was skipped.
+     */
+    SKIPPED,
 
     /**
      * The test failed.
