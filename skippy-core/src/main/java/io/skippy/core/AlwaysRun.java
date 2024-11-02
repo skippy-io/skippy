@@ -23,9 +23,9 @@ import java.lang.annotation.Target;
 
 /**
  * Disables Skippy's predictive test selection:
- * <br />
+ *  <br /><br />
  *  <pre>
- * {@literal @}DisableSkippy
+ * {@literal @}AlwaysRun
  *  public class FooTest {
  *
  *    {@literal @}Test
@@ -41,12 +41,12 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * This is particularly useful if you use JUnit 5's automatic extension registration mechanism.
+ * This is particularly useful if you use JUnit 5's automatic extension registration mechanism to enable Skippy for
+ * all tests.
  *
  * @author Florian McKee
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DisableSkippy {
+public @interface AlwaysRun {
 }
-

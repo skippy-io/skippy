@@ -20,7 +20,7 @@ import java.util.Optional;
 
 /**
  * {@link PredictionModifier} that defaults to {@link Prediction#EXECUTE} if a test (or one of it's superclasses or
- * interfaces it implements is annotated with @{@link DisableSkippy}.
+ * interfaces it implements is annotated with @{@link AlwaysRun}.
  *
  * @author Florian McKee
  */
@@ -31,26 +31,29 @@ final class DefaultPredictionModifier implements PredictionModifier {
 
     @Override
     public PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction) {
-        if (isAnnotatedWithDisableSkippy(test)) {
-            return PredictionWithReason.execute(new Reason(
+        if (isAnnotatedWithAlwaysRun(test)) {
+            return new PredictionWithReason(
+                Prediction.ALWAYS_EXECUTE,
+                new Reason(
                     Reason.Category.OVERRIDE_BY_PREDICTION_MODIFIER,
-                    Optional.of("%s is annotated with %s".formatted(test.getName(), DisableSkippy.class.getSimpleName()))
-            ));
+                    Optional.of("Class, superclass or implementing interface annotated with @%s".formatted(AlwaysRun.class.getSimpleName()))
+                )
+            );
         }
         return prediction;
     }
 
-    private static boolean isAnnotatedWithDisableSkippy(Class<?> clazz) {
-        if (clazz.isAnnotationPresent(DisableSkippy.class)) {
+    private static boolean isAnnotatedWithAlwaysRun(Class<?> clazz) {
+        if (clazz.isAnnotationPresent(AlwaysRun.class)) {
             return true;
         }
-        for (var iface : clazz.getInterfaces()) {
-            if (isAnnotatedWithDisableSkippy(iface)) {
+        for (var interfce : clazz.getInterfaces()) {
+            if (isAnnotatedWithAlwaysRun(interfce)) {
                 return true;
             }
         }
         if (clazz.getSuperclass() != null) {
-            return isAnnotatedWithDisableSkippy(clazz.getSuperclass());
+            return isAnnotatedWithAlwaysRun(clazz.getSuperclass());
         }
         return false;
     }

@@ -148,7 +148,7 @@ public final class TestImpactAnalysis {
             }
 
             if (testClass.classFileNotFound()) {
-                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(testClass.getPath().toString())));
+                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of("test class file: %s".formatted(testClass.getPath().toString()))));
             }
 
             if (testClass.hasChanged()) {
@@ -166,17 +166,22 @@ public final class TestImpactAnalysis {
             for (var coveredClassId : analyzedTest.getCoveredClassesIds()) {
                 var coveredClass = classFileContainer.getById(coveredClassId);
                 if (coveredClass.classFileNotFound()) {
-                    return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of(coveredClass.getPath().toString())));
+                    return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of("covered class: %s".formatted(coveredClass.getPath().toString()))));
                 }
                 if (coveredClass.hasChanged()) {
-                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of(coveredClass.getClassName())));
+                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of("covered class: %s".formatted(coveredClass.getClassName()))));
                 }
                 var maybeCoveredTest = analyzedTests.stream()
                         .filter(test -> test.getTestClassId() == coveredClassId)
                         .findFirst();
-                if (maybeCoveredTest.isPresent() && maybeCoveredTest.get().isTaggedAs(TestTag.FAILED)) {
-                    var coveredTest = classFileContainer.getById(coveredClassId);
-                    return PredictionWithReason.execute(new Reason(COVERED_TEST_FAILED_PREVIOUSLY, Optional.of(coveredTest.getClassName())));
+                if (maybeCoveredTest.isPresent()) {
+                    var coveredTest = maybeCoveredTest.get();
+                    if (coveredTest.isTaggedAs(TestTag.FAILED)) {
+                        return PredictionWithReason.execute(new Reason(COVERED_TEST_TAGGED_AS_FAILED, Optional.of("covered test: %s".formatted(coveredClass.getClassName()))));
+                    }
+                    if (coveredTest.isTaggedAs(TestTag.ALWAYS_EXECUTE)) {
+                        return PredictionWithReason.execute(new Reason(COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, Optional.of("covered test: %s".formatted(coveredClass.getClassName()))));
+                    }
                 }
                 if (maybeAnalyzedTest.isEmpty()) {
                     return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));

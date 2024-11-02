@@ -77,6 +77,9 @@ public class SkippyConfigurationTest {
 
     static class CustomModifier implements PredictionModifier {
 
+        public CustomModifier(SkippyRepository skippyRepository) {
+        }
+
         public CustomModifier() {
         }
 

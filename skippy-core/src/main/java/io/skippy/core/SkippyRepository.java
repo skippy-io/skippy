@@ -287,7 +287,13 @@ public final class SkippyRepository {
         }
     }
 
-    void tagTest(String className, TestTag tag) {
+    /**
+     * Tags a test.
+     *
+     * @param className the test's class name
+     * @param tag the {@link TestTag}
+     */
+    public void tagTest(String className, TestTag tag) {
         var tagsFile = SkippyFolder.get(projectDir).resolve("tags.txt");
         try {
             Files.write(tagsFile, asList("%s=%s".formatted(className, tag.name())), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
@@ -297,7 +303,11 @@ public final class SkippyRepository {
     }
 
     List<TestTag> getTestTags(String className) {
-        return getTestTags().getOrDefault(className, asList(TestTag.PASSED));
+        var tags = new ArrayList<>(getTestTags().getOrDefault(className, emptyList()));
+        if (false == tags.contains(TestTag.FAILED)) {
+            tags.add(0, TestTag.PASSED);
+        }
+        return tags;
     }
 
     private Map<String, List<TestTag>> getTestTags() {

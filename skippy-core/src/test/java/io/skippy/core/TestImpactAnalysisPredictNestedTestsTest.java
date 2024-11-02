@@ -23,6 +23,7 @@ import java.util.Optional;
 import static io.skippy.core.Prediction.EXECUTE;
 import static io.skippy.core.Prediction.SKIP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestImpactAnalysisPredictNestedTestsTest {
 
@@ -278,8 +279,8 @@ public class TestImpactAnalysisPredictNestedTestsTest {
 
         var prediction = testImpactAnalysis.predict("com.example.NestedTestsTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.COVERED_TEST_FAILED_PREVIOUSLY, prediction.reason().category());
-        assertEquals(Optional.of("com.example.NestedTestsTest$Level2FooTest"), prediction.reason().details());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_FAILED, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest"), prediction.reason().details());
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(SKIP, prediction.prediction());
@@ -290,8 +291,13 @@ public class TestImpactAnalysisPredictNestedTestsTest {
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.COVERED_TEST_FAILED_PREVIOUSLY, prediction.reason().category());
-        assertEquals(Optional.of("com.example.NestedTestsTest$Level2FooTest"), prediction.reason().details());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_FAILED, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest"), prediction.reason().details());
+    }
+
+    @Test
+    public void testWithAlwaysRunScenario() {
+        fail();
     }
 
 }

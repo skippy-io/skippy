@@ -115,14 +115,20 @@ public final class SkippyTestApi {
     public boolean testNeedsToBeExecuted(Class<?> test) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
+                // re-use prediction made for the first test method in a class for all subsequent test methods
                 if (predictions.containsKey(test.getName())) {
-                    return predictions.get(test.getName()) == Prediction.EXECUTE;
+                    return predictions.get(test.getName()) != Prediction.SKIP;
                 }
                 var predictionWithReason = predictionModifier.passThruOrModify(test, testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository));
+
+                // record {@link Prediction#ALWAYS_EXECUTE} as tags: this is required for JUnit 5's @Nested tests
+                if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {
+                    skippyRepository.tagTest(test.getName(), TestTag.ALWAYS_EXECUTE);
+                }
                 if (predictionWithReason.reason().details().isPresent()) {
                     Files.writeString(
                         SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
-                        "%s,%s,%s,%s%s".formatted(
+                        "%s,%s,%s,\"%s\"%s".formatted(
                                 test.getName(),
                                 predictionWithReason.prediction(),
                                 predictionWithReason.reason().category(),
@@ -142,7 +148,7 @@ public final class SkippyTestApi {
                     );
                 }
                 predictions.put(test.getName(), predictionWithReason.prediction());
-                return predictionWithReason.prediction() == Prediction.EXECUTE;
+                return predictionWithReason.prediction() != Prediction.SKIP;
             } catch (IOException e) {
                 throw new UncheckedIOException("Unable to check if test %s needs to be executed: %s.".formatted(test.getName(), e.getMessage()), e);
             }

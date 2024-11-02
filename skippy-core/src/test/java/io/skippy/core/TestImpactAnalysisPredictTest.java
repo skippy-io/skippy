@@ -157,7 +157,7 @@ public class TestImpactAnalysisPredictTest {
             var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(BYTECODE_CHANGE_IN_COVERED_CLASS, predictionWithReason.reason().category());
-            assertEquals("com.example.LeftPadder", predictionWithReason.reason().details().get());
+            assertEquals("covered class: com.example.LeftPadder", predictionWithReason.reason().details().get());
         }
 
         @Test
@@ -222,7 +222,7 @@ public class TestImpactAnalysisPredictTest {
             var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(TEST_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
-            assertEquals("io/skippy/core/LeftPadderTest$Bla.class", predictionWithReason.reason().details().get());
+            assertEquals("test class file: io/skippy/core/LeftPadderTest$Bla.class", predictionWithReason.reason().details().get());
         }
 
         @Test
@@ -255,7 +255,7 @@ public class TestImpactAnalysisPredictTest {
             var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(COVERED_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
-            assertEquals("io/skippy/core/LeftPadder$Bla.class", predictionWithReason.reason().details().get());
+            assertEquals("covered class: io/skippy/core/LeftPadder$Bla.class", predictionWithReason.reason().details().get());
         }
 
     }

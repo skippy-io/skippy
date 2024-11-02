@@ -58,9 +58,18 @@ record Reason(Category category, Optional<String> details) {
         TEST_FAILED_PREVIOUSLY,
 
         /**
-         * A covered test failed previously. This is relevant for JUnit 5's @Nested tests.
+         * A covered test is tagged as {@link TestTag#FAILED}.
+         * <br />
+         * This is relevant for JUnit 5's @Nested tests.
          */
-        COVERED_TEST_FAILED_PREVIOUSLY,
+        COVERED_TEST_TAGGED_AS_FAILED,
+
+        /**
+         * A covered test is tagged as {@link TestTag#ALWAYS_EXECUTE}.
+         * <br />
+         * This is relevant for JUnit 5's @Nested tests.
+         */
+        COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE,
 
         /**
          * The class file of the test was not found on the file system.

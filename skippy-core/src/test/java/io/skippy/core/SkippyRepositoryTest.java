@@ -29,7 +29,6 @@ import java.util.Optional;
 
 import static java.nio.file.Files.*;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -227,6 +226,14 @@ public class SkippyRepositoryTest {
         assertEquals(asList(TestTag.PASSED), skippyRepository.getTestTags("com.example.Test1"));
         skippyRepository.tagTest("com.example.Test1", TestTag.FAILED);
         assertEquals(asList(TestTag.FAILED), skippyRepository.getTestTags("com.example.Test1"));
+    }
+
+    @Test
+    void testTaggingAlwaysRun()  {
+        // a test is considered PASSED until it is tagged as FAILED
+        assertEquals(asList(TestTag.PASSED), skippyRepository.getTestTags("com.example.Test1"));
+        skippyRepository.tagTest("com.example.Test1", TestTag.ALWAYS_EXECUTE);
+        assertEquals(asList(TestTag.PASSED, TestTag.ALWAYS_EXECUTE), skippyRepository.getTestTags("com.example.Test1"));
     }
 
 }

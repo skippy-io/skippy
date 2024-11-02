@@ -352,7 +352,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testTagging() {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
         var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
 
         buildApi.tagTest("com.example.FooTest", TestTag.FAILED);

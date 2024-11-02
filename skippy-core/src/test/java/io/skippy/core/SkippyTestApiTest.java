@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class SkippyTestApiTest {
 
     @Test
-    void name() {
+    void testPredictionModifier() {
         fail();
     }
 }
