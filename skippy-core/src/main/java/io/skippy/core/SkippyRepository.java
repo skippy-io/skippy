@@ -23,15 +23,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.*;
 
 /**
  * Repository for storage and retrieval of
@@ -276,38 +276,43 @@ public final class SkippyRepository {
         }
     }
 
-    void deleteListOfFailedTests() {
-        var failedTestsFile = SkippyFolder.get(projectDir).resolve("failed-tests.txt");
-        if (exists(failedTestsFile)) {
+    void deleteTestTags() {
+        var tagsFile = SkippyFolder.get(projectDir).resolve("tags.txt");
+        if (exists(tagsFile)) {
             try {
-                delete(failedTestsFile);
+                delete(tagsFile);
             } catch (IOException e) {
-                throw new UncheckedIOException("Unable to delete %s.".formatted(failedTestsFile), e);
+                throw new UncheckedIOException("Unable to delete %s.".formatted(tagsFile), e);
             }
         }
-
     }
 
-    void recordFailedTest(String className) {
-        var failedTestsFile = SkippyFolder.get(projectDir).resolve("failed-tests.txt");
+    void tagTest(String className, TestTag tag) {
+        var tagsFile = SkippyFolder.get(projectDir).resolve("tags.txt");
         try {
-            Files.write(failedTestsFile, asList(className), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+            Files.write(tagsFile, asList("%s=%s".formatted(className, tag.name())), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable record failed test %s in %s: %s.".formatted(className, failedTestsFile, e.getMessage()), e);
+            throw new UncheckedIOException("Unable to tag test %s in file %s: %s.".formatted(className, tagsFile, e.getMessage()), e);
         }
     }
 
-    List<String> readListOfFailedTests() {
-        var failedTestsFile = SkippyFolder.get(projectDir).resolve("failed-tests.txt");
+    List<TestTag> getTestTags(String className) {
+        return getTestTags().getOrDefault(className, asList(TestTag.PASSED));
+    }
+
+    private Map<String, List<TestTag>> getTestTags() {
+        var tagsFile = SkippyFolder.get(projectDir).resolve("tags.txt");
         try {
-            if (false == exists(failedTestsFile)) {
-                return emptyList();
+            if (false == exists(tagsFile)) {
+                return emptyMap();
             }
-            return Files.readAllLines(failedTestsFile, StandardCharsets.UTF_8);
-
+            return Files.lines(tagsFile)
+                .map(line -> line.split("=", 2))
+                .collect(groupingBy(parts -> parts[0], mapping(parts -> TestTag.valueOf(parts[1]), toList())));
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read %s: %s.".formatted(failedTestsFile, e.getMessage()), e);
+            throw new UncheckedIOException("Unable to read tags file %s: %s.".formatted(tagsFile, e.getMessage()), e);
         }
     }
+
 }
 

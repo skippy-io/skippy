@@ -120,6 +120,9 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("FOO");
         when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("BAR");
 
+        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
+        when(skippyRepository.getTestTags("com.example.BarTest")).thenReturn(asList(TestTag.PASSED));
+
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
@@ -181,9 +184,13 @@ public final class SkippyBuildApiTest {
                 )
         ));
 
+        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
+        when(skippyRepository.getTestTags("com.example.BarTest")).thenReturn(asList(TestTag.PASSED));
+
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
+
 
         var tia = tiaCaptor.getValue();
         var expected = """
@@ -239,6 +246,9 @@ public final class SkippyBuildApiTest {
                         asList("com.example.Bar", "com.example.BarTest")
                 )
         ));
+
+        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
+        when(skippyRepository.getTestTags("com.example.BarTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -299,9 +309,8 @@ public final class SkippyBuildApiTest {
                 )
         ));
 
-        buildApi.testFailed("com.example.FooTest");
-        verify(skippyRepository).recordFailedTest("com.example.FooTest");
-        when(skippyRepository.readListOfFailedTests()).thenReturn(asList("com.example.FooTest"));
+        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.FAILED));
+        when(skippyRepository.getTestTags("com.example.BarTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -339,6 +348,18 @@ public final class SkippyBuildApiTest {
             }
         """;
         JSONAssert.assertEquals(expected, tia.toJson(), JSONCompareMode.LENIENT);
+    }
+
+    @Test
+    void testTagging() {
+        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty());
+        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+
+        buildApi.tagTest("com.example.FooTest", TestTag.FAILED);
+        verify(skippyRepository).tagTest("com.example.FooTest", TestTag.FAILED);
+
+        buildApi.tagTest("com.example.BarTest", TestTag.PASSED);
+        verify(skippyRepository).tagTest("com.example.BarTest", TestTag.PASSED);
     }
 
     @Test
@@ -424,6 +445,8 @@ public final class SkippyBuildApiTest {
                 )
         ));
 
+        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
+
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
         verify(skippyRepository).saveTestImpactAnalysis(tiaCaptor.capture());
@@ -494,6 +517,8 @@ public final class SkippyBuildApiTest {
         ));
 
         when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("11111111111111111111111111111111");
+
+        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -587,9 +612,9 @@ public final class SkippyBuildApiTest {
                 )
         ));
 
-        buildApi.testFailed("com.example.FooTest");
-        verify(skippyRepository).recordFailedTest("com.example.FooTest");
-        when(skippyRepository.readListOfFailedTests()).thenReturn(asList("com.example.FooTest"));
+        buildApi.tagTest("com.example.FooTest", TestTag.FAILED);
+        verify(skippyRepository).tagTest("com.example.FooTest", TestTag.FAILED);
+        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.FAILED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
