@@ -23,12 +23,11 @@ import java.util.Optional;
 import static io.skippy.core.Prediction.EXECUTE;
 import static io.skippy.core.Prediction.SKIP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
-public class TestImpactAnalysisPredictNestedTestsTest {
+public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
 
     @Test
-    void testPredictNoChange() {
+    public void testTestTaggedAsAlwaysExecuteScenario1() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "id": "F87679D196B903DFE24335295E13DEED",
@@ -85,7 +84,7 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                 "tests": [
                     {
                         "class": 4,
-                        "tags": ["PASSED"],
+                        "tags": ["PASSED", "ALWAYS_EXECUTE"],
                         "coveredClasses": [0,1,2,3,4,5,6,7]
                     },
                     {
@@ -96,176 +95,6 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                     {
                         "class": 6,
                         "tags": ["PASSED"],
-                        "coveredClasses": [1,2,4,6,7]
-                    },
-                    {
-                        "class": 7,
-                        "tags": ["PASSED"],
-                        "coveredClasses": [2,4,6,7]
-                    }
-                ]
-            }
-        """);
-        assertEquals(SKIP, testImpactAnalysis.predict("com.example.NestedTestsTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT)).prediction());
-        assertEquals(SKIP, testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT)).prediction());
-        assertEquals(SKIP, testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT)).prediction());
-        assertEquals(SKIP, testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT)).prediction());
-    }
-
-    @Test
-    void testPredictChangeInClassCoveredByNestedTest() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
-            {
-                "id": "F87679D196B903DFE24335295E13DEED",
-                "classes": {
-                    "0": {
-                        "name": "com.example.ClassA",
-                        "path": "io/skippy/core/nested/ClassA.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "3041DC84"
-                    },
-                    "1": {
-                        "name": "com.example.ClassB",
-                        "path": "io/skippy/core/nested/ClassB.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "37FA6DE7"
-                    },
-                    "2": {
-                        "name": "com.example.ClassC",
-                        "path": "io/skippy/core/nested/ClassC.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "00000000"
-                    },
-                    "3": {
-                        "name": "com.example.ClassD",
-                        "path": "io/skippy/core/nested/ClassD.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "41C10CEE"
-                    },
-                    "4": {
-                        "name": "com.example.NestedTestsTest",
-                        "path": "io/skippy/core/nested/NestedTestsTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "C3A3737F"
-                    },
-                    "5": {
-                        "name": "com.example.NestedTestsTest$Level2BarTest",
-                        "path": "io/skippy/core/nested/NestedTestsTest$Level2BarTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "5780C183"
-                    },
-                    "6": {
-                        "name": "com.example.NestedTestsTest$Level2FooTest",
-                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "3E35762B"
-                    },
-                    "7": {
-                        "name": "com.example.NestedTestsTest$Level2FooTest$Level3Test",
-                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest$Level3Test.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "FA83D453"
-                    }
-                },
-                "tests": [
-                    {
-                        "class": 4,
-                        "tags": ["PASSED"],
-                        "coveredClasses": [0,1,2,3,4,5,6,7]
-                    },
-                    {
-                        "class": 5,
-                        "tags": ["PASSED"],
-                        "coveredClasses": [3,4,5]
-                    },
-                    {
-                        "class": 6,
-                        "tags": ["PASSED"],
-                        "coveredClasses": [1,2,4,6,7]
-                    },
-                    {
-                        "class": 7,
-                        "tags": ["PASSED"],
-                        "coveredClasses": [2,4,6,7]
-                    }
-                ]
-            }
-        """);
-        assertEquals(EXECUTE, testImpactAnalysis.predict("com.example.NestedTestsTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT)).prediction());
-        assertEquals(SKIP, testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT)).prediction());
-        assertEquals(EXECUTE, testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT)).prediction());
-        assertEquals(EXECUTE, testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT)).prediction());
-    }
-
-    @Test
-    void testPredictFailureInNestedClass() {
-        var testImpactAnalysis = TestImpactAnalysis.parse("""
-            {
-                "id": "F87679D196B903DFE24335295E13DEED",
-                "classes": {
-                    "0": {
-                        "name": "com.example.ClassA",
-                        "path": "io/skippy/core/nested/ClassA.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "3041DC84"
-                    },
-                    "1": {
-                        "name": "com.example.ClassB",
-                        "path": "io/skippy/core/nested/ClassB.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "37FA6DE7"
-                    },
-                    "2": {
-                        "name": "com.example.ClassC",
-                        "path": "io/skippy/core/nested/ClassC.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "B17DF734"
-                    },
-                    "3": {
-                        "name": "com.example.ClassD",
-                        "path": "io/skippy/core/nested/ClassD.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "41C10CEE"
-                    },
-                    "4": {
-                        "name": "com.example.NestedTestsTest",
-                        "path": "io/skippy/core/nested/NestedTestsTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "C3A3737F"
-                    },
-                    "5": {
-                        "name": "com.example.NestedTestsTest$Level2BarTest",
-                        "path": "io/skippy/core/nested/NestedTestsTest$Level2BarTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "5780C183"
-                    },
-                    "6": {
-                        "name": "com.example.NestedTestsTest$Level2FooTest",
-                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "3E35762B"
-                    },
-                    "7": {
-                        "name": "com.example.NestedTestsTest$Level2FooTest$Level3Test",
-                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest$Level3Test.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "FA83D453"
-                    }
-                },
-                "tests": [
-                    {
-                        "class": 4,
-                        "tags": ["PASSED"],
-                        "coveredClasses": [0,1,2,3,4,5,6,7]
-                    },
-                    {
-                        "class": 5,
-                        "tags": ["PASSED"],
-                        "coveredClasses": [3,4,5]
-                    },
-                    {
-                        "class": 6,
-                        "tags": ["FAILED"],
                         "coveredClasses": [1,2,4,6,7]
                     },
                     {
@@ -279,7 +108,205 @@ public class TestImpactAnalysisPredictNestedTestsTest {
 
         var prediction = testImpactAnalysis.predict("com.example.NestedTestsTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_FAILED, prediction.reason().category());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest"), prediction.reason().details());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest"), prediction.reason().details());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest"), prediction.reason().details());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest"), prediction.reason().details());
+    }
+
+    @Test
+    public void testTestTaggedAsAlwaysExecuteScenario2() {
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
+            {
+                "id": "F87679D196B903DFE24335295E13DEED",
+                "classes": {
+                    "0": {
+                        "name": "com.example.ClassA",
+                        "path": "io/skippy/core/nested/ClassA.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "3041DC84"
+                    },
+                    "1": {
+                        "name": "com.example.ClassB",
+                        "path": "io/skippy/core/nested/ClassB.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "37FA6DE7"
+                    },
+                    "2": {
+                        "name": "com.example.ClassC",
+                        "path": "io/skippy/core/nested/ClassC.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "B17DF734"
+                    },
+                    "3": {
+                        "name": "com.example.ClassD",
+                        "path": "io/skippy/core/nested/ClassD.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "41C10CEE"
+                    },
+                    "4": {
+                        "name": "com.example.NestedTestsTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "C3A3737F"
+                    },
+                    "5": {
+                        "name": "com.example.NestedTestsTest$Level2BarTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2BarTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "5780C183"
+                    },
+                    "6": {
+                        "name": "com.example.NestedTestsTest$Level2FooTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "3E35762B"
+                    },
+                    "7": {
+                        "name": "com.example.NestedTestsTest$Level2FooTest$Level3Test",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest$Level3Test.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "FA83D453"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": 4,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [0,1,2,3,4,5,6,7]
+                    },
+                    {
+                        "class": 5,
+                        "tags": ["PASSED", "ALWAYS_EXECUTE"],
+                        "coveredClasses": [3,4,5]
+                    },
+                    {
+                        "class": 6,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [1,2,4,6,7]
+                    },
+                    {
+                        "class": 7,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [2,4,6,7]
+                    }
+                ]
+            }
+        """);
+
+        var prediction = testImpactAnalysis.predict("com.example.NestedTestsTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2BarTest"), prediction.reason().details());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2BarTest"), prediction.reason().details());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(SKIP, prediction.prediction());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(SKIP, prediction.prediction());
+    }
+
+    @Test
+    public void testTestTaggedAsAlwaysExecuteScenario3() {
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
+            {
+                "id": "F87679D196B903DFE24335295E13DEED",
+                "classes": {
+                    "0": {
+                        "name": "com.example.ClassA",
+                        "path": "io/skippy/core/nested/ClassA.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "3041DC84"
+                    },
+                    "1": {
+                        "name": "com.example.ClassB",
+                        "path": "io/skippy/core/nested/ClassB.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "37FA6DE7"
+                    },
+                    "2": {
+                        "name": "com.example.ClassC",
+                        "path": "io/skippy/core/nested/ClassC.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "B17DF734"
+                    },
+                    "3": {
+                        "name": "com.example.ClassD",
+                        "path": "io/skippy/core/nested/ClassD.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "41C10CEE"
+                    },
+                    "4": {
+                        "name": "com.example.NestedTestsTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "C3A3737F"
+                    },
+                    "5": {
+                        "name": "com.example.NestedTestsTest$Level2BarTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2BarTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "5780C183"
+                    },
+                    "6": {
+                        "name": "com.example.NestedTestsTest$Level2FooTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "3E35762B"
+                    },
+                    "7": {
+                        "name": "com.example.NestedTestsTest$Level2FooTest$Level3Test",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest$Level3Test.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "FA83D453"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": 4,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [0,1,2,3,4,5,6,7]
+                    },
+                    {
+                        "class": 5,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [3,4,5]
+                    },
+                    {
+                        "class": 6,
+                        "tags": ["PASSED", "ALWAYS_EXECUTE"],
+                        "coveredClasses": [1,2,4,6,7]
+                    },
+                    {
+                        "class": 7,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [2,4,6,7]
+                    }
+                ]
+            }
+        """);
+
+        var prediction = testImpactAnalysis.predict("com.example.NestedTestsTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
         assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest"), prediction.reason().details());
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
@@ -287,12 +314,112 @@ public class TestImpactAnalysisPredictNestedTestsTest {
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.TEST_FAILED_PREVIOUSLY, prediction.reason().category());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest"), prediction.reason().details());
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_FAILED, prediction.reason().category());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
         assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest"), prediction.reason().details());
+    }
+
+    @Test
+    public void testTestTaggedAsAlwaysExecuteScenario4() {
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
+            {
+                "id": "F87679D196B903DFE24335295E13DEED",
+                "classes": {
+                    "0": {
+                        "name": "com.example.ClassA",
+                        "path": "io/skippy/core/nested/ClassA.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "3041DC84"
+                    },
+                    "1": {
+                        "name": "com.example.ClassB",
+                        "path": "io/skippy/core/nested/ClassB.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "37FA6DE7"
+                    },
+                    "2": {
+                        "name": "com.example.ClassC",
+                        "path": "io/skippy/core/nested/ClassC.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "B17DF734"
+                    },
+                    "3": {
+                        "name": "com.example.ClassD",
+                        "path": "io/skippy/core/nested/ClassD.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "41C10CEE"
+                    },
+                    "4": {
+                        "name": "com.example.NestedTestsTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "C3A3737F"
+                    },
+                    "5": {
+                        "name": "com.example.NestedTestsTest$Level2BarTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2BarTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "5780C183"
+                    },
+                    "6": {
+                        "name": "com.example.NestedTestsTest$Level2FooTest",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "3E35762B"
+                    },
+                    "7": {
+                        "name": "com.example.NestedTestsTest$Level2FooTest$Level3Test",
+                        "path": "io/skippy/core/nested/NestedTestsTest$Level2FooTest$Level3Test.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "FA83D453"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": 4,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [0,1,2,3,4,5,6,7]
+                    },
+                    {
+                        "class": 5,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [3,4,5]
+                    },
+                    {
+                        "class": 6,
+                        "tags": ["PASSED"],
+                        "coveredClasses": [1,2,4,6,7]
+                    },
+                    {
+                        "class": 7,
+                        "tags": ["PASSED", "ALWAYS_EXECUTE"],
+                        "coveredClasses": [2,4,6,7]
+                    }
+                ]
+            }
+        """);
+
+        var prediction = testImpactAnalysis.predict("com.example.NestedTestsTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest$Level3Test"), prediction.reason().details());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(SKIP, prediction.prediction());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest$Level3Test"), prediction.reason().details());
+
+        prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, prediction.prediction());
+        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
+        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest$Level3Test"), prediction.reason().details());
     }
 
 }
