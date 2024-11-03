@@ -22,15 +22,48 @@ import java.util.Optional;
 
 import static io.skippy.core.Prediction.EXECUTE;
 import static io.skippy.core.Prediction.SKIP;
+import static io.skippy.core.Reason.Category.TEST_TAGGED_AS_ALWAYS_EXECUTE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
+public class TestImpactAnalysisPredictAlwaysExecuteTagTest {
+
+    @Test
+    void testTestTaggedAsAlwaysExecute() {
+        var testImpactAnalysis = TestImpactAnalysis.parse("""
+            {
+                "classes": {
+                    "0": {
+                        "name": "com.example.LeftPadder",
+                        "path": "io/skippy/core/LeftPadder.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "8E994DD8"
+                    },
+                    "1": {
+                        "name": "com.example.LeftPadderTest",
+                        "path": "io/skippy/core/LeftPadderTest.class",
+                        "outputFolder": "src/test/resources",
+                        "hash": "83A72152"
+                    }
+                },
+                "tests": [
+                    {
+                        "class": "1",
+                        "tags": ["PASSED", "ALWAYS_EXECUTE"],
+                        "coveredClasses": ["0", "1"]
+                    }
+                ]
+            }
+        """);
+        var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+        assertEquals(EXECUTE, predictionWithReason.prediction());
+        assertEquals(TEST_TAGGED_AS_ALWAYS_EXECUTE, predictionWithReason.reason().category());
+    }
+
 
     @Test
     public void testTestTaggedAsAlwaysExecuteScenario1() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
-                "id": "F87679D196B903DFE24335295E13DEED",
                 "classes": {
                     "0": {
                         "name": "com.example.ClassA",
@@ -108,8 +141,7 @@ public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
 
         var prediction = testImpactAnalysis.predict("com.example.NestedTestsTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
-        assertEquals(Optional.of("covered test: com.example.NestedTestsTest"), prediction.reason().details());
+        assertEquals(TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
@@ -131,7 +163,6 @@ public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
     public void testTestTaggedAsAlwaysExecuteScenario2() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
-                "id": "F87679D196B903DFE24335295E13DEED",
                 "classes": {
                     "0": {
                         "name": "com.example.ClassA",
@@ -214,8 +245,7 @@ public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2BarTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
-        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2BarTest"), prediction.reason().details());
+        assertEquals(TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(SKIP, prediction.prediction());
@@ -228,7 +258,6 @@ public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
     public void testTestTaggedAsAlwaysExecuteScenario3() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
-                "id": "F87679D196B903DFE24335295E13DEED",
                 "classes": {
                     "0": {
                         "name": "com.example.ClassA",
@@ -314,8 +343,7 @@ public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
-        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest"), prediction.reason().details());
+        assertEquals(TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
@@ -327,7 +355,6 @@ public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
     public void testTestTaggedAsAlwaysExecuteScenario4() {
         var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
-                "id": "F87679D196B903DFE24335295E13DEED",
                 "classes": {
                     "0": {
                         "name": "com.example.ClassA",
@@ -418,8 +445,7 @@ public class TestImpactAnalysisTestTaggedAsAlwaysExecuteTest {
 
         prediction = testImpactAnalysis.predict("com.example.NestedTestsTest$Level2FooTest$Level3Test", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
         assertEquals(EXECUTE, prediction.prediction());
-        assertEquals(Reason.Category.COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
-        assertEquals(Optional.of("covered test: com.example.NestedTestsTest$Level2FooTest$Level3Test"), prediction.reason().details());
+        assertEquals(Reason.Category.TEST_TAGGED_AS_ALWAYS_EXECUTE, prediction.reason().category());
     }
 
 }

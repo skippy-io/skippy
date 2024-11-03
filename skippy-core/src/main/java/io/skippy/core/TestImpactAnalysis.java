@@ -147,6 +147,10 @@ public final class TestImpactAnalysis {
                 return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
             }
 
+            if (analyzedTest.isTaggedAs(TestTag.ALWAYS_EXECUTE)) {
+                return PredictionWithReason.execute(new Reason(TEST_TAGGED_AS_ALWAYS_EXECUTE, Optional.empty()));
+            }
+
             if (testClass.classFileNotFound()) {
                 return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of("test class file: %s".formatted(testClass.getPath().toString()))));
             }
@@ -154,6 +158,7 @@ public final class TestImpactAnalysis {
             if (testClass.hasChanged()) {
                 return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
             }
+
             if (configuration.generateCoverageForSkippedTests()) {
                 if (analyzedTest.getExecutionId().isEmpty()) {
                         return PredictionWithReason.execute(new Reason(MISSING_EXECUTION_ID, Optional.empty()));

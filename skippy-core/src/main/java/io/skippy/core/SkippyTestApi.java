@@ -92,7 +92,7 @@ public final class SkippyTestApi {
      */
     private final Stack<List<byte[]>> executionDataStack = new Stack<>();
 
-    private SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyConfiguration skippyConfiguration, SkippyRepository skippyRepository) {
+    SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyConfiguration skippyConfiguration, SkippyRepository skippyRepository) {
         this.testImpactAnalysis = testImpactAnalysis;
         this.skippyRepository = skippyRepository;
         this.predictionModifier = skippyConfiguration.predictionModifier();

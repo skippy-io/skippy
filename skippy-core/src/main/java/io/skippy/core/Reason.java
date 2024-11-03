@@ -58,6 +58,11 @@ record Reason(Category category, Optional<String> details) {
         TEST_FAILED_PREVIOUSLY,
 
         /**
+         * The test is tagged as {@link TestTag#ALWAYS_EXECUTE}.
+         */
+        TEST_TAGGED_AS_ALWAYS_EXECUTE,
+
+        /**
          * A covered test is tagged as {@link TestTag#FAILED}.
          * <br />
          * This is relevant for JUnit 5's @Nested tests.
