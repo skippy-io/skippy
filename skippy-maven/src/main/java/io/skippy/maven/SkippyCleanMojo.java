@@ -31,7 +31,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * Clears the skippy folder.
+ * Resets the skippy folder: After completion, only an up-to-date config.json will remain.
  * <br /><br />
  * Direct invocation: {@code mvn skippy:clean}
  *
@@ -64,7 +64,7 @@ public class SkippyCleanMojo extends AbstractMojo {
                 new MavenClassFileCollector(project),
                 SkippyRepository.getInstance(skippyConfiguration, projectDir, projectDir.resolve(Path.of(project.getBuild().getOutputDirectory()).getParent()))
         );
-        skippyApi.deleteSkippyFolder();
+        skippyApi.resetSkippyFolder();
     }
 
 }

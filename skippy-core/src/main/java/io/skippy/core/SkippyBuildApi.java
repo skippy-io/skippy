@@ -49,10 +49,11 @@ public final class SkippyBuildApi {
     }
 
     /**
-     * Deletes the skippy folder.
+     * Resets the skippy folder.
      */
-    public void deleteSkippyFolder() {
+    public void resetSkippyFolder() {
         skippyRepository.deleteSkippyFolder();
+        skippyRepository.saveConfiguration(skippyConfiguration);
     }
 
     /**
