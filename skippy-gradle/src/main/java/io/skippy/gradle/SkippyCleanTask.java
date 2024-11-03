@@ -16,6 +16,7 @@
 
 package io.skippy.gradle;
 
+import io.skippy.core.SkippyBuildApi;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -37,9 +38,7 @@ abstract class SkippyCleanTask extends DefaultTask {
     @Inject
     public SkippyCleanTask() {
         setGroup("skippy");
-        doLast(task -> getProjectSettings().get().ifBuildSupportsSkippy(api -> {
-            api.resetSkippyFolder();
-        }));
+        doLast(task -> getProjectSettings().get().ifBuildSupportsSkippy(SkippyBuildApi::resetSkippyFolder));
     }
 
 }
