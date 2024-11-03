@@ -21,7 +21,7 @@ package io.skippy.core;
  *
  * @author Florian McKee
  */
-enum Prediction {
+public enum Prediction {
 
     /**
      * Execute the test.

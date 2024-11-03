@@ -24,7 +24,7 @@ package io.skippy.core;
  *
  * @author Florian McKee
  */
-record PredictionWithReason(Prediction prediction, Reason reason) {
+public record PredictionWithReason(Prediction prediction, Reason reason) {
     static PredictionWithReason execute(Reason reason) {
         return new PredictionWithReason(Prediction.EXECUTE, reason);
     }

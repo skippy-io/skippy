@@ -23,9 +23,12 @@ import java.util.Optional;
  *
  * @author Florian McKee
  */
-record Reason(Category category, Optional<String> details) {
+public record Reason(Category category, Optional<String> details) {
 
-    enum Category {
+    /**
+     * The high-level reason.
+     */
+    public enum Category {
 
         /**
          * Skippy was unable to retrieve an existing Test Impact Analysis to make a skip-or-execute decision.
