@@ -21,7 +21,7 @@ package io.skippy.core;
  *
  * @author Florian McKee
  */
-enum Prediction {
+public enum Prediction {
 
     /**
      * Execute the test.
@@ -29,7 +29,12 @@ enum Prediction {
     EXECUTE,
 
     /**
-     * Predict the test.
+     * Execute (don't use Skippy to try to predict whether the test needs to run or not).
+     */
+    ALWAYS_EXECUTE,
+
+    /**
+     * Skip the test.
      */
     SKIP
 }

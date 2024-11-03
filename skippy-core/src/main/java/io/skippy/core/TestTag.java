@@ -32,14 +32,14 @@ public enum TestTag {
     PASSED,
 
     /**
-     * The test was skipped.
-     */
-    SKIPPED,
-
-    /**
      * The test failed.
      */
-    FAILED;
+    FAILED,
+
+    /**
+     * The test must always execute (don't make {@link Prediction#SKIP} predictions).
+     */
+    ALWAYS_EXECUTE;
 
     static List<TestTag> parseList(Tokenizer tokenizer) {
         return Profiler.profile("TestTag#parseList", () -> {

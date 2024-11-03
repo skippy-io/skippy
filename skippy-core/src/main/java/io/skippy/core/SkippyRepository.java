@@ -54,7 +54,7 @@ public final class SkippyRepository {
     private SkippyRepository(SkippyConfiguration skippyConfiguration, Path projectDir, Path buildDir) {
         this.projectDir = projectDir;
         this.buildDir = buildDir;
-        this.extension = createRepositoryExtension(skippyConfiguration, projectDir);
+        this.extension = skippyConfiguration.repositoryExtension(projectDir);
     }
 
     /**
@@ -229,16 +229,6 @@ public final class SkippyRepository {
         }
     }
 
-    private SkippyRepositoryExtension createRepositoryExtension(SkippyConfiguration skippyConfiguration, Path projectDir) {
-        try {
-            Class<?> clazz = Class.forName(skippyConfiguration.repositoryClass());
-            Constructor<?> constructor = clazz.getConstructor(Path.class);
-            return (SkippyRepositoryExtension) constructor.newInstance(projectDir);
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to create repository extension %s: %s.".formatted(skippyConfiguration.repositoryClass(), e.getMessage()), e);
-        }
-    }
-
     private List<Path> getTemporaryExecutionDataFilesForCurrentBuild() {
         try {
             var result = new ArrayList<Path>();
@@ -297,7 +287,13 @@ public final class SkippyRepository {
         }
     }
 
-    void tagTest(String className, TestTag tag) {
+    /**
+     * Tags a test.
+     *
+     * @param className the test's class name
+     * @param tag the {@link TestTag}
+     */
+    public void tagTest(String className, TestTag tag) {
         var tagsFile = SkippyFolder.get(projectDir).resolve("tags.txt");
         try {
             Files.write(tagsFile, asList("%s=%s".formatted(className, tag.name())), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
@@ -307,7 +303,11 @@ public final class SkippyRepository {
     }
 
     List<TestTag> getTestTags(String className) {
-        return getTestTags().getOrDefault(className, asList(TestTag.PASSED));
+        var tags = new ArrayList<>(getTestTags().getOrDefault(className, emptyList()));
+        if (false == tags.contains(TestTag.FAILED)) {
+            tags.add(0, TestTag.PASSED);
+        }
+        return tags;
     }
 
     private Map<String, List<TestTag>> getTestTags() {

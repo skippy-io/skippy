@@ -18,6 +18,7 @@ package io.skippy.core;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,36 +28,80 @@ public class SkippyConfigurationTest {
 
     @Test
     void testToJson1() {
-        var configuration = new SkippyConfiguration(true, Optional.empty());
+        var configuration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
         assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "coverageForSkippedTests": "true",
-                "repositoryClass": "io.skippy.core.DefaultRepositoryExtension"
+                "repositoryExtension": "io.skippy.core.DefaultRepositoryExtension",
+                "predictionModifier": "io.skippy.core.DefaultPredictionModifier"
             }
         """);
     }
 
     @Test
     void testToJson2() {
-        var configuration = new SkippyConfiguration(true, Optional.of("com.example.CustomRepository"));
+        var configuration = new SkippyConfiguration(false, Optional.of("com.example.CustomRepository"), Optional.of("com.example.CustomModifier"));
         assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
             {
-                "coverageForSkippedTests": "true",
-                "repositoryClass": "com.example.CustomRepository"
+                "coverageForSkippedTests": "false",
+                "repositoryExtension": "com.example.CustomRepository",
+                "predictionModifier": "com.example.CustomModifier"
             }
         """);
+    }
+
+
+    static class CustomRepository implements SkippyRepositoryExtension {
+
+        public CustomRepository(Path path) {
+        }
+
+        @Override
+        public Optional<TestImpactAnalysis> findTestImpactAnalysis(String id) {
+            return Optional.empty();
+        }
+
+        @Override
+        public void saveTestImpactAnalysis(TestImpactAnalysis testImpactAnalysis) {
+        }
+
+        @Override
+        public Optional<byte[]> findJacocoExecutionData(String executionId) {
+            return Optional.empty();
+        }
+
+        @Override
+        public void saveJacocoExecutionData(String executionId, byte[] jacocoExecutionData) {
+        }
+    }
+
+    static class CustomModifier implements PredictionModifier {
+
+        public CustomModifier(SkippyRepository skippyRepository) {
+        }
+
+        public CustomModifier() {
+        }
+
+        @Override
+        public PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction) {
+            return null;
+        }
     }
 
     @Test
     void testParse() {
         var json = """
             {
-                "coverageForSkippedTests": "true"
+                "coverageForSkippedTests": "true",
+                "repositoryExtension": "io.skippy.core.SkippyConfigurationTest$CustomRepository",
+                "predictionModifier": "io.skippy.core.SkippyConfigurationTest$CustomModifier"
             }
         """;
         var configuration = SkippyConfiguration.parse(json);
         assertEquals(true, configuration.generateCoverageForSkippedTests());
-        assertEquals(true, configuration.generateCoverageForSkippedTests());
+        assertEquals(CustomRepository.class, configuration.repositoryExtension(Path.of(".")).getClass());
+        assertEquals(CustomModifier.class, configuration.predictionModifier().getClass());
 
     }
 

@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import static io.skippy.core.JacocoUtil.mergeExecutionData;
 import static io.skippy.core.JacocoUtil.swallowJacocoExceptions;
@@ -48,6 +47,7 @@ public final class SkippyTestApi {
 
     private final TestImpactAnalysis testImpactAnalysis;
     private final SkippyRepository skippyRepository;
+    private final PredictionModifier predictionModifier;
     private final SkippyConfiguration skippyConfiguration;
     private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();
 
@@ -92,9 +92,10 @@ public final class SkippyTestApi {
      */
     private final Stack<List<byte[]>> executionDataStack = new Stack<>();
 
-    private SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyConfiguration skippyConfiguration, SkippyRepository skippyRepository) {
+    SkippyTestApi(TestImpactAnalysis testImpactAnalysis, SkippyConfiguration skippyConfiguration, SkippyRepository skippyRepository) {
         this.testImpactAnalysis = testImpactAnalysis;
         this.skippyRepository = skippyRepository;
+        this.predictionModifier = skippyConfiguration.predictionModifier();
         this.skippyConfiguration = skippyConfiguration;
     }
 
@@ -114,14 +115,20 @@ public final class SkippyTestApi {
     public boolean testNeedsToBeExecuted(Class<?> test) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
+                // re-use prediction made for the first test method in a class for all subsequent test methods
                 if (predictions.containsKey(test.getName())) {
-                    return predictions.get(test.getName()) == Prediction.EXECUTE;
+                    return predictions.get(test.getName()) != Prediction.SKIP;
                 }
-                var predictionWithReason = testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository);
+                var predictionWithReason = predictionModifier.passThruOrModify(test, testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository));
+
+                // record {@link Prediction#ALWAYS_EXECUTE} as tags: this is required for JUnit 5's @Nested tests
+                if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {
+                    skippyRepository.tagTest(test.getName(), TestTag.ALWAYS_EXECUTE);
+                }
                 if (predictionWithReason.reason().details().isPresent()) {
                     Files.writeString(
                         SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
-                        "%s,%s,%s,%s%s".formatted(
+                        "%s,%s,%s,\"%s\"%s".formatted(
                                 test.getName(),
                                 predictionWithReason.prediction(),
                                 predictionWithReason.reason().category(),
@@ -141,7 +148,7 @@ public final class SkippyTestApi {
                     );
                 }
                 predictions.put(test.getName(), predictionWithReason.prediction());
-                return predictionWithReason.prediction() == Prediction.EXECUTE;
+                return predictionWithReason.prediction() != Prediction.SKIP;
             } catch (IOException e) {
                 throw new UncheckedIOException("Unable to check if test %s needs to be executed: %s.".formatted(test.getName(), e.getMessage()), e);
             }

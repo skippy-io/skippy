@@ -23,9 +23,12 @@ import java.util.Optional;
  *
  * @author Florian McKee
  */
-record Reason(Category category, Optional<String> details) {
+public record Reason(Category category, Optional<String> details) {
 
-    enum Category {
+    /**
+     * The high-level reason.
+     */
+    public enum Category {
 
         /**
          * Skippy was unable to retrieve an existing Test Impact Analysis to make a skip-or-execute decision.
@@ -58,9 +61,23 @@ record Reason(Category category, Optional<String> details) {
         TEST_FAILED_PREVIOUSLY,
 
         /**
-         * A covered test failed previously. This is relevant for JUnit 5's @Nested tests.
+         * The test is tagged as {@link TestTag#ALWAYS_EXECUTE}.
          */
-        COVERED_TEST_FAILED_PREVIOUSLY,
+        TEST_TAGGED_AS_ALWAYS_EXECUTE,
+
+        /**
+         * A covered test is tagged as {@link TestTag#FAILED}.
+         * <br />
+         * This is relevant for JUnit 5's @Nested tests.
+         */
+        COVERED_TEST_TAGGED_AS_FAILED,
+
+        /**
+         * A covered test is tagged as {@link TestTag#ALWAYS_EXECUTE}.
+         * <br />
+         * This is relevant for JUnit 5's @Nested tests.
+         */
+        COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE,
 
         /**
          * The class file of the test was not found on the file system.
@@ -82,7 +99,13 @@ record Reason(Category category, Optional<String> details) {
          * Coverage for skipped tests is enabled and the test has an execution id. However, Skippy is unable to read the
          * execution data. The test needs to be re-run in order to capture coverage for skipped tests.
          */
-        UNABLE_TO_READ_EXECUTION_DATA
+        UNABLE_TO_READ_EXECUTION_DATA,
+
+
+        /**
+         * The default prediction was overridden by a {@link PredictionModifier}.
+         */
+        OVERRIDE_BY_PREDICTION_MODIFIER
     }
 
 }

@@ -29,7 +29,6 @@ import java.util.Optional;
 
 import static java.nio.file.Files.*;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,7 +42,7 @@ public class SkippyRepositoryTest {
     @BeforeEach
     void setUp() throws URISyntaxException {
         projectDir = Paths.get(getClass().getResource(".").toURI());
-        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false, Optional.empty()), projectDir, null);
+        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false, Optional.empty(), Optional.empty()), projectDir, null);
         skippyRepository.deleteSkippyFolder();
         skippyFolder = SkippyFolder.get(projectDir);
     }
@@ -59,12 +58,13 @@ public class SkippyRepositoryTest {
     void testSaveConfiguration() throws IOException {
         var configFile = skippyFolder.resolve("config.json");
         assertFalse(exists(skippyFolder.resolve("config.json")));
-        skippyRepository.saveConfiguration(new SkippyConfiguration(true, Optional.empty()));
+        skippyRepository.saveConfiguration(new SkippyConfiguration(true, Optional.empty(), Optional.empty()));
         var content = readString(configFile, StandardCharsets.UTF_8);
         assertThat(content).isEqualToIgnoringWhitespace("""
             {
                 "coverageForSkippedTests": "true",
-                "repositoryClass": "io.skippy.core.DefaultRepositoryExtension"
+                "repositoryExtension": "io.skippy.core.DefaultRepositoryExtension",
+                "predictionModifier": "io.skippy.core.DefaultPredictionModifier"
             }
         """);
     }
@@ -226,6 +226,14 @@ public class SkippyRepositoryTest {
         assertEquals(asList(TestTag.PASSED), skippyRepository.getTestTags("com.example.Test1"));
         skippyRepository.tagTest("com.example.Test1", TestTag.FAILED);
         assertEquals(asList(TestTag.FAILED), skippyRepository.getTestTags("com.example.Test1"));
+    }
+
+    @Test
+    void testTaggingAlwaysRun()  {
+        // a test is considered PASSED until it is tagged as FAILED
+        assertEquals(asList(TestTag.PASSED), skippyRepository.getTestTags("com.example.Test1"));
+        skippyRepository.tagTest("com.example.Test1", TestTag.ALWAYS_EXECUTE);
+        assertEquals(asList(TestTag.PASSED, TestTag.ALWAYS_EXECUTE), skippyRepository.getTestTags("com.example.Test1"));
     }
 
 }

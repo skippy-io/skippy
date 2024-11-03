@@ -56,6 +56,13 @@
           <editable>true</editable>
           <description>fully-qualified class name of a custom io.skippy.core.SkippyRepositoryExtension</description>
         </parameter>
+        <parameter>
+          <name>predictionModifier</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.PredictionModifier</description>
+        </parameter>
       </parameters>
       <configuration>
         <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
@@ -105,6 +112,13 @@
           <editable>true</editable>
           <description>fully-qualified class name of a custom io.skippy.core.SkippyRepositoryExtension</description>
         </parameter>
+        <parameter>
+          <name>predictionModifier</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.PredictionModifier</description>
+        </parameter>
       </parameters>
       <configuration>
         <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
@@ -153,6 +167,13 @@
           <required>false</required>
           <editable>true</editable>
           <description>fully-qualified class name of a custom io.skippy.core.SkippyRepositoryExtension</description>
+        </parameter>
+        <parameter>
+          <name>predictionModifier</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.PredictionModifier</description>
         </parameter>
       </parameters>
       <configuration>

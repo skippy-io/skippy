@@ -16,20 +16,37 @@
 
 package io.skippy.core;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * 2-tuple that contains a {@link Prediction} and the {@link Reason} why the prediction was made.
+ * Disables Skippy's predictive test selection:
+ *  <br /><br />
+ *  <pre>
+ * {@literal @}AlwaysRun
+ *  public class FooTest {
  *
- * @param prediction a {@link Prediction}
- * @param reason the reason the {@link Prediction} was made
+ *    {@literal @}Test
+ *     void testFoo() {
+ *         ...
+ *     }
+ *
+ *    {@literal @}Test
+ *     void testBar() {
+ *         ...
+ *     }
+ *
+ * }
+ * </pre>
+ *
+ * This is particularly useful if you use JUnit 5's automatic extension registration mechanism to enable Skippy for
+ * all tests.
  *
  * @author Florian McKee
  */
-public record PredictionWithReason(Prediction prediction, Reason reason) {
-    static PredictionWithReason execute(Reason reason) {
-        return new PredictionWithReason(Prediction.EXECUTE, reason);
-    }
-
-    static PredictionWithReason skip(Reason reason) {
-        return new PredictionWithReason(Prediction.SKIP, reason);
-    }
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AlwaysRun {
 }
