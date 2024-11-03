@@ -24,7 +24,7 @@ import org.gradle.api.tasks.Input;
 import javax.inject.Inject;
 
 /**
- * Clears the skippy directory.
+ * Resets the skippy folder: After completion, only an up-to-date config.json will remain.
  * <br /><br />
  * Invocation: {@code ./gradlew skippyClean}
  *
@@ -38,7 +38,7 @@ abstract class SkippyCleanTask extends DefaultTask {
     @Inject
     public SkippyCleanTask() {
         setGroup("skippy");
-        doLast(task -> getProjectSettings().get().ifBuildSupportsSkippy(SkippyBuildApi::deleteSkippyFolder));
+        doLast(task -> getProjectSettings().get().ifBuildSupportsSkippy(SkippyBuildApi::resetSkippyFolder));
     }
 
 }
