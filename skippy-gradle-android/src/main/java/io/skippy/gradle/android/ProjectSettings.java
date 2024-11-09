@@ -27,7 +27,11 @@ class ProjectSettings implements Serializable {
     }
 
     static ProjectSettings from(Project project) {
-        return new ProjectSettings(null, null, null, null);
+        var skippyExtension = project.getExtensions().getByType(SkippyPluginExtension.class);
+        List<File> classesDirs = null;
+        Path projectDir = null;
+        Path buildDir = null;
+        return new ProjectSettings(classesDirs, skippyExtension, projectDir, buildDir);
     }
 
     void ifBuildSupportsSkippy(Consumer<SkippyBuildApi> action) {
