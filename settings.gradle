@@ -1,5 +1,6 @@
 include 'skippy-core'
 include 'skippy-gradle'
+include 'skippy-gradle-android'
 include 'skippy-maven'
 include 'skippy-junit4'
 include 'skippy-junit5'

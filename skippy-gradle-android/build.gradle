@@ -1,0 +1,77 @@
+buildscript {
+    repositories {
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
+    }
+    dependencies {
+        classpath("com.gradle.publish:plugin-publish-plugin:1.2.1")
+    }
+}
+
+plugins {
+    id 'java-gradle-plugin'
+}
+
+def publishToGradlePluginPortal = project.hasProperty("publishToGradlePluginPortal")
+        && Boolean.valueOf(project.property("publishToGradlePluginPortal"))
+
+if ( publishToGradlePluginPortal) {
+
+    // Gradle Plugin Portal
+
+    apply plugin: 'com.gradle.plugin-publish'
+
+} else {
+
+    // SonaType OSSRH
+
+    apply plugin: 'io.skippy.ossrh-publish'
+
+    ossrhPublish {
+        title = 'skippy-gradle-android'
+        description = 'Skippy\'s Test Impact Analysis for Gradle & Android'
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':skippy-core')
+    compileOnly 'com.android.tools.build:gradle:8.2.0'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:" + versions.junit5
+    testImplementation "org.junit.jupiter:junit-jupiter-params:" + versions.junit5
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:" + versions.junit5
+    testImplementation 'org.assertj:assertj-core:' + versions.assertj
+    testImplementation 'org.mockito:mockito-core:' + versions.mockito
+    testImplementation gradleTestKit()
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams true
+        exceptionFormat 'FULL'
+    }
+    useJUnitPlatform()
+}
+
+gradlePlugin {
+
+    website = 'https://www.skippy.io'
+    vcsUrl = 'https://github.com/skippy-io/skippy'
+
+    plugins {
+        skippyPlugin {
+            id = 'io.skippy.android'
+            displayName = 'skippy-gradle-android'
+            description = 'Skippy\'s Test Impact Analysis for Gradle & Android'
+            tags.set(['skippy', 'test-impact-analysis'])
+            implementationClass = 'io.skippy.gradle.android.SkippyPlugin'
+        }
+    }
+    automatedPublishing = publishToGradlePluginPortal
+}
