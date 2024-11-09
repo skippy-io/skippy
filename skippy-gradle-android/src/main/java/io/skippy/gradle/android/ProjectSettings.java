@@ -1,19 +1,11 @@
 package io.skippy.gradle.android;
 
-import com.android.build.api.variant.AndroidComponentsExtension;
-import com.android.build.gradle.AppExtension;
-import com.android.build.gradle.BaseExtension;
 import io.skippy.core.SkippyBuildApi;
-import io.skippy.core.SkippyRepository;
 import org.gradle.api.Project;
-import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.file.FileCollection;
-import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
 import java.io.Serializable;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
