@@ -28,9 +28,12 @@ class ProjectSettings implements Serializable {
 
     static ProjectSettings from(Project project) {
         var skippyExtension = project.getExtensions().getByType(SkippyPluginExtension.class);
+
+        // TODO: figure out how to set the properties below for Android based projects
         List<File> classesDirs = null;
         Path projectDir = null;
         Path buildDir = null;
+
         return new ProjectSettings(classesDirs, skippyExtension, projectDir, buildDir);
     }
 
