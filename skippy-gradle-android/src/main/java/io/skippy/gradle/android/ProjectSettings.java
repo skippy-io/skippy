@@ -1,8 +1,5 @@
 package io.skippy.gradle.android;
 
-import com.android.build.api.dsl.AndroidSourceSet;
-import com.android.build.gradle.BaseExtension;
-
 import org.gradle.api.Project;
 
 import java.io.File;
@@ -33,16 +30,14 @@ class ProjectSettings implements Serializable {
     }
 
     static ProjectSettings from(Project project) {
-        BaseExtension androidExtension = project.getExtensions().findByType(BaseExtension.class);
-        Stream<AndroidSourceSet> androidSourceSets = androidExtension.getSourceSets()
-                .stream()
-                .map(deprecatedAndroidSourceSet -> deprecatedAndroidSourceSet);
+        var androidClassesDirs = AndroidClassFileCollector.collectIfExists(project);
+        var kotlinClassesDirs = KotlinClassFileCollector.collectIfExists(project);
+        var allClassesDirs = Stream.concat(kotlinClassesDirs, androidClassesDirs).toList();
 
-        List<File> classesDirs = AndroidTestSourceSetCollector.collectIfExists(androidSourceSets).toList();
         Path projectDir = project.getProjectDir().toPath();
         Path buildDir = project.getLayout().getBuildDirectory().getAsFile().get().toPath();
         var skippyExtension = project.getExtensions().getByType(SkippyPluginExtension.class);
-        return new ProjectSettings(classesDirs, skippyExtension, projectDir, buildDir);
+        return new ProjectSettings(allClassesDirs, skippyExtension, projectDir, buildDir);
     }
 
     void ifBuildSupportsSkippy(Consumer<SkippyBuildApi> action) {
