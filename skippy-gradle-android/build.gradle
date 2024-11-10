@@ -41,6 +41,8 @@ repositories {
 
 dependencies {
     implementation project(':skippy-core')
+    compileOnly 'com.android.tools.build:gradle:8.7.2'
+    compileOnly 'org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.0.21'
     testImplementation "org.junit.jupiter:junit-jupiter-api:" + versions.junit5
     testImplementation "org.junit.jupiter:junit-jupiter-params:" + versions.junit5
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:" + versions.junit5
