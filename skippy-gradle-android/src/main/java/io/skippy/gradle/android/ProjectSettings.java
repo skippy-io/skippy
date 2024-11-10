@@ -44,7 +44,7 @@ class ProjectSettings implements Serializable {
             var androidExtension = project.getExtensions().getByType(AppExtension.class);
             androidExtension.getApplicationVariants().matching(variant -> variant.getBuildType().getName().equals("debug")).all(variant -> {
                 /*
-                 * Adds directory with class files built by the Java compiler:
+                 * Adds directories with class files built by the Java compiler:
                  *
                  * build/intermediates/javac/debug/classes
                  * build/intermediates/javac/debugUnitTest/classes
@@ -56,7 +56,7 @@ class ProjectSettings implements Serializable {
             });
 
             /*
-             * Adds directory with class files built by the Kotlin compiler:
+             * Adds directories with class files built by the Kotlin compiler:
              *
              * build/tmp/kotlin-classes/debug
              * build/tmp/kotlin-classes/debugUnitTest
