@@ -19,38 +19,37 @@ package io.skippy.gradle;
 import io.skippy.core.ClassFileCollector;
 import io.skippy.core.ClassFile;
 import io.skippy.core.Profiler;
-import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 
 /**
- * Collects {@link ClassFile}s across all {@link SourceSet}s in a project.
+ * Collects {@link ClassFile}s across all output folders in a project.
  *
  * @author Florian McKee
  */
 final class GradleClassFileCollector implements ClassFileCollector {
 
     private final Path projectDir;
-    private final List<File> classesDirs;
+    private final List<File> outputFolders;
 
-    GradleClassFileCollector(Path projectDir, List<File> classesDirs) {
+    GradleClassFileCollector(Path projectDir, List<File> outputFolders) {
         this.projectDir = projectDir;
-        this.classesDirs = classesDirs;
+        this.outputFolders = outputFolders;
     }
 
     /**
-     * Collects all {@link ClassFile}s in the output directories of the project organized by classes folders.
+     * Collects all {@link ClassFile}s in the output folders of the project.
      *
-     * @return all {@link ClassFile}s in the output directories of the project organized by classes folders.
+     * @return all {@link ClassFile}s in the output folders of the project
      */
     @Override
     public List<ClassFile> collect() {
         return Profiler.profile("GradleClassFileCollector#collect", () -> {
             var result = new ArrayList<ClassFile>();
-            for (var classesDir : classesDirs) {
-                result.addAll(sort(collect(classesDir, classesDir)));
+            for (var outputFolder : outputFolders) {
+                result.addAll(sort(collect(outputFolder, outputFolder)));
             }
             return result;
         });
