@@ -20,6 +20,7 @@ import io.skippy.core.SkippyBuildApi;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
 
 import javax.inject.Inject;
 
@@ -32,7 +33,7 @@ import javax.inject.Inject;
  */
 abstract class SkippyCleanTask extends DefaultTask {
 
-    @Input
+    @Internal
     abstract Property<ProjectSettings> getProjectSettings();
 
     @Inject
