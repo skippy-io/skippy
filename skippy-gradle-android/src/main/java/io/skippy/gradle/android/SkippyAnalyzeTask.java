@@ -25,6 +25,8 @@ import javax.inject.Inject;
 
 /**
  * Informs Skippy that the relevant parts of the build (e.g., compilation and testing) have finished.
+ *
+ * @author Florian McKee
  */
 abstract class SkippyAnalyzeTask extends DefaultTask {
 

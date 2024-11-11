@@ -14,6 +14,9 @@ import io.skippy.core.SkippyRepository;
 
 /**
  * A sub-set of relevant {@link Project} properties that are compatible with Gradle's Configuration Cache.
+ *
+ * @author Florian McKee
+ * @author Eugeniu Tufar
  */
 class ProjectSettings implements Serializable {
 
@@ -22,6 +25,14 @@ class ProjectSettings implements Serializable {
     final Path projectDir;
     final Path buildDir;
 
+    /**
+     * C'tor.
+     *
+     * @param classesDirs the folders that contain compiled class files
+     * @param skippyExtension the {@link SkippyPluginExtension}
+     * @param projectDir the project directory (e.g., /repos/my-project)
+     * @param buildDir the build directory (e.g., /repos/my-project/build)
+     */
     private ProjectSettings(List<File> classesDirs, SkippyPluginExtension skippyExtension, Path projectDir, Path buildDir) {
         this.classesDirs = classesDirs;
         this.skippyPluginExtension = skippyExtension;
@@ -30,8 +41,8 @@ class ProjectSettings implements Serializable {
     }
 
     static ProjectSettings from(Project project) {
-        var androidClassesDirs = AndroidClassFileCollector.collectIfExists(project);
-        var kotlinClassesDirs = KotlinClassFileCollector.collectIfExists(project);
+        var androidClassesDirs = AndroidDestinationDirectoryCollector.collectIfExists(project);
+        var kotlinClassesDirs = KotlinDestinationDirectoryCollector.collectIfExists(project);
         var allClassesDirs = Stream.concat(kotlinClassesDirs, androidClassesDirs).toList();
 
         Path projectDir = project.getProjectDir().toPath();
