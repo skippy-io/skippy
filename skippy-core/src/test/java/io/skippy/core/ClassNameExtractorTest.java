@@ -18,8 +18,7 @@ package io.skippy.core;
 
 import org.junit.jupiter.api.Test;
 
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,8 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ClassNameExtractorTest {
 
     @Test
-    void testFetFullyQualifiedClassName() throws URISyntaxException {
-        var classFile = Paths.get(getClass().getResource("StringUtils.class").toURI());
+    void testFetFullyQualifiedClassName() {
+        var classFile = Path.of("build/classes/java/test").resolve("com/example/StringUtils.class");
         assertEquals("com.example.StringUtils", ClassNameExtractor.getFullyQualifiedClassName(classFile));
     }
 

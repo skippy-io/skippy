@@ -124,18 +124,18 @@ public final class TestImpactAnalysis {
     /**
      * Makes a skip-or-execute prediction for the test identified by the {@code testClassName}.
      *
-     * @param testClassName the test's fully-qualified class name (e.g., com.example.FooTest)
+     * @param testClazz the test's {@link Class} object
      * @param configuration the {@link SkippyConfiguration}, must not be null
      * @param skippyRepository the {@link SkippyRepository}, must no tbe null
      * @return a skip-or-execute prediction for the test identified by the {@code testClassName}
      */
-    PredictionWithReason predict(String testClassName, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
+    PredictionWithReason predict(Class<?> testClazz, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
             if (NOT_FOUND.equals(this)) {
                 return PredictionWithReason.execute(new Reason(TEST_IMPACT_ANALYSIS_NOT_FOUND, Optional.empty()));
             }
             var maybeAnalyzedTest = analyzedTests.stream()
-                    .filter(test -> classFileContainer.getById(test.getTestClassId()).getClassName().equals(testClassName))
+                    .filter(test -> classFileContainer.getById(test.getTestClassId()).getClassName().equals(testClazz.getName()))
                     .findFirst();
             if (maybeAnalyzedTest.isEmpty()) {
                 return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));

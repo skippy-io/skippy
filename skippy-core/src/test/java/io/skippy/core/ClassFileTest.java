@@ -20,9 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,50 +66,50 @@ public class ClassFileTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "LeftPadder.class:com.example.LeftPadder",
-            "LeftPadderTest.class:com.example.LeftPadderTest"
+        "com/example/LeftPadder.class:com.example.LeftPadder",
+        "com/example/LeftPadderTest.class:com.example.LeftPadderTest"
     }, delimiter = ':')
-    void testGetClassName(String fileName, String expectedValue) throws URISyntaxException {
-        var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        var outputFolder = classFile.getParent();
-        var projectDir = outputFolder.getParent();
-        assertEquals(expectedValue, ClassFile.fromFileSystem(projectDir, outputFolder, classFile).getClassName());
+    void testGetClassName(String fileName, String expectedValue) {
+        var classFile = Path.of(fileName);
+        var outputFolder = Path.of("build/classes/java/test");
+        var projectDir = Path.of(".");
+        assertEquals(expectedValue, ClassFile.fromFileSystem(projectDir, outputFolder, projectDir.resolve(outputFolder).resolve(classFile)).getClassName());
     }
 
     @ParameterizedTest
     @CsvSource(value = {
-            "LeftPadder.class:LeftPadder.class",
-            "LeftPadderTest.class:LeftPadderTest.class"
+        "com/example/LeftPadder.class:com/example/LeftPadder.class",
+        "com/example/LeftPadderTest.class:com/example/LeftPadderTest.class"
     }, delimiter = ':')
-    void testGetClassFile(String fileName, String expectedValue) throws URISyntaxException {
-        var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        var outputFolder = classFile.getParent();
-        var projectDir = outputFolder.getParent();
-        assertEquals(Path.of(expectedValue), ClassFile.fromFileSystem(projectDir, outputFolder, classFile).getPath());
+    void testGetPath(String fileName, String expectedValue) {
+        var classFile = Path.of(fileName);
+        var outputFolder = Path.of("build/classes/java/test");
+        var projectDir = Path.of(".");
+        assertEquals(Path.of(expectedValue), ClassFile.fromFileSystem(projectDir, outputFolder, projectDir.resolve(outputFolder).resolve(classFile)).getPath());
     }
 
     @ParameterizedTest
     @CsvSource(value = {
-            "LeftPadder.class:core",
-            "LeftPadderTest.class:core"
+        "com/example/LeftPadder.class:build/classes/java/test",
+        "com/example/LeftPadderTest.class:build/classes/java/test"
     }, delimiter = ':')
-    void testGetOutputFolder(String fileName, String expectedValue) throws URISyntaxException {
-        var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        var outputFolder = classFile.getParent();
-        var projectDir = outputFolder.getParent();
-        assertEquals(Path.of(expectedValue), ClassFile.fromFileSystem(projectDir, outputFolder, classFile).getOutputFolder());
+    void testGetOutputFolder(String fileName, String expectedValue) {
+        var classFile = Path.of(fileName);
+        var outputFolder = Path.of("build/classes/java/test");
+        var projectDir = Path.of(".");
+        assertEquals(Path.of(expectedValue), ClassFile.fromFileSystem(projectDir, outputFolder, projectDir.resolve(outputFolder).resolve(classFile)).getOutputFolder());
     }
 
     @ParameterizedTest
     @CsvSource(value = {
-            "LeftPadder.class:8E994DD8",
-            "LeftPadderTest.class:83A72152"
+            "com/example/LeftPadder.class:8E994DD8",
+            "com/example/LeftPadderTest.class:80E52EBA"
     }, delimiter = ':')
-    void getHash(String fileName, String expectedValue) throws URISyntaxException {
-        var classFile = Paths.get(getClass().getResource(fileName).toURI());
-        var outputFolder = classFile.getParent();
-        var projectDir = outputFolder.getParent();
-        assertEquals(expectedValue, ClassFile.fromFileSystem(projectDir, outputFolder, classFile).getHash());
+    void getHash(String fileName, String expectedValue) {
+        var classFile = Path.of(fileName);
+        var outputFolder = Path.of("build/classes/java/test");
+        var projectDir = Path.of(".");
+        assertEquals(expectedValue, ClassFile.fromFileSystem(projectDir, outputFolder, projectDir.resolve(outputFolder).resolve(classFile)).getHash());
     }
 
 
