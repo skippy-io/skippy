@@ -35,29 +35,29 @@ public class TestImpactAnalysisPredictTest {
     class ScenariosWithCoverageForSkippedTestsDisabled {
 
         @Test
-        void testNoTestImpactAnalysisFound() {
+        void testNoTestImpactAnalysisFound() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.NOT_FOUND;
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(TEST_IMPACT_ANALYSIS_NOT_FOUND, predictionWithReason.reason().category());
         }
 
         @Test
-        void testPredictNoChange() {
+        void testPredictNoChange() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
                         "name": "com.example.LeftPadder",
-                        "path": "io/skippy/core/LeftPadder.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadder.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "8E994DD8"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
-                        "path": "io/skippy/core/LeftPadderTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "83A72152"
+                        "path": "com/example/LeftPadderTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "80E52EBA"
                     }
                 },
                 "tests": [
@@ -69,20 +69,20 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(SKIP, predictionWithReason.prediction());
             assertEquals(NO_CHANGE, predictionWithReason.reason().category());
         }
 
         @Test
-        void testPredictUnknownTest() {
+        void testPredictUnknownTest() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
                 {
                     "classes": {
                         "0": {
                             "name": "com.example.LeftPadder",
-                            "path": "io/skippy/core/LeftPadder.class",
-                            "outputFolder": "src/test/resources",
+                            "path": "com/example/LeftPadder.class",
+                            "outputFolder": "build/classes/java/test",
                             "hash": "8E994DD8"
                         }
                     },
@@ -90,26 +90,26 @@ public class TestImpactAnalysisPredictTest {
                     ]
                 }
             """);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(NO_DATA_FOUND_FOR_TEST, predictionWithReason.reason().category());
         }
 
         @Test
-        void testPredictBytecodeChangeInTest() {
+        void testPredictBytecodeChangeInTest() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
                         "name": "com.example.LeftPadder",
-                        "path": "io/skippy/core/LeftPadder.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadder.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "8E994DD8"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
-                        "path": "io/skippy/core/LeftPadderTest.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadderTest.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "00000000"
                     }
                 },
@@ -122,27 +122,27 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(BYTECODE_CHANGE_IN_TEST, predictionWithReason.reason().category());
         }
 
         @Test
-        void testPredictBytecodeChangeInCoveredClass() {
+        void testPredictBytecodeChangeInCoveredClass() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
                         "name": "com.example.LeftPadder",
-                        "path": "io/skippy/core/LeftPadder.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadder.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "00000000"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
-                        "path": "io/skippy/core/LeftPadderTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "83A72152"
+                        "path": "com/example/LeftPadderTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "80E52EBA"
                     }
                 },
                 "tests": [
@@ -154,27 +154,27 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(BYTECODE_CHANGE_IN_COVERED_CLASS, predictionWithReason.reason().category());
             assertEquals("covered class: com.example.LeftPadder", predictionWithReason.reason().details().get());
         }
 
         @Test
-        void testPredictFailedTest() {
+        void testPredictFailedTest() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
                         "name": "com.example.LeftPadder",
-                        "path": "io/skippy/core/LeftPadder.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadder.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "9U3+WYit7uiiNqA9jplN2A=="
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
-                        "path": "io/skippy/core/LeftPadderTest.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadderTest.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "sGLJTZJw4beE9m2Kg6chUg=="
                     }
                 },
@@ -187,26 +187,26 @@ public class TestImpactAnalysisPredictTest {
                 ]                      
             }
         """);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(TEST_FAILED_PREVIOUSLY, predictionWithReason.reason().category());
         }
 
         @Test
-        void testPredictTestClassFileNotFound() {
+        void testPredictTestClassFileNotFound() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
             {
                 "classes": {
                     "0": {
                         "name": "com.example.LeftPadder",
-                        "path": "io/skippy/core/LeftPadder.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadder.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "9U3+WYit7uiiNqA9jplN2A=="
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
-                        "path": "io/skippy/core/LeftPadderTest$Bla.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadderTest$Bla.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "sGLJTZJw4beE9m2Kg6chUg=="
                     }
                 },
@@ -219,28 +219,28 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(TEST_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
-            assertEquals("test class file: io/skippy/core/LeftPadderTest$Bla.class", predictionWithReason.reason().details().get());
+            assertEquals("test class file: com/example/LeftPadderTest$Bla.class", predictionWithReason.reason().details().get());
         }
 
         @Test
-        void testPredictCoveredClassClassFileNotFound() {
+        void testPredictCoveredClassClassFileNotFound() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
              {
                 "classes": {
                     "0": {
                         "name": "com.example.LeftPadder",
-                        "path": "io/skippy/core/LeftPadder$Bla.class",
-                        "outputFolder": "src/test/resources",
+                        "path": "com/example/LeftPadder$Bla.class",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "00000000"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
-                        "path": "io/skippy/core/LeftPadderTest.class",
-                        "outputFolder": "src/test/resources",
-                        "hash": "83A72152"
+                        "path": "com/example/LeftPadderTest.class",
+                        "outputFolder": "build/classes/java/test",
+                        "hash": "80E52EBA"
                     }
                 },
                 "tests": [
@@ -252,10 +252,10 @@ public class TestImpactAnalysisPredictTest {
                 ]
             }
         """);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(COVERED_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
-            assertEquals("covered class: io/skippy/core/LeftPadder$Bla.class", predictionWithReason.reason().details().get());
+            assertEquals("covered class: com/example/LeftPadder$Bla.class", predictionWithReason.reason().details().get());
         }
 
     }
@@ -264,15 +264,15 @@ public class TestImpactAnalysisPredictTest {
     class ScenariosWithCoverageForSkippedTestsEnabled {
 
         @Test
-        void testHappyPath() {
+        void testHappyPath() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
                 {
                     "classes": {
                         "0": {
                             "name": "com.example.LeftPadderTest",
-                            "path": "io/skippy/core/LeftPadderTest.class",
-                            "outputFolder": "src/test/resources",
-                            "hash": "83A72152"
+                            "path": "com/example/LeftPadderTest.class",
+                            "outputFolder": "build/classes/java/test",
+                            "hash": "80E52EBA"
                         }
                     },
                     "tests": [
@@ -288,21 +288,21 @@ public class TestImpactAnalysisPredictTest {
             var configuration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
             var repository = mock(SkippyRepository.class);
             when(repository.readJacocoExecutionData("00000000000000000000000000000000")).thenReturn(Optional.of(new byte[]{}));
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), configuration, repository);
             assertEquals(SKIP, predictionWithReason.prediction());
         }
 
 
         @Test
-        void testMissingExecutionId() {
+        void testMissingExecutionId() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
                 {
                     "classes": {
                         "0": {
                             "name": "com.example.LeftPadderTest",
-                            "path": "io/skippy/core/LeftPadderTest.class",
-                            "outputFolder": "src/test/resources",
-                            "hash": "83A72152"
+                            "path": "com/example/LeftPadderTest.class",
+                            "outputFolder": "build/classes/java/test",
+                            "hash": "80E52EBA"
                         }
                     },
                     "tests": [
@@ -316,21 +316,21 @@ public class TestImpactAnalysisPredictTest {
             """);
             var configuration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
             var repository = SkippyRepository.getInstance(configuration);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), configuration, repository);
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(MISSING_EXECUTION_ID, predictionWithReason.reason().category());
         }
 
         @Test
-        void testUnableToReadExecutionData() {
+        void testUnableToReadExecutionData() throws ClassNotFoundException {
             var testImpactAnalysis = TestImpactAnalysis.parse("""
                 {
                     "classes": {
                         "0": {
                             "name": "com.example.LeftPadderTest",
-                            "path": "io/skippy/core/LeftPadderTest.class",
-                            "outputFolder": "src/test/resources",
-                            "hash": "83A72152"
+                            "path": "com/example/LeftPadderTest.class",
+                            "outputFolder": "build/classes/java/test",
+                            "hash": "80E52EBA"
                         }
                     },
                     "tests": [
@@ -345,7 +345,7 @@ public class TestImpactAnalysisPredictTest {
             """);
             var configuration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
             var repository = SkippyRepository.getInstance(configuration);
-            var predictionWithReason = testImpactAnalysis.predict("com.example.LeftPadderTest", configuration, repository);
+            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), configuration, repository);
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(UNABLE_TO_READ_EXECUTION_DATA, predictionWithReason.reason().category());
         }

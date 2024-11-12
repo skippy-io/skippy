@@ -49,7 +49,7 @@ public final class SkippyTestApi {
     private final SkippyRepository skippyRepository;
     private final PredictionModifier predictionModifier;
     private final SkippyConfiguration skippyConfiguration;
-    private final Map<String, Prediction> predictions = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Prediction> predictions = new ConcurrentHashMap<>();
 
     /**
      * Stack that keeps track of the execution data across nested test classes.
@@ -116,10 +116,10 @@ public final class SkippyTestApi {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
                 // re-use prediction made for the first test method in a class for all subsequent test methods
-                if (predictions.containsKey(test.getName())) {
-                    return predictions.get(test.getName()) != Prediction.SKIP;
+                if (predictions.containsKey(test)) {
+                    return predictions.get(test) != Prediction.SKIP;
                 }
-                var predictionWithReason = predictionModifier.passThruOrModify(test, testImpactAnalysis.predict(test.getName(), skippyConfiguration, skippyRepository));
+                var predictionWithReason = predictionModifier.passThruOrModify(test, testImpactAnalysis.predict(test, skippyConfiguration, skippyRepository));
 
                 // record {@link Prediction#ALWAYS_EXECUTE} as tags: this is required for JUnit 5's @Nested tests
                 if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {
@@ -147,7 +147,7 @@ public final class SkippyTestApi {
                             StandardCharsets.UTF_8, CREATE, APPEND
                     );
                 }
-                predictions.put(test.getName(), predictionWithReason.prediction());
+                predictions.put(test, predictionWithReason.prediction());
                 return predictionWithReason.prediction() != Prediction.SKIP;
             } catch (IOException e) {
                 throw new UncheckedIOException("Unable to check if test %s needs to be executed: %s.".formatted(test.getName(), e.getMessage()), e);
