@@ -16,7 +16,6 @@
 
 package io.skippy.junit5;
 
-import io.skippy.core.RuntimeParameters;
 import io.skippy.core.SkippyTestApi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;

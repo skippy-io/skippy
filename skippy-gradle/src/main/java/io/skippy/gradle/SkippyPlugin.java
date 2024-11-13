@@ -17,7 +17,6 @@
 package io.skippy.gradle;
 
 import io.skippy.core.Profiler;
-import io.skippy.core.RuntimeParameters;
 import io.skippy.core.TestTag;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
@@ -26,7 +25,7 @@ import org.gradle.api.tasks.testing.TestListener;
 import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
-import static io.skippy.core.RuntimeParameters.Parameter.TEST_TASK;
+import static io.skippy.core.ParametersFromBuildPlugin.Parameter.TEST_TASK;
 
 /**
  * The Skippy plugin adds the

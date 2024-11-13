@@ -30,7 +30,7 @@ final class DefaultPredictionModifier implements PredictionModifier {
     }
 
     @Override
-    public PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction) {
+    public PredictionWithReason passThruOrModify(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin, PredictionWithReason prediction) {
         if (isAnnotatedWithAlwaysRun(test)) {
             return new PredictionWithReason(
                 Prediction.ALWAYS_EXECUTE,

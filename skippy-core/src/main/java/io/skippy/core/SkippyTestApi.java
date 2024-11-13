@@ -110,17 +110,17 @@ public final class SkippyTestApi {
      * Returns {@code true} if {@code test} needs to be executed, {@code false} otherwise.
      *
      * @param test a class object representing a test
-     * @param runtimeParameters parameters that have been passed from Skippy's build plugins to the JUnit libraries
+     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
-    public boolean testNeedsToBeExecuted(Class<?> test, RuntimeParameters runtimeParameters) {
+    public boolean testNeedsToBeExecuted(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
                 // re-use prediction made for the first test method in a class for all subsequent test methods
                 if (predictions.containsKey(test)) {
                     return predictions.get(test) != Prediction.SKIP;
                 }
-                var predictionWithReason = predictionModifier.passThruOrModify(test, testImpactAnalysis.predict(test, skippyConfiguration, skippyRepository));
+                var predictionWithReason = predictionModifier.passThruOrModify(test, parametersFromBuildPlugin, testImpactAnalysis.predict(test, parametersFromBuildPlugin, skippyConfiguration, skippyRepository));
 
                 // record {@link Prediction#ALWAYS_EXECUTE} as tags: this is required for JUnit 5's @Nested tests
                 if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {

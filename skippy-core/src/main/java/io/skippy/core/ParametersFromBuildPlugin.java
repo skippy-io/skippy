@@ -8,7 +8,7 @@ import static java.util.Collections.emptyMap;
 /**
  * Parameters that are passed from Skippy's build plugins to the JUnit libraries.
  */
-public class RuntimeParameters {
+public class ParametersFromBuildPlugin {
 
     /**
      * A parameter that is passed from Skippy's build plugins to the JUnit libraries.
@@ -42,7 +42,7 @@ public class RuntimeParameters {
 
     private final Map<Parameter, String> parameters;
 
-    private RuntimeParameters(Map<Parameter, String> parameters) {
+    private ParametersFromBuildPlugin(Map<Parameter, String> parameters) {
         this.parameters = parameters;
     }
 
@@ -51,16 +51,20 @@ public class RuntimeParameters {
      *
      * @return a new instance from all system properties that match one of the known parameters
      */
-    public static RuntimeParameters fromSystemProperties() {
+    public static ParametersFromBuildPlugin fromSystemProperties() {
         var result = new HashMap<Parameter, String>();
         for (var parameter : Parameter.values()) {
             result.put(parameter, System.getProperties().getProperty(parameter.systemPropertyKey, parameter.defaultValue));
         }
-        return new RuntimeParameters(result);
+        return new ParametersFromBuildPlugin(result);
     }
 
     String get(Parameter parameter) {
         return parameters.getOrDefault(parameter, parameter.defaultValue);
+    }
+
+    static ParametersFromBuildPlugin none() {
+        return new ParametersFromBuildPlugin(emptyMap());
     }
 
 }
