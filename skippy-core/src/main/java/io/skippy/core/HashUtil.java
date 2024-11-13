@@ -49,6 +49,16 @@ final class HashUtil {
     }
 
     /**
+     * Generates an 8-character hexadecimal hash of the input.
+     *
+     * @param data the input
+     * @return ab 8-character hexadecimal hash of the input
+     */
+    static String hashWith8Digits(byte[] data) {
+        return fullHash(data).substring(24, 32);
+    }
+
+    /**
      * Generates a 8-digit hexadecimal hash for the {@code classfile} that is agnostic of debug information.
      *
      * If the only difference between two class files is debug information within the bytecode, their hash will be the same.
@@ -65,7 +75,7 @@ final class HashUtil {
      * @return a 8-digit hexadecimal  hash of the {@code classfile} that is agnostic of debug information
      */
     static String debugAgnosticHash(Path classFile) {
-        return fullHash(getBytecodeWithoutDebugInformation(classFile)).substring(24, 32);
+        return hashWith8Digits(getBytecodeWithoutDebugInformation(classFile));
     }
 
     private static String fullHash(byte[] data) {

@@ -15,7 +15,6 @@
  */
 
 package io.skippy.junit4;
-
 import io.skippy.core.SkippyTestApi;
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -36,7 +35,7 @@ public class SkipOrExecuteRuleTest {
     public void testExecutionofTest() throws Throwable {
         doReturn(SkipOrExecuteRuleTest.class).when(description).getTestClass();
         var rule = new SkipOrExecuteRule(skippyTestApi);
-        when(skippyTestApi.testNeedsToBeExecuted(eq(SkipOrExecuteRuleTest.class), any())).thenReturn(true);
+        when(skippyTestApi.testNeedsToBeExecuted(SkipOrExecuteRuleTest.class)).thenReturn(true);
         rule.apply(base, description).evaluate();
         verify(base).evaluate();
     }
@@ -45,7 +44,7 @@ public class SkipOrExecuteRuleTest {
     public void testSkippingOfTest() throws Throwable {
         doReturn(SkipOrExecuteRuleTest.class).when(description).getTestClass();
         var rule = new SkipOrExecuteRule(skippyTestApi);
-        when(skippyTestApi.testNeedsToBeExecuted(eq(SkipOrExecuteRuleTest.class), any())).thenReturn(false);
+        when(skippyTestApi.testNeedsToBeExecuted(SkipOrExecuteRuleTest.class)).thenReturn(false);
         rule.apply(base, description).evaluate();
         verify(base, times(0)).evaluate();
     }

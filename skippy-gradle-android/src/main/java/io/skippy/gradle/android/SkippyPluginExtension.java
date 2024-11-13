@@ -56,6 +56,13 @@ public interface SkippyPluginExtension  {
     Property<String> getPredictionModifier();
 
     /**
+     * Returns the property to register a custom {@link io.skippy.core.ClassFileSelector}.
+     *
+     * @return the property to register a custom {@link io.skippy.core.ClassFileSelector}
+     */
+    Property<String> getClassFileSelector();
+
+    /**
      * Converts the extension data into a {@link SkippyConfiguration}
      *
      * @return a {@link SkippyConfiguration} derived from the extension data
@@ -64,7 +71,8 @@ public interface SkippyPluginExtension  {
         return new SkippyConfiguration(
             getCoverageForSkippedTests().getOrElse(false),
             Optional.ofNullable(getRepository().getOrNull()),
-            Optional.ofNullable(getPredictionModifier().getOrNull())
+            Optional.ofNullable(getPredictionModifier().getOrNull()),
+            Optional.ofNullable(getClassFileSelector().getOrNull())
         );
     }
 }

@@ -26,12 +26,14 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.skippy.core.HashUtil.hashWith8Digits;
 import static io.skippy.core.JacocoUtil.mergeExecutionData;
 import static io.skippy.core.JacocoUtil.swallowJacocoExceptions;
 import static io.skippy.core.SkippyConstants.PREDICTIONS_LOG_FILE;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.StandardOpenOption.*;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
 
 /**
  * API that is used by Skippy's JUnit libraries to query for skip-or-execute predictions and to trigger the generation of .exec files.
@@ -110,17 +112,16 @@ public final class SkippyTestApi {
      * Returns {@code true} if {@code test} needs to be executed, {@code false} otherwise.
      *
      * @param test a class object representing a test
-     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
-    public boolean testNeedsToBeExecuted(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin) {
+    public boolean testNeedsToBeExecuted(Class<?> test) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
                 // re-use prediction made for the first test method in a class for all subsequent test methods
                 if (predictions.containsKey(test)) {
                     return predictions.get(test) != Prediction.SKIP;
                 }
-                var predictionWithReason = predictionModifier.passThruOrModify(test, parametersFromBuildPlugin, testImpactAnalysis.predict(test, parametersFromBuildPlugin, skippyConfiguration, skippyRepository));
+                var predictionWithReason = predictionModifier.passThruOrModify(test, testImpactAnalysis.predict(test, skippyConfiguration, skippyRepository));
 
                 // record {@link Prediction#ALWAYS_EXECUTE} as tags: this is required for JUnit 5's @Nested tests
                 if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {
@@ -160,9 +161,8 @@ public final class SkippyTestApi {
      * Prepares for the capturing of a JaCoCo execution data file for {@code testClass} before any tests in the class are executed.
      *
      * @param testClass a test class
-     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      */
-    public void prepareExecFileGeneration(Class<?> testClass, ParametersFromBuildPlugin parametersFromBuildPlugin) {
+    public void prepareExecFileGeneration(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareExecFileGeneration", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
@@ -176,18 +176,24 @@ public final class SkippyTestApi {
     }
 
     /**
-     * Writes a JaCoCo execution data file after all tests in for {@code testClass} have been executed.
+     * Writes a JaCoCo execution data and classpath file after all tests in for {@code testClass} have been executed:
+     * <ul>
+     *     <li>The execution data file contains the test's coverage</li>
+     *     <li>The classpath file contains the test's classpath</li>
+     * </ul>
      *
      * @param testClass a test class
-     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      */
-    public void writeExecFile(Class<?> testClass, ParametersFromBuildPlugin parametersFromBuildPlugin) {
-        Profiler.profile("SkippyTestApi#writeExecFile", () -> {
+    public void writeExecAndClasspathFile(Class<?> testClass) {
+        Profiler.profile("SkippyTestApi#writeExecAndClasspathFile", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 var executionData = executionDataStack.lastElement();
                 executionData.add(agent.getExecutionData(true));
-                skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild(testClass.getName(), mergeExecutionData(executionData));
+
+                var classPathHash = skippyRepository.saveTemporaryClassPathFileForCurrentBuild();
+                skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild(testClass.getName(), classPathHash, mergeExecutionData(executionData));
+
                 executionDataStack.pop();
                 if (isNestedTest()) {
                     addExecutionDataToParent(executionData);

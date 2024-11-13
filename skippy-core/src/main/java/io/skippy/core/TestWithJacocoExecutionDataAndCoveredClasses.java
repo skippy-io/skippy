@@ -27,10 +27,11 @@ import java.util.List;
  * </ul>
  *
  * @param testClassName the class name of a test
+ * @param classPathFile the file that contains the classpath that was used to execute the test
  * @param jacocoExecutionData raw Jacoco execution data
  * @param coveredClasses the covered classes as list of class names
  *
  * @author Florian McKee
  */
-record TestWithJacocoExecutionDataAndCoveredClasses(String testClassName, byte[] jacocoExecutionData, List<String> coveredClasses) {
+record TestWithJacocoExecutionDataAndCoveredClasses(String testClassName, String classPathFile, byte[] jacocoExecutionData, List<String> coveredClasses) {
 }

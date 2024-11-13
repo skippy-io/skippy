@@ -54,16 +54,14 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testBuildStartedSavesSkippyConfiguration() {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
         buildApi.buildStarted();
-        verify(skippyRepository).saveConfiguration(new SkippyConfiguration(false, Optional.empty(), Optional.empty()));
+        verify(skippyRepository).saveConfiguration(SkippyConfiguration.DEFAULT);
     }
 
     @Test
     void testEmptySkippyFolderWithoutExecFiles() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
@@ -98,8 +96,14 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesCoverageForSkippedTestsEnabled() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var config = new SkippyConfiguration(
+            true,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
+
+        var buildApi = new SkippyBuildApi(config, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
@@ -107,11 +111,13 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
             new TestWithJacocoExecutionDataAndCoveredClasses(
                 "com.example.FooTest",
+                "00000000.classpath",
                 "0xFOO".getBytes(StandardCharsets.UTF_8),
                 asList("com.example.Foo", "com.example.FooTest")
             ),
             new TestWithJacocoExecutionDataAndCoveredClasses(
                 "com.example.BarTest",
+                "00000000.classpath",
                 "0xBAR".getBytes(StandardCharsets.UTF_8),
                 asList("com.example.Bar", "com.example.BarTest")
             )
@@ -165,8 +171,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFiles() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
@@ -174,11 +179,13 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
+                        "00000000.classpath",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Foo", "com.example.FooTest")
                 ),
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.BarTest",
+                        "00000000.classpath",
                         "0xBAR".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Bar", "com.example.BarTest")
                 )
@@ -228,8 +235,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesAndTwoExecFiles() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
@@ -237,11 +243,13 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
+                        "00000000.classpath",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Foo", "com.example.FooTest")
                 ),
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.BarTest",
+                        "00000000.classpath",
                         "0xBAR".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Bar", "com.example.BarTest")
                 )
@@ -290,8 +298,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testEmptySkippyFolderWithTwoExecFilesOneFailedTests() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
@@ -299,11 +306,13 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
+                        "00000000.classpath",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Foo")
                 ),
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.BarTest",
+                        "00000000.classpath",
                         "0xBAR".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Bar")
                 )
@@ -352,8 +361,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testTagging() {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
         buildApi.tagTest("com.example.FooTest", TestTag.FAILED);
         verify(skippyRepository).tagTest("com.example.FooTest", TestTag.FAILED);
@@ -364,8 +372,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileNoExecFile() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
@@ -412,8 +419,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileUpdatedExecFile() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
@@ -440,6 +446,7 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
+                        "00000000.classpath",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Foo", "com.example.FooTest")
                 )
@@ -482,8 +489,13 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileUpdatedExecFileExecutionDataEnabled() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var config = new SkippyConfiguration(
+            true,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
+        var buildApi = new SkippyBuildApi(config, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
@@ -511,6 +523,7 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
+                        "00000000.classpath",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Foo", "com.example.FooTest")
                 )
@@ -556,8 +569,7 @@ public final class SkippyBuildApiTest {
 
     @Test
     void testExistingJsonFileNewTestFailure() throws JSONException {
-        var skippyConfiguration = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
-        var buildApi = new SkippyBuildApi(skippyConfiguration, classFileCollector, skippyRepository);
+        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.parse("""
             {
@@ -607,6 +619,7 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
                 new TestWithJacocoExecutionDataAndCoveredClasses(
                         "com.example.FooTest",
+                        "00000000.classpath",
                         "0xFOO".getBytes(StandardCharsets.UTF_8),
                         asList("com.example.Foo", "com.example.FooTest")
                 )

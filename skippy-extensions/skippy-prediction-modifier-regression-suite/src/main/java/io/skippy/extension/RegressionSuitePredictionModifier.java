@@ -10,7 +10,7 @@ import java.util.Optional;
 public class RegressionSuitePredictionModifier implements PredictionModifier  {
 
     @Override
-    public PredictionWithReason passThruOrModify(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin, PredictionWithReason prediction) {
+    public PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction) {
         return new PredictionWithReason(Prediction.ALWAYS_EXECUTE, new Reason(Reason.Category.OVERRIDE_BY_PREDICTION_MODIFIER, Optional.of("RegressionSuitePredictionModifier")));
     }
 }

@@ -52,13 +52,21 @@ public class SkippyCleanMojo extends AbstractMojo {
     @Parameter(property = "predictionModifier")
     private String predictionModifier;
 
+    @Parameter(property = "classFileSelector")
+    private String classFileSelector;
+
     @Component
     private MavenSession session;
 
     @Override
     public void execute() {
         var projectDir = project.getBasedir().toPath();
-        var skippyConfiguration = new SkippyConfiguration(coverageForSkippedTests, Optional.ofNullable(repository), Optional.ofNullable(predictionModifier));
+        var skippyConfiguration = new SkippyConfiguration(
+                coverageForSkippedTests,
+                Optional.ofNullable(repository),
+                Optional.ofNullable(predictionModifier),
+                Optional.ofNullable(classFileSelector)
+        );
         var skippyApi = new SkippyBuildApi(
                 skippyConfiguration,
                 new MavenClassFileCollector(project),

@@ -18,6 +18,8 @@ package io.skippy.core;
 
 import java.util.*;
 
+import static java.util.Optional.empty;
+
 /**
  * API that is used by Skippy's Gradle and Maven plugins to remove the Skippy folder and to inform Skippy about events
  * like
@@ -34,6 +36,7 @@ public final class SkippyBuildApi {
     private final SkippyConfiguration skippyConfiguration;
     private final ClassFileCollector classFileCollector;
     private final SkippyRepository skippyRepository;
+    private final ClassFileSelector classFileSelector;
 
     /**
      * C'tor.
@@ -46,6 +49,7 @@ public final class SkippyBuildApi {
         this.skippyConfiguration = skippyConfiguration;
         this.classFileCollector = classFileCollector;
         this.skippyRepository = skippyRepository;
+        this.classFileSelector = skippyConfiguration.classFileSelector();
     }
 
     /**
@@ -119,20 +123,26 @@ public final class SkippyBuildApi {
             TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData,
             ClassFileContainer classFileContainer
     ) {
-        var ids = classFileContainer.getIdsByClassName(testWithExecutionData.testClassName());
+        var classpath = skippyRepository.getClassPath(testWithExecutionData.classPathFile());
+        var ids = classFileSelector.select(testWithExecutionData.testClassName(), classFileContainer, classpath).stream()
+                .map(classFileContainer::getId)
+                .toList();
         var tags = skippyRepository.getTestTags(testWithExecutionData.testClassName());
         var executionId = skippyConfiguration.generateCoverageForSkippedTests() ?
                 Optional.of(skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData())) :
                 Optional.<String>empty();
         return ids.stream()
-                .map(id -> new AnalyzedTest(id, tags, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer), executionId))
+                .map(id -> new AnalyzedTest(id, tags, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer, classpath), executionId))
                 .toList();
     }
 
-    private List<Integer> getCoveredClassesIds(List<String> coveredClasses, ClassFileContainer classFileContainer) {
+    private List<Integer> getCoveredClassesIds(List<String> coveredClasses, ClassFileContainer classFileContainer, List<String> classpath) {
         var coveredClassIds = new LinkedList<Integer>();
-        for (String clazz : coveredClasses) {
-            coveredClassIds.addAll(classFileContainer.getIdsByClassName(clazz));
+        for (var className : coveredClasses) {
+            var ids = classFileSelector.select(className, classFileContainer, classpath).stream()
+                    .map(classFileContainer::getId)
+                    .toList();
+            coveredClassIds.addAll(ids);
         }
         return coveredClassIds;
     }
