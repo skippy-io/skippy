@@ -160,8 +160,9 @@ public final class SkippyTestApi {
      * Prepares for the capturing of a JaCoCo execution data file for {@code testClass} before any tests in the class are executed.
      *
      * @param testClass a test class
+     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      */
-    public void prepareExecFileGeneration(Class<?> testClass) {
+    public void prepareExecFileGeneration(Class<?> testClass, ParametersFromBuildPlugin parametersFromBuildPlugin) {
         Profiler.profile("SkippyTestApi#prepareExecFileGeneration", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
@@ -178,8 +179,9 @@ public final class SkippyTestApi {
      * Writes a JaCoCo execution data file after all tests in for {@code testClass} have been executed.
      *
      * @param testClass a test class
+     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      */
-    public void writeExecFile(Class<?> testClass) {
+    public void writeExecFile(Class<?> testClass, ParametersFromBuildPlugin parametersFromBuildPlugin) {
         Profiler.profile("SkippyTestApi#writeExecFile", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
