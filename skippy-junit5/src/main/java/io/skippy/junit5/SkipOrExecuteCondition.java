@@ -16,6 +16,7 @@
 
 package io.skippy.junit5;
 
+import io.skippy.core.RuntimeParameters;
 import io.skippy.core.SkippyTestApi;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
@@ -46,7 +47,7 @@ public final class SkipOrExecuteCondition implements ExecutionCondition {
         if (context.getTestClass().isEmpty()) {
             return ConditionEvaluationResult.enabled("");
         }
-        if (skippyTestApi.testNeedsToBeExecuted(context.getTestClass().get())) {
+        if (skippyTestApi.testNeedsToBeExecuted(context.getTestClass().get(), RuntimeParameters.fromSystemProperties())) {
             return ConditionEvaluationResult.enabled("");
         }
         return ConditionEvaluationResult.disabled("");

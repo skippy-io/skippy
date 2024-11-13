@@ -17,6 +17,7 @@
 package io.skippy.gradle;
 
 import io.skippy.core.Profiler;
+import io.skippy.core.RuntimeParameters;
 import io.skippy.core.TestTag;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
@@ -24,6 +25,8 @@ import org.gradle.api.tasks.testing.TestDescriptor;
 import org.gradle.api.tasks.testing.TestListener;
 import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
+
+import static io.skippy.core.RuntimeParameters.Parameter.TEST_TASK;
 
 /**
  * The Skippy plugin adds the
@@ -56,6 +59,7 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
             project.getTasks().withType(SkippyAnalyzeTask.class).forEach( task -> task.getProjectSettings().set(projectSettings));
 
             action.getTasks().withType(Test.class, testTask -> {
+                testTask.jvmArgs(TEST_TASK.asJvmArgument(testTask.getName()));
                 testTask.finalizedBy("skippyAnalyze");
                 testTask.addTestListener(new TestListener() {
                     @Override

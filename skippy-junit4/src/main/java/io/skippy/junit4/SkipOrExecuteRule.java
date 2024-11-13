@@ -16,6 +16,7 @@
 
 package io.skippy.junit4;
 
+import io.skippy.core.RuntimeParameters;
 import io.skippy.core.SkippyTestApi;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -48,7 +49,7 @@ class SkipOrExecuteRule implements TestRule {
             }
 
             private boolean executeTest(Class<?> testClass) {
-                return skippyTestApi.testNeedsToBeExecuted(testClass);
+                return skippyTestApi.testNeedsToBeExecuted(testClass, RuntimeParameters.fromSystemProperties());
             }
         };
     }

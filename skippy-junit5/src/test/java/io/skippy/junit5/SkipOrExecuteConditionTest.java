@@ -16,6 +16,7 @@
 
 package io.skippy.junit5;
 
+import io.skippy.core.RuntimeParameters;
 import io.skippy.core.SkippyTestApi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -53,7 +54,7 @@ public class SkipOrExecuteConditionTest {
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
         when(context.getTestClass()).thenReturn(Optional.of(Object.class));
-        when(skippyTestApi.testNeedsToBeExecuted(any())).thenReturn(false);
+        when(skippyTestApi.testNeedsToBeExecuted(any(), any())).thenReturn(false);
 
         assertEquals(true, skippyExecutionCondition.evaluateExecutionCondition(context).isDisabled());
     }
@@ -66,7 +67,7 @@ public class SkipOrExecuteConditionTest {
 
         when(context.getTestInstance()).thenReturn(Optional.of(new Object()));
         when(context.getTestClass()).thenReturn(Optional.of(Object.class));
-        when(skippyTestApi.testNeedsToBeExecuted(any())).thenReturn(true);
+        when(skippyTestApi.testNeedsToBeExecuted(any(), any())).thenReturn(true);
 
         assertEquals(false, skippyExecutionCondition.evaluateExecutionCondition(context).isDisabled());
     }

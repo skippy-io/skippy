@@ -110,9 +110,10 @@ public final class SkippyTestApi {
      * Returns {@code true} if {@code test} needs to be executed, {@code false} otherwise.
      *
      * @param test a class object representing a test
+     * @param runtimeParameters parameters that have been passed from Skippy's build plugins to the JUnit libraries
      * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
-    public boolean testNeedsToBeExecuted(Class<?> test) {
+    public boolean testNeedsToBeExecuted(Class<?> test, RuntimeParameters runtimeParameters) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
                 // re-use prediction made for the first test method in a class for all subsequent test methods
