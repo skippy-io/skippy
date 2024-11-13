@@ -16,6 +16,7 @@
 
 package io.skippy.junit4;
 
+import io.skippy.core.ParametersFromBuildPlugin;
 import io.skippy.core.SkippyTestApi;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -43,7 +44,8 @@ class CoverageFileRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                skippyTestApi.prepareExecFileGeneration(description.getTestClass());
+                var parametersFromBuildPlugin = ParametersFromBuildPlugin.fromSystemProperties();
+                skippyTestApi.prepareExecFileGeneration(description.getTestClass(), parametersFromBuildPlugin);
                 List<Throwable> errors = new ArrayList<Throwable>();
                 try {
                     base.evaluate();
@@ -51,7 +53,7 @@ class CoverageFileRule implements TestRule {
                     errors.add(t);
                 } finally {
                     try {
-                        skippyTestApi.writeExecFile(description.getTestClass());
+                        skippyTestApi.writeExecFile(description.getTestClass(), parametersFromBuildPlugin);
                     } catch (Throwable t) {
                         errors.add(t);
                     }

@@ -25,6 +25,8 @@ import org.gradle.api.tasks.testing.TestListener;
 import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
+import static io.skippy.core.ParametersFromBuildPlugin.Parameter.TEST_TASK_NAME;
+
 /**
  * The Skippy Android plugin adds the
  * <ul>
@@ -56,6 +58,7 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
             project.getTasks().withType(SkippyAnalyzeTask.class).forEach( task -> task.getProjectSettings().set(projectSettings));
 
             action.getTasks().withType(Test.class, testTask -> {
+                testTask.jvmArgs(TEST_TASK_NAME.asJvmArgument(testTask.getName()));
                 testTask.finalizedBy("skippyAnalyze");
                 testTask.addTestListener(new TestListener() {
                     @Override

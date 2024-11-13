@@ -16,6 +16,7 @@
 
 package io.skippy.junit5;
 
+import io.skippy.core.ParametersFromBuildPlugin;
 import io.skippy.core.SkippyTestApi;
 import org.junit.jupiter.api.extension.*;
 
@@ -30,12 +31,12 @@ public final class CoverageFileCallbacks implements BeforeAllCallback, AfterAllC
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        context.getTestClass().ifPresent(skippyTestApi::prepareExecFileGeneration);
+        context.getTestClass().ifPresent(testClass -> skippyTestApi.prepareExecFileGeneration(testClass, ParametersFromBuildPlugin.fromSystemProperties()));
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
-        context.getTestClass().ifPresent(skippyTestApi::writeExecFile);
+        context.getTestClass().ifPresent(testClass -> skippyTestApi.writeExecFile(testClass, ParametersFromBuildPlugin.fromSystemProperties()));
     }
 
 }

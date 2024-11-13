@@ -110,16 +110,17 @@ public final class SkippyTestApi {
      * Returns {@code true} if {@code test} needs to be executed, {@code false} otherwise.
      *
      * @param test a class object representing a test
+     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      * @return {@code true} if {@code test} needs to be executed, {@code false} otherwise
      */
-    public boolean testNeedsToBeExecuted(Class<?> test) {
+    public boolean testNeedsToBeExecuted(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
             try {
                 // re-use prediction made for the first test method in a class for all subsequent test methods
                 if (predictions.containsKey(test)) {
                     return predictions.get(test) != Prediction.SKIP;
                 }
-                var predictionWithReason = predictionModifier.passThruOrModify(test, testImpactAnalysis.predict(test, skippyConfiguration, skippyRepository));
+                var predictionWithReason = predictionModifier.passThruOrModify(test, parametersFromBuildPlugin, testImpactAnalysis.predict(test, parametersFromBuildPlugin, skippyConfiguration, skippyRepository));
 
                 // record {@link Prediction#ALWAYS_EXECUTE} as tags: this is required for JUnit 5's @Nested tests
                 if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {
@@ -159,8 +160,9 @@ public final class SkippyTestApi {
      * Prepares for the capturing of a JaCoCo execution data file for {@code testClass} before any tests in the class are executed.
      *
      * @param testClass a test class
+     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      */
-    public void prepareExecFileGeneration(Class<?> testClass) {
+    public void prepareExecFileGeneration(Class<?> testClass, ParametersFromBuildPlugin parametersFromBuildPlugin) {
         Profiler.profile("SkippyTestApi#prepareExecFileGeneration", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
@@ -177,8 +179,9 @@ public final class SkippyTestApi {
      * Writes a JaCoCo execution data file after all tests in for {@code testClass} have been executed.
      *
      * @param testClass a test class
+     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      */
-    public void writeExecFile(Class<?> testClass) {
+    public void writeExecFile(Class<?> testClass, ParametersFromBuildPlugin parametersFromBuildPlugin) {
         Profiler.profile("SkippyTestApi#writeExecFile", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();

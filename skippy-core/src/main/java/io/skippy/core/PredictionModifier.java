@@ -45,9 +45,10 @@ public interface PredictionModifier {
      * Returns a modified or unmodified prediction made by Skippy.
      *
      * @param test a class object representing a test
+     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      * @param prediction the prediction made by Skippy.
      * @return the modified or unmodified prediction
      */
-    PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction);
+    PredictionWithReason passThruOrModify(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin, PredictionWithReason prediction);
 
 }
