@@ -63,7 +63,7 @@ public class DefaultClassFileSelectorTest {
     }
 
     private List<Integer> select(String className, List<String> classPath) {
-        return selector.select(className, classFileContainer, classPath).stream().map(classFileContainer::getId).toList();
+        return selector.select(className, classFileContainer.getClassFilesByClassName(className), classPath).stream().map(classFileContainer::getId).toList();
     }
 
 }

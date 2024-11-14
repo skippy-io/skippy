@@ -124,7 +124,8 @@ public final class SkippyBuildApi {
             ClassFileContainer classFileContainer
     ) {
         var classpath = skippyRepository.getClassPath(testWithExecutionData.classPathFile());
-        var ids = classFileSelector.select(testWithExecutionData.testClassName(), classFileContainer, classpath).stream()
+        var classFileCandidates = classFileContainer.getClassFilesByClassName(testWithExecutionData.testClassName());
+        var ids = classFileSelector.select(testWithExecutionData.testClassName(), classFileCandidates, classpath).stream()
                 .map(classFileContainer::getId)
                 .toList();
         var tags = skippyRepository.getTestTags(testWithExecutionData.testClassName());
@@ -139,7 +140,8 @@ public final class SkippyBuildApi {
     private List<Integer> getCoveredClassesIds(List<String> coveredClasses, ClassFileContainer classFileContainer, List<String> classpath) {
         var coveredClassIds = new LinkedList<Integer>();
         for (var className : coveredClasses) {
-            var ids = classFileSelector.select(className, classFileContainer, classpath).stream()
+            var classFileCandidates = classFileContainer.getClassFilesByClassName(className);
+            var ids = classFileSelector.select(className, classFileCandidates, classpath).stream()
                     .map(classFileContainer::getId)
                     .toList();
             coveredClassIds.addAll(ids);
