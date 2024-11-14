@@ -18,13 +18,14 @@ package io.skippy.core;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 
+import static io.skippy.core.HashUtil.hashWith8Digits;
+import static java.lang.System.lineSeparator;
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -76,7 +77,7 @@ public final class SkippyRepository {
      * @return the {@link SkippyRepository}
      */
     public static SkippyRepository getInstance(SkippyConfiguration skippyConfiguration) {
-        return getInstance(skippyConfiguration, Path.of("."), null);
+        return getInstance(skippyConfiguration, Path.of(""), null);
     }
 
     /**
@@ -173,29 +174,37 @@ public final class SkippyRepository {
      * The data will be automatically deleted after the build finishes.
      *
      * @param testClassName the name of a test class (e.g., com.example.FooTest)
+     * @param classPathHash hash of {@code System.getProperty("java.class.path")} at the time of test execution
      * @param jacocoExecutionData Jacoco execution data for the test.
      */
-    void saveTemporaryJaCoCoExecutionDataForCurrentBuild(String testClassName, byte[] jacocoExecutionData) {
+    void saveTemporaryJaCoCoExecutionDataForCurrentBuild(String testClassName, String classPathHash, byte[] jacocoExecutionData) {
         try {
-            Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(testClassName)), jacocoExecutionData, CREATE, TRUNCATE_EXISTING);
+            Files.write(SkippyFolder.get(projectDir).resolve("%s.%s.exec".formatted(testClassName, classPathHash)), jacocoExecutionData, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to save temporary test execution data file for current build: %s / %s.".formatted(testClassName, e.getMessage()), e);
         }
     }
 
     /**
-     * Returns the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, byte[])}
+     * Returns the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, String, byte[])}
      *
-     * @return the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, byte[])}
+     * @return the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, String, byte[])}
      */
     List<TestWithJacocoExecutionDataAndCoveredClasses> readTemporaryJaCoCoExecutionDataForCurrentBuild() {
         var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
         for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
+
+            // Splits the filename into the classname and the classpath hash:
+            //      filename = com.example.FooTest.905451B1.exec
+            //      testName = com.example.FooTest
+            //      classPathHash = 905451B1
             var filename = executionDataFile.getFileName().toString();
-            var testName = filename.substring(0, filename.indexOf(".exec"));
+            var classNamePrefixLength = filename.length() - ".00000000.exec".length();
+            var testName = filename.substring(0, classNamePrefixLength);
+            var classPathHash = filename.substring(classNamePrefixLength + 1, filename.length() - ".exec".length());
             try {
                 var bytes = Files.readAllBytes(executionDataFile);
-                result.add(new TestWithJacocoExecutionDataAndCoveredClasses(testName, bytes, JacocoUtil.getCoveredClasses(bytes)));
+                result.add(new TestWithJacocoExecutionDataAndCoveredClasses(testName, "%s.classpath".formatted(classPathHash), bytes, JacocoUtil.getCoveredClasses(bytes)));
             } catch (IOException e) {
                 throw new UncheckedIOException("Unable to get temporary test execution data for current build: %s.".formatted(e.getMessage()), e);
             }
@@ -308,6 +317,53 @@ public final class SkippyRepository {
             tags.add(0, TestTag.PASSED);
         }
         return tags;
+    }
+
+    /**
+     * Saves classpath entries that point to the project folder as folders relative to the project folder.
+     * <br /><br />
+     * Example:
+     * <pre>
+     * build/classes/java/test
+     * build/classes/java/main
+     * build/resources/main
+     * </pre>
+     * <br /><br />
+     *
+     * The filename will be ${hash}.classpath, with ${hash} being an 8-character hash of the file's content.
+     *
+     * @return an 8-character hash of the file's content
+     */
+    String saveTemporaryClassPathFileForCurrentBuild() {
+        var classpath = asList(System.getProperty("java.class.path")
+                .split(System.getProperty("path.separator")))
+                .stream()
+                .filter(entry -> entry.startsWith(projectDir.toAbsolutePath().toString()))
+                .map(entry -> entry.substring(projectDir.toAbsolutePath().toString().length() + 1))
+                .collect(joining(lineSeparator()));
+
+        var hash = hashWith8Digits(classpath.getBytes(StandardCharsets.UTF_8));
+        var classPathFile = SkippyFolder.get(projectDir).resolve("%s.classpath".formatted(hash));
+        if (false == exists(classPathFile)) {
+            try {
+                Files.writeString(classPathFile, classpath, StandardCharsets.UTF_8, TRUNCATE_EXISTING, StandardOpenOption.CREATE);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Unable to save classpath %s in file %s: %s.".formatted(hash, classPathFile, e.getMessage()), e);
+            }
+        }
+        return hash;
+    }
+
+    List<String> getClassPath(String classPathFile) {
+        var file = SkippyFolder.get(projectDir).resolve(Path.of(classPathFile));
+        try {
+            if (exists(file)) {
+                return Files.readAllLines(file, StandardCharsets.UTF_8);
+            }
+            return emptyList();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unable to read classpath file %s: %s.".formatted(file, e.getMessage()), e);
+        }
     }
 
     private Map<String, List<TestTag>> getTestTags() {

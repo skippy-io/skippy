@@ -63,6 +63,13 @@
           <editable>true</editable>
           <description>fully-qualified class name of a custom io.skippy.core.PredictionModifier</description>
         </parameter>
+        <parameter>
+          <name>classFileSelector</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.ClassFileSelector</description>
+        </parameter>
       </parameters>
       <configuration>
         <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
@@ -119,6 +126,13 @@
           <editable>true</editable>
           <description>fully-qualified class name of a custom io.skippy.core.PredictionModifier</description>
         </parameter>
+        <parameter>
+          <name>classFileSelector</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.ClassFileSelector</description>
+        </parameter>
       </parameters>
       <configuration>
         <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
@@ -174,6 +188,13 @@
           <required>false</required>
           <editable>true</editable>
           <description>fully-qualified class name of a custom io.skippy.core.PredictionModifier</description>
+        </parameter>
+        <parameter>
+          <name>classFileSelector</name>
+          <type>string</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>fully-qualified class name of a custom io.skippy.core.ClassFileSelector</description>
         </parameter>
       </parameters>
       <configuration>

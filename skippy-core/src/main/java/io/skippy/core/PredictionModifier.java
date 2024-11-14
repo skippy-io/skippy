@@ -26,9 +26,11 @@ package io.skippy.core;
  *     <li>etc.</li>
  * </ul>
  *
+ * Custom implementations must have a public no-args constructor.
+ * They can be registered using Skippy's build plugins.
+ *
  * <br /><br />
- * Custom implementations must be registered using Skippy's build plugins.
- * <br /><br />
+ *
  * Gradle example:
  * <pre>
  * skippy {
@@ -45,10 +47,9 @@ public interface PredictionModifier {
      * Returns a modified or unmodified prediction made by Skippy.
      *
      * @param test a class object representing a test
-     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      * @param prediction the prediction made by Skippy.
      * @return the modified or unmodified prediction
      */
-    PredictionWithReason passThruOrModify(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin, PredictionWithReason prediction);
+    PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction);
 
 }

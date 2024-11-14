@@ -19,7 +19,7 @@ package io.skippy.core;
 import java.util.Optional;
 
 /**
- * {@link PredictionModifier} that defaults to {@link Prediction#EXECUTE} if a test (or one of it's superclasses or
+ * {@link PredictionModifier} that defaults to {@link Prediction#EXECUTE} if a test (or one of its superclasses or
  * interfaces it implements is annotated with @{@link AlwaysRun}.
  *
  * @author Florian McKee
@@ -30,7 +30,7 @@ final class DefaultPredictionModifier implements PredictionModifier {
     }
 
     @Override
-    public PredictionWithReason passThruOrModify(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin, PredictionWithReason prediction) {
+    public PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction) {
         if (isAnnotatedWithAlwaysRun(test)) {
             return new PredictionWithReason(
                 Prediction.ALWAYS_EXECUTE,

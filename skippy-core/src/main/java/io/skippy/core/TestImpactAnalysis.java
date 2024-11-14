@@ -125,12 +125,11 @@ public final class TestImpactAnalysis {
      * Makes a skip-or-execute prediction for the test identified by the {@code testClassName}.
      *
      * @param testClazz the test's {@link Class} object
-     * @param parametersFromBuildPlugin parameters that have been passed from Skippy's build plugin
      * @param configuration the {@link SkippyConfiguration}, must not be null
      * @param skippyRepository the {@link SkippyRepository}, must no tbe null
      * @return a skip-or-execute prediction for the test identified by the {@code testClassName}
      */
-    PredictionWithReason predict(Class<?> testClazz, ParametersFromBuildPlugin parametersFromBuildPlugin, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
+    PredictionWithReason predict(Class<?> testClazz, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
             if (NOT_FOUND.equals(this)) {
                 return PredictionWithReason.execute(new Reason(TEST_IMPACT_ANALYSIS_NOT_FOUND, Optional.empty()));

@@ -42,7 +42,7 @@ public class SkippyRepositoryTest {
     @BeforeEach
     void setUp() throws URISyntaxException {
         projectDir = Paths.get(getClass().getResource(".").toURI());
-        skippyRepository = SkippyRepository.getInstance(new SkippyConfiguration(false, Optional.empty(), Optional.empty()), projectDir, null);
+        skippyRepository = SkippyRepository.getInstance(SkippyConfiguration.DEFAULT, projectDir, null);
         skippyRepository.deleteSkippyFolder();
         skippyFolder = SkippyFolder.get(projectDir);
     }
@@ -58,13 +58,42 @@ public class SkippyRepositoryTest {
     void testSaveConfiguration() throws IOException {
         var configFile = skippyFolder.resolve("config.json");
         assertFalse(exists(skippyFolder.resolve("config.json")));
-        skippyRepository.saveConfiguration(new SkippyConfiguration(true, Optional.empty(), Optional.empty()));
+        var config = new SkippyConfiguration(
+            true,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
+        skippyRepository.saveConfiguration(config);
         var content = readString(configFile, StandardCharsets.UTF_8);
         assertThat(content).isEqualToIgnoringWhitespace("""
             {
                 "coverageForSkippedTests": "true",
                 "repositoryExtension": "io.skippy.core.DefaultRepositoryExtension",
-                "predictionModifier": "io.skippy.core.DefaultPredictionModifier"
+                "predictionModifier": "io.skippy.core.DefaultPredictionModifier",
+                "classFileSelector": "io.skippy.core.DefaultClassFileSelector"
+            }
+        """);
+    }
+
+    @Test
+    void testSaveCustomConfiguration() throws IOException {
+        var configFile = skippyFolder.resolve("config.json");
+        assertFalse(exists(skippyFolder.resolve("config.json")));
+        var config = new SkippyConfiguration(
+                false,
+                Optional.of("com.example.RepositoryExtension"),
+                Optional.of("com.example.PredictionModifier"),
+                Optional.of("com.example.ClassFileSelector")
+        );
+        skippyRepository.saveConfiguration(config);
+        var content = readString(configFile, StandardCharsets.UTF_8);
+        assertThat(content).isEqualToIgnoringWhitespace("""
+            {
+                "coverageForSkippedTests": "false",
+                "repositoryExtension": "com.example.RepositoryExtension",
+                "predictionModifier": "com.example.PredictionModifier",
+                "classFileSelector": "com.example.ClassFileSelector"
             }
         """);
     }
@@ -82,14 +111,14 @@ public class SkippyRepositoryTest {
     void testSaveTemporaryJaCoCoExecutionDataForCurrentBuild() throws Exception {
         var execFile = Paths.get(getClass().getResource("com.example.LeftPadderTest.exec").toURI());
         assertFalse(exists(skippyFolder.resolve("com.example.LeftPadderTest.exec")));
-        skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild("com.example.LeftPadderTest", readAllBytes(execFile));
-        assertTrue(exists(skippyFolder.resolve("com.example.LeftPadderTest.exec")));
+        skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild("com.example.LeftPadderTest", "00000000", readAllBytes(execFile));
+        assertTrue(exists(skippyFolder.resolve("com.example.LeftPadderTest.00000000.exec")));
     }
 
     @Test
     void testReadTemporaryJaCoCoExecutionDataForCurrentBuild() throws Exception {
         var execFile = Paths.get(getClass().getResource("com.example.LeftPadderTest.exec").toURI());
-        skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild("com.example.LeftPadderTest", readAllBytes(execFile));
+        skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild("com.example.LeftPadderTest", "00000000", readAllBytes(execFile));
         var resultSet = skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild();
         assertEquals(1, resultSet.size());
         var result = resultSet.get(0);

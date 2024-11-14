@@ -28,26 +28,31 @@ import java.util.Optional;
  */
 public class SkippyConfiguration {
 
-    static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
+    static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false, Optional.empty(), Optional.empty(), Optional.empty());
 
     private final boolean generateCoverageForSkippedTests;
     private final String repositoryExtensionClass;
     private final String predictionModifierClass;
+    private final String classFileSelectorClass;
 
     /**
      * C'tor.
      *
      * @param generateCoverageForSkippedTests {@code true} to generate coverage for skipped tests, {@code false} otherwise
-     * @param repositoryExtensionClass the fully-qualified class name of the {@link SkippyRepositoryExtension} implementation for
-     *          this build
-     @param predictionModifierClass the fully-qualified class name of the {@link PredictionModifier} implementation for
-      *          this build
+     * @param repositoryExtensionClass the fully-qualified class name of the {@link SkippyRepositoryExtension} for this build
+     * @param predictionModifierClass the fully-qualified class name of the {@link PredictionModifier} for this build
+     * @param classFileSelectorClass the fully-qualified class name of the {@link ClassFileSelector} for this build
      */
-    public SkippyConfiguration(boolean generateCoverageForSkippedTests,
-                               Optional<String> repositoryExtensionClass, Optional<String> predictionModifierClass) {
+    public SkippyConfiguration(
+            boolean generateCoverageForSkippedTests,
+            Optional<String> repositoryExtensionClass,
+            Optional<String> predictionModifierClass,
+            Optional<String> classFileSelectorClass
+    ) {
         this.generateCoverageForSkippedTests = generateCoverageForSkippedTests;
         this.repositoryExtensionClass = repositoryExtensionClass.orElse(DefaultRepositoryExtension.class.getName());
         this.predictionModifierClass = predictionModifierClass.orElse(DefaultPredictionModifier.class.getName());
+        this.classFileSelectorClass = classFileSelectorClass.orElse(DefaultClassFileSelector.class.getName());
     }
 
     /**
@@ -90,6 +95,21 @@ public class SkippyConfiguration {
     }
 
     /**
+     * Returns the {@link ClassFileSelector} for this build.
+     *
+     * @return the {@link ClassFileSelector} for this build
+     */
+    ClassFileSelector classFileSelector() {
+        try {
+            Class<?> clazz = Class.forName(classFileSelectorClass);
+            Constructor<?> constructor = clazz.getConstructor();
+            return (ClassFileSelector) constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to create class file selector %s: %s.".formatted(classFileSelectorClass, e.getMessage()), e);
+        }
+    }
+
+    /**
      * Creates a new instance from JSON.
      *
      * @param json the JSON representation of a {@link SkippyConfiguration}
@@ -101,6 +121,7 @@ public class SkippyConfiguration {
         boolean coverageForSkippedTests = false;
         Optional<String> repositoryExtension = Optional.empty();
         Optional<String> predictionModifier = Optional.empty();
+        Optional<String> classFileSelector = Optional.empty();
         while (true) {
             var key = tokenizer.next();
             tokenizer.skip(':');
@@ -114,6 +135,9 @@ public class SkippyConfiguration {
                 case "predictionModifier":
                     predictionModifier = Optional.of(tokenizer.next());
                     break;
+                case "classFileSelector":
+                    classFileSelector = Optional.of(tokenizer.next());
+                    break;
             }
             tokenizer.skipIfNext(',');
             if (tokenizer.peek('}')) {
@@ -121,7 +145,7 @@ public class SkippyConfiguration {
                 break;
             }
         }
-        return new SkippyConfiguration(coverageForSkippedTests, repositoryExtension, predictionModifier);
+        return new SkippyConfiguration(coverageForSkippedTests, repositoryExtension, predictionModifier, classFileSelector);
     }
 
     /**
@@ -134,9 +158,10 @@ public class SkippyConfiguration {
         {
             "coverageForSkippedTests": "%s",
             "repositoryExtension": "%s",
-            "predictionModifier": "%s"
+            "predictionModifier": "%s",
+            "classFileSelector": "%s"
         }
-        """.formatted(generateCoverageForSkippedTests, repositoryExtensionClass, predictionModifierClass);
+        """.formatted(generateCoverageForSkippedTests, repositoryExtensionClass, predictionModifierClass, classFileSelectorClass);
     }
 
     @Override

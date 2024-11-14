@@ -19,6 +19,7 @@ package io.skippy.core;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,24 +29,36 @@ public class SkippyConfigurationTest {
 
     @Test
     void testToJson1() {
-        var configuration = new SkippyConfiguration(true, Optional.empty(), Optional.empty());
+        var configuration = new SkippyConfiguration(
+            true,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty()
+        );
         assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "coverageForSkippedTests": "true",
                 "repositoryExtension": "io.skippy.core.DefaultRepositoryExtension",
-                "predictionModifier": "io.skippy.core.DefaultPredictionModifier"
+                "predictionModifier": "io.skippy.core.DefaultPredictionModifier",
+                "classFileSelector": "io.skippy.core.DefaultClassFileSelector"
             }
         """);
     }
 
     @Test
     void testToJson2() {
-        var configuration = new SkippyConfiguration(false, Optional.of("com.example.CustomRepository"), Optional.of("com.example.CustomModifier"));
+        var configuration = new SkippyConfiguration(
+                false,
+                Optional.of("com.example.CustomRepository"),
+                Optional.of("com.example.CustomModifier"),
+                Optional.of("com.example.CustomSelector")
+        );
         assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "coverageForSkippedTests": "false",
                 "repositoryExtension": "com.example.CustomRepository",
-                "predictionModifier": "com.example.CustomModifier"
+                "predictionModifier": "com.example.CustomModifier",
+                "classFileSelector": "com.example.CustomSelector"
             }
         """);
     }
@@ -77,14 +90,22 @@ public class SkippyConfigurationTest {
 
     static class CustomModifier implements PredictionModifier {
 
-        public CustomModifier(SkippyRepository skippyRepository) {
-        }
-
         public CustomModifier() {
         }
 
         @Override
-        public PredictionWithReason passThruOrModify(Class<?> test, ParametersFromBuildPlugin parametersFromBuildPlugin, PredictionWithReason prediction) {
+        public PredictionWithReason passThruOrModify(Class<?> test, PredictionWithReason prediction) {
+            return null;
+        }
+    }
+
+    static class CustomSelector implements ClassFileSelector {
+
+        public CustomSelector() {
+        }
+
+        @Override
+        public List<ClassFile> select(String className, ClassFileContainer classFileContainer, List<String> classPath) {
             return null;
         }
     }
@@ -95,15 +116,16 @@ public class SkippyConfigurationTest {
             {
                 "coverageForSkippedTests": "true",
                 "repositoryExtension": "io.skippy.core.SkippyConfigurationTest$CustomRepository",
-                "predictionModifier": "io.skippy.core.SkippyConfigurationTest$CustomModifier"
+                "predictionModifier": "io.skippy.core.SkippyConfigurationTest$CustomModifier",
+                "classFileSelector": "io.skippy.core.SkippyConfigurationTest$CustomSelector"
             }
         """;
         var configuration = SkippyConfiguration.parse(json);
         assertEquals(true, configuration.generateCoverageForSkippedTests());
         assertEquals(CustomRepository.class, configuration.repositoryExtension(Path.of(".")).getClass());
         assertEquals(CustomModifier.class, configuration.predictionModifier().getClass());
+        assertEquals(CustomSelector.class, configuration.classFileSelector().getClass());
 
     }
-
 
 }
