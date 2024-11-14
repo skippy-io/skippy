@@ -127,10 +127,10 @@ public interface ClassFileSelector {
      *     <li>{@code classPath}.</li>
      * </ul>
      * @param className a class name (e.g., com.example.Foo)
-     * @param classFileContainer a {@link ClassFileContainer}
+     * @param candidates all {@link ClassFile}s that match the {@code className}
      * @param classPath a list of folders within the project's output folders that contribute to the classpath (e.g. build/classes/java/main).
      *
      * @return all matching {@link ClassFile}s
      */
-    List<ClassFile> select(String className, ClassFileContainer classFileContainer, List<String> classPath);
+    List<ClassFile> select(String className, List<ClassFile> candidates, List<String> classPath);
 }

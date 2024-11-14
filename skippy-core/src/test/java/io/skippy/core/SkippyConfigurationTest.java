@@ -105,7 +105,7 @@ public class SkippyConfigurationTest {
         }
 
         @Override
-        public List<ClassFile> select(String className, ClassFileContainer classFileContainer, List<String> classPath) {
+        public List<ClassFile> select(String className, List<ClassFile> candidates, List<String> classPath) {
             return null;
         }
     }

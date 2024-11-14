@@ -103,7 +103,7 @@ final class ClassFileContainer {
      * @param className a class name
      * @return the ids of the classes that match the provided class name
      */
-    List<Integer> getIdsByClassName(String className) {
+    private List<Integer> getIdsByClassName(String className) {
         if (false == idsByClassName.containsKey(className)) {
             return emptyList();
         }
@@ -112,6 +112,15 @@ final class ClassFileContainer {
 
     Set<ClassFile> getClassFiles() {
         return unmodifiableSet(classFiles);
+    }
+
+    /**
+     * Returns
+     * @param className
+     * @return
+     */
+    List<ClassFile> getClassFilesByClassName(String className) {
+        return getIdsByClassName(className).stream().map(this::getById).toList();
     }
 
     /**
@@ -194,4 +203,5 @@ final class ClassFileContainer {
     public int hashCode() {
         return Objects.hash(classFilesById);
     }
+
 }
