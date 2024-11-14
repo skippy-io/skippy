@@ -72,7 +72,7 @@ public interface SkippyPluginExtension  {
             getCoverageForSkippedTests().getOrElse(false),
             Optional.ofNullable(getRepository().getOrNull()),
             Optional.ofNullable(getPredictionModifier().getOrNull()),
-            Optional.ofNullable(getClassFileSelector().getOrNull())
+            Optional.of(getClassFileSelector().getOrElse(AndroidClassFileSelector.class.getName()))
         );
     }
 }
