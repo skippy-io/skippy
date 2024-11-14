@@ -20,8 +20,8 @@ public class AndroidClassFileSelector implements ClassFileSelector {
 
         if (filteredCandidates.size() > 1) {
             // TODO: resolve candidates based on classpath
-            return candidates;
+            return filteredCandidates;
         }
-        return candidates;
+        return filteredCandidates;
     }
 }

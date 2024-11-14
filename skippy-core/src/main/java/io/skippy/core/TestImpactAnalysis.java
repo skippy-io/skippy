@@ -170,8 +170,8 @@ public final class TestImpactAnalysis {
             }
             for (var coveredClassId : analyzedTest.getCoveredClassesIds()) {
                 var coveredClass = classFileContainer.getById(coveredClassId);
-                if (coveredClass.classFileNotFound()) {
-                    return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of("covered class: %s".formatted(coveredClass.getPath().toString()))));
+                if (false == coveredClass.classFileNotFound()) {
+                    continue;
                 }
                 if (coveredClass.hasChanged()) {
                     return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of("covered class: %s".formatted(coveredClass.getClassName()))));

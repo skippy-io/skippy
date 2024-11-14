@@ -85,11 +85,6 @@ public record Reason(Category category, Optional<String> details) {
         TEST_CLASS_CLASS_FILE_NOT_FOUND,
 
         /**
-         * The class file of a covered class  was not found on the file system.
-         */
-        COVERED_CLASS_CLASS_FILE_NOT_FOUND,
-
-        /**
          * Coverage for skipped tests is enabled but the test has no execution id. The test needs to be re-run in order
          * to capture coverage for skipped tests.
          */
