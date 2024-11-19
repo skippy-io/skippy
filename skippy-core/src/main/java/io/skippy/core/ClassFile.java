@@ -16,6 +16,10 @@
 
 package io.skippy.core;
 
+import org.jacoco.core.internal.data.CRC64;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -45,7 +49,27 @@ public final class ClassFile implements Comparable<ClassFile> {
     private final String className;
     private final Path path;
     private final Path outputFolder;
+
+    // this is needed if the build plugins call a method that needs to access a class file on the file system
+    private final Path fullyQualifiedPath;
     private final String hash;
+
+    /**
+     * C'tor.
+     *
+     * @param className             the fully qualified class name
+     * @param fullyQualifiedPath    the fully qualified path of the class file
+     * @param path                  the path of the class file relative to the output folder (e.g., com/example/Foo.class)
+     * @param outputFolder          the path of the output folder relative to the project root (e.g., build/classes/java/main)
+     * @param hash                  a hash of the class file
+     */
+    private ClassFile(String className, Path fullyQualifiedPath, Path path, Path outputFolder, String hash) {
+        this.className = className;
+        this.fullyQualifiedPath = fullyQualifiedPath;
+        this.outputFolder = outputFolder;
+        this.path = path;
+        this.hash = hash;
+    }
 
     /**
      * C'tor.
@@ -56,10 +80,7 @@ public final class ClassFile implements Comparable<ClassFile> {
      * @param hash         a hash of the class file
      */
     ClassFile(String className, Path path, Path outputFolder, String hash) {
-        this.className = className;
-        this.outputFolder = outputFolder;
-        this.path = path;
-        this.hash = hash;
+        this(className, null, path, outputFolder, hash);
     }
 
     /**
@@ -73,6 +94,7 @@ public final class ClassFile implements Comparable<ClassFile> {
     public static ClassFile fromFileSystem(Path projectDir, Path outputFolder, Path classFile) {
         return new ClassFile(
             ClassNameExtractor.getFullyQualifiedClassName(classFile),
+                classFile,
                 outputFolder.relativize(classFile), projectDir.relativize(outputFolder),
                 exists(classFile) ? HashUtil.debugAgnosticHash(classFile) : ""
         );
@@ -184,4 +206,13 @@ public final class ClassFile implements Comparable<ClassFile> {
     boolean classFileNotFound() {
         return false == exists(outputFolder.resolve(path));
     }
+
+    long getJaCoCoId() {
+        try {
+            return CRC64.classId(Files.readAllBytes(fullyQualifiedPath));
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to compute JaCoCo id for %s: %s".formatted(fullyQualifiedPath, e), e);
+        }
+    }
+
 }

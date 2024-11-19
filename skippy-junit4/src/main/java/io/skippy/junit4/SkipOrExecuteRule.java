@@ -17,6 +17,7 @@
 package io.skippy.junit4;
 
 import io.skippy.core.SkippyTestApi;
+import org.junit.AssumptionViolatedException;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -44,6 +45,8 @@ class SkipOrExecuteRule implements TestRule {
             public void evaluate() throws Throwable {
                 if (executeTest(description.getTestClass())) {
                     base.evaluate();
+                } else {
+                    throw new AssumptionViolatedException("Test skipped by Skippy.");
                 }
             }
 

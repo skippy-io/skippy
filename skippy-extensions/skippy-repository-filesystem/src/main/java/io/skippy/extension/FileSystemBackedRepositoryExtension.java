@@ -38,7 +38,7 @@ public class FileSystemBackedRepositoryExtension implements SkippyRepositoryExte
                 createDirectories(storageFolder);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("Could not create new instance: %s".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Could not create new instance: %s".formatted(e), e);
         }
     }
 
@@ -51,7 +51,7 @@ public class FileSystemBackedRepositoryExtension implements SkippyRepositoryExte
             }
             return Optional.of(TestImpactAnalysis.parse(Files.readString(file, StandardCharsets.UTF_8)));
         } catch (IOException e) {
-            throw new UncheckedIOException("Could not create new instance: %s".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Could not create new instance: %s".formatted(e), e);
         }
     }
 
@@ -61,7 +61,7 @@ public class FileSystemBackedRepositoryExtension implements SkippyRepositoryExte
             var jsonFile = storageFolder.resolve(Path.of("%s.json".formatted(testImpactAnalysis.getId())));
             Files.writeString(jsonFile, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save test impact analysis %s: %s.".formatted(testImpactAnalysis.getId(), e.getMessage()), e);
+            throw new UncheckedIOException("Unable to save test impact analysis %s: %s.".formatted(testImpactAnalysis.getId(), e), e);
         }
     }
 
@@ -74,7 +74,7 @@ public class FileSystemBackedRepositoryExtension implements SkippyRepositoryExte
             }
             return Optional.of(Files.readAllBytes(file));
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read JaCoCo execution data %s: %s.".formatted(testExecutionId, e.getMessage()), e);
+            throw new UncheckedIOException("Unable to read JaCoCo execution data %s: %s.".formatted(testExecutionId, e), e);
         }
     }
 
@@ -84,7 +84,7 @@ public class FileSystemBackedRepositoryExtension implements SkippyRepositoryExte
             var file = storageFolder.resolve("%s.exec".formatted(testExecutionId));
             Files.write(file, jacocoExecutionData, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save JaCoCo execution data %s: %s.".formatted(testExecutionId, e.getMessage()), e);
+            throw new UncheckedIOException("Unable to save JaCoCo execution data %s: %s.".formatted(testExecutionId, e), e);
         }
     }
 }

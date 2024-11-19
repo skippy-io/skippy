@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static io.skippy.core.HashUtil.hashWith8Digits;
 import static io.skippy.core.JacocoUtil.mergeExecutionData;
 import static io.skippy.core.JacocoUtil.swallowJacocoExceptions;
 import static io.skippy.core.SkippyConstants.PREDICTIONS_LOG_FILE;
@@ -109,6 +108,16 @@ public final class SkippyTestApi {
     }
 
     /**
+     * Tags a test.
+     *
+     * @param testClass the test's {@link Class}
+     * @param tag the {@link TestTag}
+     */
+    public void tagTest(Class<?> testClass, TestTag tag) {
+        skippyRepository.tagTest(testClass, tag);
+    }
+
+    /**
      * Returns {@code true} if {@code test} needs to be executed, {@code false} otherwise.
      *
      * @param test a class object representing a test
@@ -125,7 +134,7 @@ public final class SkippyTestApi {
 
                 // record {@link Prediction#ALWAYS_EXECUTE} as tags: this is required for JUnit 5's @Nested tests
                 if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {
-                    skippyRepository.tagTest(test.getName(), TestTag.ALWAYS_EXECUTE);
+                    skippyRepository.tagTest(test, TestTag.ALWAYS_EXECUTE);
                 }
                 if (predictionWithReason.reason().details().isPresent()) {
                     Files.writeString(
@@ -152,7 +161,7 @@ public final class SkippyTestApi {
                 predictions.put(test, predictionWithReason.prediction());
                 return predictionWithReason.prediction() != Prediction.SKIP;
             } catch (IOException e) {
-                throw new UncheckedIOException("Unable to check if test %s needs to be executed: %s.".formatted(test.getName(), e.getMessage()), e);
+                throw new UncheckedIOException("Unable to check if test %s needs to be executed: %s.".formatted(test.getName(), e), e);
             }
         });
     }
@@ -162,7 +171,7 @@ public final class SkippyTestApi {
      *
      * @param testClass a test class
      */
-    public void prepareExecFileGeneration(Class<?> testClass) {
+    public void beforeTest(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareExecFileGeneration", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
@@ -184,16 +193,13 @@ public final class SkippyTestApi {
      *
      * @param testClass a test class
      */
-    public void writeExecAndClasspathFile(Class<?> testClass) {
+    public void afterTest(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#writeExecAndClasspathFile", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 var executionData = executionDataStack.lastElement();
                 executionData.add(agent.getExecutionData(true));
-
-                var classPathHash = skippyRepository.saveTemporaryClassPathFileForCurrentBuild();
-                skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild(testClass.getName(), classPathHash, mergeExecutionData(executionData));
-
+                skippyRepository.afterTest(testClass, mergeExecutionData(executionData));
                 executionDataStack.pop();
                 if (isNestedTest()) {
                     addExecutionDataToParent(executionData);

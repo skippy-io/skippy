@@ -81,7 +81,7 @@ public final class DefaultRepositoryExtension implements SkippyRepositoryExtensi
             }
             return Optional.of(tia);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read test impact analysis: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to read test impact analysis: %s.".formatted(e), e);
         }
     }
 
@@ -92,7 +92,7 @@ public final class DefaultRepositoryExtension implements SkippyRepositoryExtensi
             Files.writeString(jsonFile, testImpactAnalysis.toJson(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             deleteObsoleteExecutionDataFiles(testImpactAnalysis);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save test impact analysis %s: %s.".formatted(testImpactAnalysis.getId(), e.getMessage()), e);
+            throw new UncheckedIOException("Unable to save test impact analysis %s: %s.".formatted(testImpactAnalysis.getId(), e), e);
         }
     }
 
@@ -101,7 +101,7 @@ public final class DefaultRepositoryExtension implements SkippyRepositoryExtensi
         try {
             Files.write(SkippyFolder.get(projectDir).resolve("%s.exec".formatted(executionId)), zip(jacocoExecutionData), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save JaCoCo execution data %s: %s.".formatted(executionId, e.getMessage()), e);
+            throw new UncheckedIOException("Unable to save JaCoCo execution data %s: %s.".formatted(executionId, e), e);
         }
     }
 
@@ -114,7 +114,7 @@ public final class DefaultRepositoryExtension implements SkippyRepositoryExtensi
             }
             return Optional.empty();
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read JaCoCo execution data %s: %s.".formatted(testExecutionId, e.getMessage()), e);
+            throw new UncheckedIOException("Unable to read JaCoCo execution data %s: %s.".formatted(testExecutionId, e), e);
         }
     }
 
@@ -127,7 +127,7 @@ public final class DefaultRepositoryExtension implements SkippyRepositoryExtensi
                 }
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("Deletion of obsolete execution data files failed: %s".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Deletion of obsolete execution data files failed: %s".formatted(e), e);
         }
     }
 

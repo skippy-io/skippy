@@ -55,7 +55,7 @@ final class SkippyFolder {
             }
             return skippyFolder;
         } catch (IOException e) {
-            throw new UncheckedIOException("Could not create Skippy folder: %s".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Could not create Skippy folder: %s".formatted(e), e);
         }
     }
 

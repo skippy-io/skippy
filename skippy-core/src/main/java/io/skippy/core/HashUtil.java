@@ -84,7 +84,7 @@ final class HashUtil {
             md.update(data);
             return bytesToHex(md.digest());
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Generation of hash failed: %s".formatted(e.getMessage()), e);
+            throw new RuntimeException("Generation of hash failed: %s".formatted(e), e);
         }
     }
 
@@ -95,7 +95,7 @@ final class HashUtil {
             new ClassReader(inputStream).accept(classVisitor, ClassReader.SKIP_DEBUG);
             return classWriter.toByteArray();
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to get bytecode without debug information for class file %s: %s".formatted(classFile, e.getMessage()), e);
+            throw new UncheckedIOException("Unable to get bytecode without debug information for class file %s: %s".formatted(classFile, e), e);
         }
     }
 

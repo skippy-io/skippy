@@ -316,7 +316,6 @@ public class TestImpactAnalysisPredictTest {
             var configuration = new SkippyConfiguration(
                 true,
                 Optional.empty(),
-                Optional.empty(),
                 Optional.empty()
             );
             var repository = SkippyRepository.getInstance(configuration);
@@ -349,7 +348,6 @@ public class TestImpactAnalysisPredictTest {
             """);
             var configuration = new SkippyConfiguration(
                     true,
-                    Optional.empty(),
                     Optional.empty(),
                     Optional.empty()
             );

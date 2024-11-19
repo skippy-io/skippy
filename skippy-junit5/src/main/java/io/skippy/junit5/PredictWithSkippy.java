@@ -44,5 +44,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith(SkipOrExecuteCondition.class)
 @ExtendWith(CoverageFileCallbacks.class)
+@ExtendWith(TestResultExtension.class)
 public @interface PredictWithSkippy {
 }

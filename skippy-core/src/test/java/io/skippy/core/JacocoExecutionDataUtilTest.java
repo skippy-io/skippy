@@ -47,16 +47,24 @@ public class JacocoExecutionDataUtilTest {
     void testGetCoveredClasses() throws URISyntaxException, IOException {
         var leftPadderTestExecutionDataFile = Path.of(getClass().getResource("com.example.LeftPadderTest.exec").toURI());
         var coveredClasses = JacocoUtil.getCoveredClasses(Files.readAllBytes(leftPadderTestExecutionDataFile)).stream()
-                .filter(clazz -> clazz.startsWith("com.example"))
+                .filter(clazz -> clazz.className().startsWith("com.example"))
                 .toList();
-        assertEquals(asList("com.example.LeftPadder", "com.example.LeftPadderTest", "com.example.StringUtils"), coveredClasses);
 
+        assertEquals(asList(
+            new ClassNameAndJaCoCoId("com.example.LeftPadder", -6866071476670293317L),
+            new ClassNameAndJaCoCoId("com.example.LeftPadderTest", -7420687749271300115L),
+            new ClassNameAndJaCoCoId("com.example.StringUtils", 3772932961599681095L)
+        ), coveredClasses);
 
         var rightPadderTestExecutionDataFile = Path.of(getClass().getResource("com.example.RightPadderTest.exec").toURI());
         coveredClasses = JacocoUtil.getCoveredClasses(Files.readAllBytes(rightPadderTestExecutionDataFile)).stream()
-                .filter(clazz -> clazz.startsWith("com.example"))
+                .filter(clazz -> clazz.className().startsWith("com.example"))
                 .toList();
-        assertEquals(asList("com.example.RightPadder", "com.example.RightPadderTest", "com.example.StringUtils"), coveredClasses);
+        assertEquals(asList(
+                new ClassNameAndJaCoCoId("com.example.RightPadder", 5424557702887177730L),
+                new ClassNameAndJaCoCoId("com.example.RightPadderTest", 3704313255965055468L),
+                new ClassNameAndJaCoCoId("com.example.StringUtils", 3772932961599681095L)
+        ), coveredClasses);
     }
 
 }

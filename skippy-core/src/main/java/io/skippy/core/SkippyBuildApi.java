@@ -18,8 +18,6 @@ package io.skippy.core;
 
 import java.util.*;
 
-import static java.util.Optional.empty;
-
 /**
  * API that is used by Skippy's Gradle and Maven plugins to remove the Skippy folder and to inform Skippy about events
  * like
@@ -36,7 +34,6 @@ public final class SkippyBuildApi {
     private final SkippyConfiguration skippyConfiguration;
     private final ClassFileCollector classFileCollector;
     private final SkippyRepository skippyRepository;
-    private final ClassFileSelector classFileSelector;
 
     /**
      * C'tor.
@@ -49,14 +46,13 @@ public final class SkippyBuildApi {
         this.skippyConfiguration = skippyConfiguration;
         this.classFileCollector = classFileCollector;
         this.skippyRepository = skippyRepository;
-        this.classFileSelector = skippyConfiguration.classFileSelector();
     }
 
     /**
      * Resets the skippy folder.
      */
     public void resetSkippyFolder() {
-        skippyRepository.deleteSkippyFolder();
+        skippyRepository.resetSkippyFolder();
         skippyRepository.saveConfiguration(skippyConfiguration);
     }
 
@@ -65,7 +61,7 @@ public final class SkippyBuildApi {
      */
     public void buildStarted() {
         skippyRepository.deleteLogFiles();
-        skippyRepository.deleteTestTags();
+        skippyRepository.deleteTmpFolder();
         skippyRepository.saveConfiguration(skippyConfiguration);
     }
 
@@ -100,51 +96,38 @@ public final class SkippyBuildApi {
         skippyRepository.saveExecutionDataForSkippedTests(mergeExecutionData);
     }
 
-    /**
-     * Tags a test.
-     *
-     * @param className a test's class name
-     * @param tag a {@link TestTag}
-     */
-    public void tagTest(String className, TestTag tag) {
-        skippyRepository.tagTest(className, tag);
-    }
-
     private TestImpactAnalysis getTestImpactAnalysis() {
         var classFileContainer = ClassFileContainer.from(classFileCollector.collect());
-        var executionDataForCurrentBuild = skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild();
-        var analyzedTests = executionDataForCurrentBuild.stream()
-                .flatMap(testWithExecutionData -> getAnalyzedTests(testWithExecutionData, classFileContainer).stream())
+        var testRecordings = skippyRepository.getTestRecordings();
+        var analyzedTests = testRecordings.stream()
+                .map(testWithExecutionData -> getAnalyzedTests(testWithExecutionData, classFileContainer))
                 .toList();
         return new TestImpactAnalysis(classFileContainer, analyzedTests);
     }
 
-    private List<AnalyzedTest> getAnalyzedTests(
-            TestWithJacocoExecutionDataAndCoveredClasses testWithExecutionData,
+    private AnalyzedTest getAnalyzedTests(
+            TestRecording testRecording,
             ClassFileContainer classFileContainer
     ) {
-        var classpath = skippyRepository.getClassPath(testWithExecutionData.classPathFile());
-        var classFileCandidates = classFileContainer.getClassFilesByClassName(testWithExecutionData.testClassName());
-        var ids = classFileSelector.select(testWithExecutionData.testClassName(), classFileCandidates, classpath).stream()
-                .map(classFileContainer::getId)
-                .toList();
-        var tags = skippyRepository.getTestTags(testWithExecutionData.testClassName());
+        var classFile = classFileContainer.getClassFileFor(testRecording);
         var executionId = skippyConfiguration.generateCoverageForSkippedTests() ?
-                Optional.of(skippyRepository.saveJacocoExecutionData(testWithExecutionData.jacocoExecutionData())) :
+                Optional.of(skippyRepository.saveJacocoExecutionData(testRecording.jacocoExecutionData())) :
                 Optional.<String>empty();
-        return ids.stream()
-                .map(id -> new AnalyzedTest(id, tags, getCoveredClassesIds(testWithExecutionData.coveredClasses(), classFileContainer, classpath), executionId))
-                .toList();
+        return new AnalyzedTest(
+                classFileContainer.getId(classFile),
+                testRecording.tags(),
+                getCoveredClassesIds(testRecording, classFileContainer), executionId);
     }
 
-    private List<Integer> getCoveredClassesIds(List<String> coveredClasses, ClassFileContainer classFileContainer, List<String> classpath) {
+    private List<Integer> getCoveredClassesIds(TestRecording testRecording, ClassFileContainer classFileContainer) {
         var coveredClassIds = new LinkedList<Integer>();
-        for (var className : coveredClasses) {
-            var classFileCandidates = classFileContainer.getClassFilesByClassName(className);
-            var ids = classFileSelector.select(className, classFileCandidates, classpath).stream()
-                    .map(classFileContainer::getId)
-                    .toList();
-            coveredClassIds.addAll(ids);
+        for (var coveredClass : testRecording.coveredClasses()) {
+            for (var candidate : classFileContainer.getClassFilesByClassName(coveredClass.className())) {
+                if (candidate.getJaCoCoId() == coveredClass.jaCoCoId()) {
+                    coveredClassIds.add(classFileContainer.getId(candidate));
+                }
+
+            }
         }
         return coveredClassIds;
     }

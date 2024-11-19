@@ -16,6 +16,10 @@
 
 package io.skippy.core;
 
+import com.example.Bar;
+import com.example.BarTest;
+import com.example.Foo;
+import com.example.FooTest;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,26 +34,22 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.*;
 
 public final class SkippyBuildApiTest {
 
     private ClassFileCollector classFileCollector;
-    private Path projectDir;
     private SkippyRepository skippyRepository = mock(SkippyRepository.class);
 
     @BeforeEach
-    void setup() throws URISyntaxException {
+    void setup() {
         classFileCollector = () -> asList(
                 new ClassFile("com.example.FooTest", Path.of("com/example/FooTest.class"), Path.of("build/classes/java/test"), "hash-foo-test"),
                 new ClassFile("com.example.BarTest", Path.of("com/example/BarTest.class"), Path.of("build/classes/java/test"), "hash-bar-test"),
-                new ClassFile("com.example.Foo", Path.of("com/example/Foo.class"), Path.of("build/classes/java/main"), "hash-foo"),
-                new ClassFile("com.example.Bar", Path.of("com/example/Bar.class"), Path.of("build/classes/java/main"), "hash-bar")
+                new ClassFile("com.example.Foo", Path.of("com/example/Foo.class"), Path.of("build/classes/java/test"), "hash-foo"),
+                new ClassFile("com.example.Bar", Path.of("com/example/Bar.class"), Path.of("build/classes/java/test"), "hash-bar")
         );
-
-        projectDir = Paths.get(getClass().getResource("project").toURI());
-        ignoreStubs(skippyRepository);
-
     }
 
     @Test
@@ -65,7 +65,7 @@ public final class SkippyBuildApiTest {
 
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
-        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList());
+        when(skippyRepository.getTestRecordings()).thenReturn(asList());
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -99,7 +99,6 @@ public final class SkippyBuildApiTest {
         var config = new SkippyConfiguration(
             true,
             Optional.empty(),
-            Optional.empty(),
             Optional.empty()
         );
 
@@ -108,26 +107,31 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
-        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
-            new TestWithJacocoExecutionDataAndCoveredClasses(
+        when(skippyRepository.getTestRecordings()).thenReturn(asList(
+            new TestRecording(
                 "com.example.FooTest",
-                "00000000.classpath",
-                "0xFOO".getBytes(StandardCharsets.UTF_8),
-                asList("com.example.Foo", "com.example.FooTest")
+                Path.of("build/classes/java/test"),
+                asList(TestTag.PASSED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Foo.class),
+                    ClassNameAndJaCoCoId.from(FooTest.class)
+                ),
+                "0xFOO".getBytes(StandardCharsets.UTF_8)
             ),
-            new TestWithJacocoExecutionDataAndCoveredClasses(
+            new TestRecording(
                 "com.example.BarTest",
-                "00000000.classpath",
-                "0xBAR".getBytes(StandardCharsets.UTF_8),
-                asList("com.example.Bar", "com.example.BarTest")
+                Path.of("build/classes/java/test"),
+                asList(TestTag.PASSED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Bar.class),
+                    ClassNameAndJaCoCoId.from(BarTest.class)
+                ),
+                "0xBAR".getBytes(StandardCharsets.UTF_8)
             )
         ));
 
         when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("FOO");
         when(skippyRepository.saveJacocoExecutionData("0xBAR".getBytes(StandardCharsets.UTF_8))).thenReturn("BAR");
-
-        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
-        when(skippyRepository.getTestTags("com.example.BarTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -176,23 +180,28 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
-        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.FooTest",
-                        "00000000.classpath",
-                        "0xFOO".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Foo", "com.example.FooTest")
+        when(skippyRepository.getTestRecordings()).thenReturn(asList(
+                new TestRecording(
+                    "com.example.FooTest",
+                    Path.of("build/classes/java/test"),
+                    asList(TestTag.PASSED),
+                    asList(
+                        ClassNameAndJaCoCoId.from(Foo.class),
+                        ClassNameAndJaCoCoId.from(FooTest.class)
+                    ),
+                    "0xFOO".getBytes(StandardCharsets.UTF_8)
                 ),
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.BarTest",
-                        "00000000.classpath",
-                        "0xBAR".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Bar", "com.example.BarTest")
+                new TestRecording(
+                    "com.example.BarTest",
+                    Path.of("build/classes/java/test"),
+                    asList(TestTag.PASSED),
+                    asList(
+                        ClassNameAndJaCoCoId.from(Bar.class),
+                        ClassNameAndJaCoCoId.from(BarTest.class)
+                    ),
+                    "0xBAR".getBytes(StandardCharsets.UTF_8)
                 )
         ));
-
-        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
-        when(skippyRepository.getTestTags("com.example.BarTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -240,23 +249,28 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
-        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.FooTest",
-                        "00000000.classpath",
-                        "0xFOO".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Foo", "com.example.FooTest")
+        when(skippyRepository.getTestRecordings()).thenReturn(asList(
+            new TestRecording(
+                "com.example.FooTest",
+                Path.of("build/classes/java/test"),
+                asList(TestTag.PASSED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Foo.class),
+                    ClassNameAndJaCoCoId.from(FooTest.class)
                 ),
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.BarTest",
-                        "00000000.classpath",
-                        "0xBAR".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Bar", "com.example.BarTest")
-                )
+                "0xFOO".getBytes(StandardCharsets.UTF_8)
+            ),
+            new TestRecording(
+                "com.example.BarTest",
+                Path.of("build/classes/java/test"),
+                asList(TestTag.PASSED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Bar.class),
+                    ClassNameAndJaCoCoId.from(BarTest.class)
+                ),
+                "0xBAR".getBytes(StandardCharsets.UTF_8)
+            )
         ));
-
-        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
-        when(skippyRepository.getTestTags("com.example.BarTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -303,23 +317,26 @@ public final class SkippyBuildApiTest {
         when(skippyRepository.readLatestTestImpactAnalysis()).thenReturn(TestImpactAnalysis.NOT_FOUND);
         buildApi.buildStarted();
 
-        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.FooTest",
-                        "00000000.classpath",
-                        "0xFOO".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Foo")
+        when(skippyRepository.getTestRecordings()).thenReturn(asList(
+            new TestRecording(
+                "com.example.FooTest",
+                Path.of("build/classes/java/test"),
+                asList(TestTag.FAILED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Foo.class)
                 ),
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.BarTest",
-                        "00000000.classpath",
-                        "0xBAR".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Bar")
-                )
+                "0xFOO".getBytes(StandardCharsets.UTF_8)
+            ),
+            new TestRecording(
+                "com.example.BarTest",
+                Path.of("build/classes/java/test"),
+                asList(TestTag.PASSED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Bar.class)
+                ),
+                "0xBAR".getBytes(StandardCharsets.UTF_8)
+            )
         ));
-
-        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.FAILED));
-        when(skippyRepository.getTestTags("com.example.BarTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -360,17 +377,6 @@ public final class SkippyBuildApiTest {
     }
 
     @Test
-    void testTagging() {
-        var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
-
-        buildApi.tagTest("com.example.FooTest", TestTag.FAILED);
-        verify(skippyRepository).tagTest("com.example.FooTest", TestTag.FAILED);
-
-        buildApi.tagTest("com.example.BarTest", TestTag.PASSED);
-        verify(skippyRepository).tagTest("com.example.BarTest", TestTag.PASSED);
-    }
-
-    @Test
     void testExistingJsonFileNoExecFile() throws JSONException {
         var buildApi = new SkippyBuildApi(SkippyConfiguration.DEFAULT, classFileCollector, skippyRepository);
 
@@ -380,7 +386,7 @@ public final class SkippyBuildApiTest {
                     "0": {
                         "name": "com.example.Bar",
                         "path": "com/example/Bar.class",
-                        "outputFolder": "build/classes/java/main",
+                        "outputFolder": "build/classes/java/test", 
                         "hash": "hash-bar"
                     }
                 },
@@ -443,16 +449,18 @@ public final class SkippyBuildApiTest {
 
         buildApi.buildStarted();
 
-        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.FooTest",
-                        "00000000.classpath",
-                        "0xFOO".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Foo", "com.example.FooTest")
-                )
+        when(skippyRepository.getTestRecordings()).thenReturn(asList(
+            new TestRecording(
+                "com.example.FooTest",
+                Path.of("build/classes/java/test"),
+                asList(TestTag.PASSED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Foo.class),
+                    ClassNameAndJaCoCoId.from(FooTest.class)
+                ),
+                "0xFOO".getBytes(StandardCharsets.UTF_8)
+            )
         ));
-
-        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -492,7 +500,6 @@ public final class SkippyBuildApiTest {
         var config = new SkippyConfiguration(
             true,
             Optional.empty(),
-            Optional.empty(),
             Optional.empty()
         );
         var buildApi = new SkippyBuildApi(config, classFileCollector, skippyRepository);
@@ -520,18 +527,20 @@ public final class SkippyBuildApiTest {
 
         buildApi.buildStarted();
 
-        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.FooTest",
-                        "00000000.classpath",
-                        "0xFOO".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Foo", "com.example.FooTest")
-                )
+        when(skippyRepository.getTestRecordings()).thenReturn(asList(
+            new TestRecording(
+                "com.example.FooTest",
+                Path.of("build/classes/java/test"),
+                asList(TestTag.PASSED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Foo.class),
+                    ClassNameAndJaCoCoId.from(FooTest.class)
+                ),
+                "0xFOO".getBytes(StandardCharsets.UTF_8)
+            )
         ));
 
         when(skippyRepository.saveJacocoExecutionData("0xFOO".getBytes(StandardCharsets.UTF_8))).thenReturn("11111111111111111111111111111111");
-
-        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.PASSED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
@@ -577,7 +586,7 @@ public final class SkippyBuildApiTest {
                     "0": {
                         "name": "com.example.Bar",
                         "path": "com/example/Bar.class",
-                        "outputFolder": "build/classes/java/main",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "hash-bar"
                     },
                     "1": {
@@ -589,7 +598,7 @@ public final class SkippyBuildApiTest {
                     "2": {
                         "name": "com.example.Foo",
                         "path": "com/example/Foo.class",
-                        "outputFolder": "build/classes/java/main",
+                        "outputFolder": "build/classes/java/test",
                         "hash": "hash-foo"
                     },
                     "3": {
@@ -616,18 +625,18 @@ public final class SkippyBuildApiTest {
 
         buildApi.buildStarted();
 
-        when(skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild()).thenReturn(asList(
-                new TestWithJacocoExecutionDataAndCoveredClasses(
-                        "com.example.FooTest",
-                        "00000000.classpath",
-                        "0xFOO".getBytes(StandardCharsets.UTF_8),
-                        asList("com.example.Foo", "com.example.FooTest")
-                )
+        when(skippyRepository.getTestRecordings()).thenReturn(asList(
+            new TestRecording(
+                "com.example.FooTest",
+                Path.of("build/classes/java/test"),
+                asList(TestTag.FAILED),
+                asList(
+                    ClassNameAndJaCoCoId.from(Foo.class),
+                    ClassNameAndJaCoCoId.from(FooTest.class)
+                ),
+                "0xFOO".getBytes(StandardCharsets.UTF_8)
+            )
         ));
-
-        buildApi.tagTest("com.example.FooTest", TestTag.FAILED);
-        verify(skippyRepository).tagTest("com.example.FooTest", TestTag.FAILED);
-        when(skippyRepository.getTestTags("com.example.FooTest")).thenReturn(asList(TestTag.FAILED));
 
         var tiaCaptor = ArgumentCaptor.forClass(TestImpactAnalysis.class);
         buildApi.buildFinished();
