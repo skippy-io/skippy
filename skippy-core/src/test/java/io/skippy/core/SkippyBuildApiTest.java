@@ -45,10 +45,10 @@ public final class SkippyBuildApiTest {
     @BeforeEach
     void setup() {
         classFileCollector = () -> asList(
-                new ClassFile("com.example.FooTest", Path.of("com/example/FooTest.class"), Path.of("build/classes/java/test"), "hash-foo-test"),
-                new ClassFile("com.example.BarTest", Path.of("com/example/BarTest.class"), Path.of("build/classes/java/test"), "hash-bar-test"),
-                new ClassFile("com.example.Foo", Path.of("com/example/Foo.class"), Path.of("build/classes/java/test"), "hash-foo"),
-                new ClassFile("com.example.Bar", Path.of("com/example/Bar.class"), Path.of("build/classes/java/test"), "hash-bar")
+                new ClassFile("com.example.FooTest", Path.of("build/classes/java/test/com/example/FooTest.class"), Path.of("com/example/FooTest.class"), Path.of("build/classes/java/test"), "hash-foo-test"),
+                new ClassFile("com.example.BarTest", Path.of("build/classes/java/test/com/example/BarTest.class"), Path.of("com/example/BarTest.class"), Path.of("build/classes/java/test"), "hash-bar-test"),
+                new ClassFile("com.example.Foo", Path.of("build/classes/java/test/com/example/Foo.class"), Path.of("com/example/Foo.class"), Path.of("build/classes/java/test"), "hash-foo"),
+                new ClassFile("com.example.Bar", Path.of("build/classes/java/test/com/example/Bar.class"), Path.of("com/example/Bar.class"), Path.of("build/classes/java/test"), "hash-bar")
         );
     }
 

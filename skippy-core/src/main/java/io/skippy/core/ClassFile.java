@@ -63,7 +63,7 @@ public final class ClassFile implements Comparable<ClassFile> {
      * @param outputFolder          the path of the output folder relative to the project root (e.g., build/classes/java/main)
      * @param hash                  a hash of the class file
      */
-    private ClassFile(String className, Path fullyQualifiedPath, Path path, Path outputFolder, String hash) {
+    ClassFile(String className, Path fullyQualifiedPath, Path path, Path outputFolder, String hash) {
         this.className = className;
         this.fullyQualifiedPath = fullyQualifiedPath;
         this.outputFolder = outputFolder;
