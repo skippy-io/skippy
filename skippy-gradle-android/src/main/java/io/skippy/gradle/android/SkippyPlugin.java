@@ -16,14 +16,13 @@
 
 package io.skippy.gradle.android;
 
-import io.skippy.core.Profiler;
-import io.skippy.core.TestTag;
+import com.android.build.gradle.BaseExtension;
+
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
-import org.gradle.api.tasks.testing.TestDescriptor;
-import org.gradle.api.tasks.testing.TestListener;
-import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
+
+import io.skippy.core.Profiler;
 
 /**
  * The Skippy Android plugin adds the
@@ -47,6 +46,13 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
         project.getExtensions().create("skippy", SkippyPluginExtension.class);
         project.getTasks().register("skippyClean", SkippyCleanTask.class);
         project.getTasks().register("skippyAnalyze", SkippyAnalyzeTask.class);
+        project.getExtensions().getByType(BaseExtension.class).testOptions(testOptions -> {
+            testOptions.unitTests(unitTestOptions -> {
+                unitTestOptions.all(test -> {
+                    // todo: get all the tests that we can exclude and pass it to `test.exclude()`;
+                });
+            });
+        });
 
         project.afterEvaluate(action -> {
 
