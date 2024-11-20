@@ -19,10 +19,10 @@ package io.skippy.core;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static io.skippy.core.HashUtil.hashWith8Digits;
 import static java.lang.System.lineSeparator;
@@ -31,7 +31,6 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -83,20 +82,19 @@ public final class SkippyRepository {
     /**
      * Deletes the Skippy folder.
      */
-    void deleteSkippyFolder() {
+    void resetSkippyFolder() {
         try {
-            var skippyFolder = SkippyFolder.get(projectDir);
-            if (exists(skippyFolder)) {
-                try (var stream = newDirectoryStream(skippyFolder)) {
-                    for (Path file : stream) {
-                        delete(file);
-                    }
-                }
-                delete(skippyFolder);
-            }
+            deleteTmpFolder();
+            deleteLogFiles();
+            deleteIfExists(SkippyFolder.get(projectDir).resolve("test-impact-analysis.json"));
+            deleteIfExists(SkippyFolder.get(projectDir).resolve("LATEST"));
         } catch (IOException e) {
-            throw new RuntimeException("Unable to delete the Skippy folder: %s.".formatted(e), e);
+            throw new RuntimeException("Unable to reset skippy folder %s: %s".formatted(SkippyFolder.get(projectDir), e), e);
         }
+    }
+
+    void deleteTmpFolder() {
+        deleteDirectory(SkippyFolder.get(projectDir).resolve("tmp"));
     }
 
     /**
@@ -113,7 +111,7 @@ public final class SkippyRepository {
             }
             return SkippyConfiguration.parse(Files.readString(SkippyFolder.get().resolve("config.json"), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read Skippy configuration: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to read Skippy configuration: %s.".formatted(e), e);
         }
     }
 
@@ -126,7 +124,7 @@ public final class SkippyRepository {
         try {
             Files.writeString(SkippyFolder.get(projectDir).resolve("config.json"), skippyConfiguration.toJson(), StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save Skippy configuration: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to save Skippy configuration: %s.".formatted(e), e);
         }
     }
 
@@ -151,7 +149,7 @@ public final class SkippyRepository {
                     .toList();
 
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read predictions log: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to read predictions log: %s.".formatted(e), e);
         }
     }
 
@@ -165,7 +163,7 @@ public final class SkippyRepository {
                 delete(logFile);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to delete log files: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to delete log files: %s.".formatted(e), e);
         }
     }
 
@@ -173,43 +171,59 @@ public final class SkippyRepository {
      * Allows Skippy's JUnit libraries to temporarily save test execution data in the Skippy folder.
      * The data will be automatically deleted after the build finishes.
      *
-     * @param testClassName the name of a test class (e.g., com.example.FooTest)
-     * @param classPathHash hash of {@code System.getProperty("java.class.path")} at the time of test execution
+     * @param testClass the name of a test class (e.g., com.example.FooTest)
      * @param jacocoExecutionData Jacoco execution data for the test.
      */
-    void saveTemporaryJaCoCoExecutionDataForCurrentBuild(String testClassName, String classPathHash, byte[] jacocoExecutionData) {
+    void afterTest(Class<?> testClass, byte[] jacocoExecutionData) {
         try {
-            Files.write(SkippyFolder.get(projectDir).resolve("%s.%s.exec".formatted(testClassName, classPathHash)), jacocoExecutionData, CREATE, TRUNCATE_EXISTING);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save temporary test execution data file for current build: %s / %s.".formatted(testClassName, e.getMessage()), e);
+            Files.write(
+                getFolderWithTestRecording(testClass).resolve("%s.classpath".formatted(testClass.getName())),
+                getClassPath(), CREATE, TRUNCATE_EXISTING
+            );
+            Files.write(getFolderWithTestRecording(testClass).resolve("%s.exec".formatted(testClass.getName())), jacocoExecutionData, CREATE, TRUNCATE_EXISTING);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to save temporary test execution data file for current build: %s / %s.".formatted(testClass.getName(), e), e);
         }
     }
 
     /**
-     * Returns the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, String, byte[])}
+     * Returns the test execution data written by {@link #afterTest(Class, byte[])}
      *
-     * @return the test execution data written by {@link #saveTemporaryJaCoCoExecutionDataForCurrentBuild(String, String, byte[])}
+     * @return the test execution data written by {@link #afterTest(Class, byte[])}
      */
-    List<TestWithJacocoExecutionDataAndCoveredClasses> readTemporaryJaCoCoExecutionDataForCurrentBuild() {
-        var result = new ArrayList<TestWithJacocoExecutionDataAndCoveredClasses>();
-        for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
-
-            // Splits the filename into the classname and the classpath hash:
-            //      filename = com.example.FooTest.905451B1.exec
-            //      testName = com.example.FooTest
-            //      classPathHash = 905451B1
-            var filename = executionDataFile.getFileName().toString();
-            var classNamePrefixLength = filename.length() - ".00000000.exec".length();
-            var testName = filename.substring(0, classNamePrefixLength);
-            var classPathHash = filename.substring(classNamePrefixLength + 1, filename.length() - ".exec".length());
-            try {
-                var bytes = Files.readAllBytes(executionDataFile);
-                result.add(new TestWithJacocoExecutionDataAndCoveredClasses(testName, "%s.classpath".formatted(classPathHash), bytes, JacocoUtil.getCoveredClasses(bytes)));
-            } catch (IOException e) {
-                throw new UncheckedIOException("Unable to get temporary test execution data for current build: %s.".formatted(e.getMessage()), e);
-            }
+    List<TestRecording> getTestRecordings() {
+        var result = new ArrayList<TestRecording>();
+        var tmpDir = SkippyFolder.get(projectDir).resolve("tmp");
+        if (false == exists(tmpDir)) {
+            return emptyList();
         }
-        return result;
+        try (Stream<Path> stream = Files.walk(tmpDir)) {
+            stream
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".exec"))
+                    .forEach(file -> {
+                        var fileName = file.getFileName().toString();
+                        var className = fileName.substring(0, fileName.lastIndexOf("."));
+                        var outputFolder = tmpDir.relativize(file.getParent());
+                        try {
+                            var jacocoExecData = Files.readAllBytes(file);
+                            var tagsFile = tmpDir.resolve(outputFolder).resolve("%s.tags".formatted(className));
+                            var tags = new ArrayList<TestTag>();
+                            if (exists(tagsFile)) {
+                                tags.addAll(Files.readAllLines(tagsFile).stream().map(line -> TestTag.valueOf(line)).toList());
+                            }
+                            if (false == tags.contains(TestTag.FAILED)) {
+                                tags.add(TestTag.PASSED);
+                            }
+                            result.add(new TestRecording(className, outputFolder, tags, JacocoUtil.getCoveredClasses(jacocoExecData), jacocoExecData));
+                        } catch (IOException e) {
+                            throw new RuntimeException("Unable to read recorded test data for current build: %s.".formatted(e), e);
+                        }
+                    });
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to read recorded test data for current build: %s.".formatted(e), e);
+        }
     }
 
     /**
@@ -221,7 +235,7 @@ public final class SkippyRepository {
         try {
             Files.write(buildDir.resolve("skippy.exec"), executionDataForSkippedTests, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to save execution data for skipped tests: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to save execution data for skipped tests: %s.".formatted(e), e);
         }
     }
 
@@ -234,7 +248,7 @@ public final class SkippyRepository {
             }
             return TestImpactAnalysis.NOT_FOUND;
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read latest test impact analysis: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to read latest test impact analysis: %s.".formatted(e), e);
         }
     }
 
@@ -259,7 +273,7 @@ public final class SkippyRepository {
             var versionFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
             Files.writeString(versionFile, testImpactAnalysis.getId(), StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
             extension.saveTestImpactAnalysis(testImpactAnalysis);
-            deleteTemporaryExecutionDataFilesForCurrentBuild();
+            deleteDirectory(SkippyFolder.get(projectDir).resolve("tmp"));
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to save TestImpactAnalysis %s: %s".formatted(testImpactAnalysis.getId(), e), e);
         }
@@ -275,52 +289,23 @@ public final class SkippyRepository {
         return executionId;
     }
 
-    private void deleteTemporaryExecutionDataFilesForCurrentBuild() {
-        for (var executionDataFile : getTemporaryExecutionDataFilesForCurrentBuild()) {
-            try {
-                delete(executionDataFile);
-            } catch (IOException e) {
-                throw new UncheckedIOException("Unable to delete %s.".formatted(executionDataFile), e);
-            }
-        }
-    }
-
-    void deleteTestTags() {
-        var tagsFile = SkippyFolder.get(projectDir).resolve("tags.txt");
-        if (exists(tagsFile)) {
-            try {
-                delete(tagsFile);
-            } catch (IOException e) {
-                throw new UncheckedIOException("Unable to delete %s.".formatted(tagsFile), e);
-            }
-        }
-    }
-
     /**
      * Tags a test.
      *
-     * @param className the test's class name
+     * @param testClass the test
      * @param tag the {@link TestTag}
      */
-    public void tagTest(String className, TestTag tag) {
-        var tagsFile = SkippyFolder.get(projectDir).resolve("tags.txt");
+    public void tagTest(Class<?> testClass, TestTag tag) {
+        var tagsFile = getFolderWithTestRecording(testClass).resolve("%s.tags".formatted(testClass.getName()));
         try {
-            Files.write(tagsFile, asList("%s=%s".formatted(className, tag.name())), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+            Files.write(tagsFile, asList(tag.name()), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to tag test %s in file %s: %s.".formatted(className, tagsFile, e.getMessage()), e);
+            throw new UncheckedIOException("Unable to tag test %s in file %s: %s.".formatted(testClass.getName(), tagsFile, e), e);
         }
-    }
-
-    List<TestTag> getTestTags(String className) {
-        var tags = new ArrayList<>(getTestTags().getOrDefault(className, emptyList()));
-        if (false == tags.contains(TestTag.FAILED)) {
-            tags.add(0, TestTag.PASSED);
-        }
-        return tags;
     }
 
     /**
-     * Saves classpath entries that point to the project folder as folders relative to the project folder.
+     * The classpath entries that point to the project folder (as folders relative to the project folder):
      * <br /><br />
      * Example:
      * <pre>
@@ -328,55 +313,53 @@ public final class SkippyRepository {
      * build/classes/java/main
      * build/resources/main
      * </pre>
-     * <br /><br />
      *
-     * The filename will be ${hash}.classpath, with ${hash} being an 8-character hash of the file's content.
-     *
-     * @return an 8-character hash of the file's content
+     * @return classpath entries that point to the project folder
      */
-    String saveTemporaryClassPathFileForCurrentBuild() {
-        var classpath = asList(System.getProperty("java.class.path")
+    private List<String> getClassPath() {
+        return asList(System.getProperty("java.class.path")
                 .split(System.getProperty("path.separator")))
                 .stream()
                 .filter(entry -> entry.startsWith(projectDir.toAbsolutePath().toString()))
                 .map(entry -> entry.substring(projectDir.toAbsolutePath().toString().length() + 1))
-                .collect(joining(lineSeparator()));
+                .toList();
+    }
 
-        var hash = hashWith8Digits(classpath.getBytes(StandardCharsets.UTF_8));
-        var classPathFile = SkippyFolder.get(projectDir).resolve("%s.classpath".formatted(hash));
-        if (false == exists(classPathFile)) {
+    private Path getFolderWithTestRecording(Class<?> testClass) {
+        try {
+            // e.g. /user/foo/repos/my-project/build/classes/java/test/
+            var pathToTest = Path.of(testClass.getProtectionDomain().getCodeSource().getLocation().toURI());
+            // e.g. build/classes/java/test/
+            var pathToTestRelativeToProject = projectDir.toAbsolutePath().relativize(pathToTest);
+            // e.g. .skippy/tmp/build/classes/java/test/
+            var execFileFolder = SkippyFolder.get(projectDir)
+                    .resolve("tmp")
+                    .resolve(pathToTestRelativeToProject);
+            return Files.createDirectories(execFileFolder);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteDirectory(Path path) {
+        if (Files.isDirectory(path)) {
             try {
-                Files.writeString(classPathFile, classpath, StandardCharsets.UTF_8, TRUNCATE_EXISTING, StandardOpenOption.CREATE);
+                Files.walkFileTree(path, new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
             } catch (IOException e) {
-                throw new UncheckedIOException("Unable to save classpath %s in file %s: %s.".formatted(hash, classPathFile, e.getMessage()), e);
+                throw new RuntimeException("Unable to delete directory %s: %s.".formatted(path, e), e);
             }
-        }
-        return hash;
-    }
-
-    List<String> getClassPath(String classPathFile) {
-        var file = SkippyFolder.get(projectDir).resolve(Path.of(classPathFile));
-        try {
-            if (exists(file)) {
-                return Files.readAllLines(file, StandardCharsets.UTF_8);
-            }
-            return emptyList();
-        } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read classpath file %s: %s.".formatted(file, e.getMessage()), e);
-        }
-    }
-
-    private Map<String, List<TestTag>> getTestTags() {
-        var tagsFile = SkippyFolder.get(projectDir).resolve("tags.txt");
-        try {
-            if (false == exists(tagsFile)) {
-                return emptyMap();
-            }
-            return Files.lines(tagsFile)
-                .map(line -> line.split("=", 2))
-                .collect(groupingBy(parts -> parts[0], mapping(parts -> TestTag.valueOf(parts[1]), toList())));
-        } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read tags file %s: %s.".formatted(tagsFile, e.getMessage()), e);
         }
     }
 

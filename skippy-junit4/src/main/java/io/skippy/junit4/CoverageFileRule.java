@@ -17,6 +17,7 @@
 package io.skippy.junit4;
 
 import io.skippy.core.SkippyTestApi;
+import io.skippy.core.TestTag;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.MultipleFailureException;
@@ -43,15 +44,16 @@ class CoverageFileRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                skippyTestApi.prepareExecFileGeneration(description.getTestClass());
+                skippyTestApi.beforeTest(description.getTestClass());
                 List<Throwable> errors = new ArrayList<Throwable>();
                 try {
                     base.evaluate();
                 } catch (Throwable t) {
+                    skippyTestApi.tagTest(description.getTestClass(), TestTag.FAILED);
                     errors.add(t);
                 } finally {
                     try {
-                        skippyTestApi.writeExecAndClasspathFile(description.getTestClass());
+                        skippyTestApi.afterTest(description.getTestClass());
                     } catch (Throwable t) {
                         errors.add(t);
                     }

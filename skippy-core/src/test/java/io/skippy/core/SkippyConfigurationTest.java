@@ -32,15 +32,13 @@ public class SkippyConfigurationTest {
         var configuration = new SkippyConfiguration(
             true,
             Optional.empty(),
-            Optional.empty(),
             Optional.empty()
         );
         assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "coverageForSkippedTests": "true",
                 "repositoryExtension": "io.skippy.core.DefaultRepositoryExtension",
-                "predictionModifier": "io.skippy.core.DefaultPredictionModifier",
-                "classFileSelector": "io.skippy.core.DefaultClassFileSelector"
+                "predictionModifier": "io.skippy.core.DefaultPredictionModifier"
             }
         """);
     }
@@ -50,15 +48,13 @@ public class SkippyConfigurationTest {
         var configuration = new SkippyConfiguration(
                 false,
                 Optional.of("com.example.CustomRepository"),
-                Optional.of("com.example.CustomModifier"),
-                Optional.of("com.example.CustomSelector")
+                Optional.of("com.example.CustomModifier")
         );
         assertThat(configuration.toJson()).isEqualToIgnoringWhitespace("""
             {
                 "coverageForSkippedTests": "false",
                 "repositoryExtension": "com.example.CustomRepository",
-                "predictionModifier": "com.example.CustomModifier",
-                "classFileSelector": "com.example.CustomSelector"
+                "predictionModifier": "com.example.CustomModifier"
             }
         """);
     }
@@ -99,33 +95,19 @@ public class SkippyConfigurationTest {
         }
     }
 
-    static class CustomSelector implements ClassFileSelector {
-
-        public CustomSelector() {
-        }
-
-        @Override
-        public List<ClassFile> select(String className, List<ClassFile> candidates, List<String> classPath) {
-            return null;
-        }
-    }
-
     @Test
     void testParse() {
         var json = """
             {
                 "coverageForSkippedTests": "true",
                 "repositoryExtension": "io.skippy.core.SkippyConfigurationTest$CustomRepository",
-                "predictionModifier": "io.skippy.core.SkippyConfigurationTest$CustomModifier",
-                "classFileSelector": "io.skippy.core.SkippyConfigurationTest$CustomSelector"
+                "predictionModifier": "io.skippy.core.SkippyConfigurationTest$CustomModifier"
             }
         """;
         var configuration = SkippyConfiguration.parse(json);
         assertEquals(true, configuration.generateCoverageForSkippedTests());
         assertEquals(CustomRepository.class, configuration.repositoryExtension(Path.of(".")).getClass());
         assertEquals(CustomModifier.class, configuration.predictionModifier().getClass());
-        assertEquals(CustomSelector.class, configuration.classFileSelector().getClass());
-
     }
 
 }

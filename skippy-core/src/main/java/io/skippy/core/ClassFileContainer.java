@@ -204,4 +204,14 @@ final class ClassFileContainer {
         return Objects.hash(classFilesById);
     }
 
+    ClassFile getClassFileFor(TestRecording testRecording) {
+        var matchesByClassName = getClassFilesByClassName(testRecording.className());
+        var matchesByClassNameAndJaCoCoId = matchesByClassName.stream()
+                .filter(classFile -> classFile.getOutputFolder().equals(testRecording.outputFolder()))
+                .toList();
+        if (matchesByClassNameAndJaCoCoId.size() != 1) {
+            throw new IllegalStateException("Expected exactly one match for %s but found %s: %s".formatted(testRecording, matchesByClassNameAndJaCoCoId.size(), matchesByClassNameAndJaCoCoId));
+        }
+        return matchesByClassNameAndJaCoCoId.get(0);
+    }
 }

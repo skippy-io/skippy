@@ -55,31 +55,7 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
             project.getTasks().withType(SkippyCleanTask.class).forEach( task -> task.getProjectSettings().set(projectSettings));
             project.getTasks().withType(SkippyAnalyzeTask.class).forEach( task -> task.getProjectSettings().set(projectSettings));
 
-            action.getTasks().withType(Test.class, testTask -> {
-                testTask.finalizedBy("skippyAnalyze");
-                testTask.addTestListener(new TestListener() {
-                    @Override
-                    public void beforeSuite(TestDescriptor testDescriptor) {
-                    }
-
-                    @Override
-                    public void afterSuite(TestDescriptor testDescriptor, TestResult testResult) {
-                    }
-
-                    @Override
-                    public void beforeTest(TestDescriptor testDescriptor) {
-                    }
-
-                    @Override
-                    public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
-                        projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> {
-                            if (testResult.getResultType() == TestResult.ResultType.FAILURE) {
-                                skippyBuildApi.tagTest(testDescriptor.getClassName(), TestTag.FAILED);
-                            }
-                        });
-                    }
-                });
-            });
+            action.getTasks().withType(Test.class, testTask -> testTask.finalizedBy("skippyAnalyze"));
 
             projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> skippyBuildApi.buildStarted());
         });

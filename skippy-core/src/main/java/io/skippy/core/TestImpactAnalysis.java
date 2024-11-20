@@ -122,12 +122,12 @@ public final class TestImpactAnalysis {
     }
 
     /**
-     * Makes a skip-or-execute prediction for the test identified by the {@code testClassName}.
+     * Makes a skip-or-execute prediction for the test identified by the {@code className}.
      *
      * @param testClazz the test's {@link Class} object
      * @param configuration the {@link SkippyConfiguration}, must not be null
      * @param skippyRepository the {@link SkippyRepository}, must no tbe null
-     * @return a skip-or-execute prediction for the test identified by the {@code testClassName}
+     * @return a skip-or-execute prediction for the test identified by the {@code className}
      */
     PredictionWithReason predict(Class<?> testClazz, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {

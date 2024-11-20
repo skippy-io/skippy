@@ -78,16 +78,19 @@ class JacocoUtil {
      * @param jacocoExecutionData JaCoCo execution data
      * @return the names of the classes that are covered by the JaCoCo execution data
      */
-    static List<String> getCoveredClasses(byte[] jacocoExecutionData) {
+    static List<ClassNameAndJaCoCoId> getCoveredClasses(byte[] jacocoExecutionData) {
         try {
-            var coveredClasses = new LinkedList<String>();
+            var coveredClasses = new LinkedList<ClassNameAndJaCoCoId>();
             var reader = new ExecutionDataReader(new ByteArrayInputStream(jacocoExecutionData));
             reader.setSessionInfoVisitor(new SessionInfoStore());
-            reader.setExecutionDataVisitor(visitor -> coveredClasses.add(visitor.getName().replace("/", ".").trim()));
+            reader.setExecutionDataVisitor(visitor -> coveredClasses.add(new ClassNameAndJaCoCoId(
+                visitor.getName().replace("/", ".").trim(),
+                visitor.getId()
+            )));
             reader.read();
             return coveredClasses.stream().sorted().toList();
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to compute covered classes for JaCoCo execution data: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to compute covered classes for JaCoCo execution data: %s.".formatted(e), e);
         }
     }
 
@@ -109,7 +112,7 @@ class JacocoUtil {
             reader.read();
             return HashUtil.hashWith32Digits(byteArrayOutputStream.toByteArray());
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to compute execution id from JaCoCo execution data: %s.".formatted(e.getMessage()), e);
+            throw new UncheckedIOException("Unable to compute execution id from JaCoCo execution data: %s.".formatted(e), e);
         }
     }
 

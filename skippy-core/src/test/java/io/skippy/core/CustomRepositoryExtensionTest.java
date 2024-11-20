@@ -72,12 +72,11 @@ public class CustomRepositoryExtensionTest {
         var config = new SkippyConfiguration(
             false,
             Optional.of(Extension.class.getName()),
-            Optional.empty(),
             Optional.empty()
         );
         skippyRepository = SkippyRepository.getInstance(config, projectDir, null);
 
-        skippyRepository.deleteSkippyFolder();
+        skippyRepository.resetSkippyFolder();
         skippyFolder = SkippyFolder.get(projectDir);
         reset(extensionMock);
     }

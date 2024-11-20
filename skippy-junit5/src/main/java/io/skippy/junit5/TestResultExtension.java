@@ -17,25 +17,24 @@
 package io.skippy.junit5;
 
 import io.skippy.core.SkippyTestApi;
-import org.junit.jupiter.api.extension.*;
+import io.skippy.core.TestTag;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestWatcher;
 
 /**
  * Callbacks that trigger the capture of coverage data for a test class.
  *
  * @author Florian McKee
  */
-public final class CoverageFileCallbacks implements BeforeAllCallback, AfterAllCallback {
+public final class TestResultExtension implements TestWatcher {
 
     private final SkippyTestApi skippyTestApi = SkippyTestApi.INSTANCE;
 
     @Override
-    public void beforeAll(ExtensionContext context) {
-        context.getTestClass().ifPresent(skippyTestApi::beforeTest);
-    }
-
-    @Override
-    public void afterAll(ExtensionContext context) {
-        context.getTestClass().ifPresent(skippyTestApi::afterTest);
+    public void testFailed(ExtensionContext context, Throwable cause) {
+        skippyTestApi.tagTest(context.getTestClass().get(), TestTag.FAILED);
     }
 
 }

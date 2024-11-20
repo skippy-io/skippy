@@ -28,12 +28,11 @@ import java.util.Optional;
  */
 public class SkippyConfiguration {
 
-    static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false, Optional.empty(), Optional.empty(), Optional.empty());
+    static final SkippyConfiguration DEFAULT = new SkippyConfiguration(false, Optional.empty(), Optional.empty());
 
     private final boolean generateCoverageForSkippedTests;
     private final String repositoryExtensionClass;
     private final String predictionModifierClass;
-    private final String classFileSelectorClass;
 
     /**
      * C'tor.
@@ -41,18 +40,15 @@ public class SkippyConfiguration {
      * @param generateCoverageForSkippedTests {@code true} to generate coverage for skipped tests, {@code false} otherwise
      * @param repositoryExtensionClass the fully-qualified class name of the {@link SkippyRepositoryExtension} for this build
      * @param predictionModifierClass the fully-qualified class name of the {@link PredictionModifier} for this build
-     * @param classFileSelectorClass the fully-qualified class name of the {@link ClassFileSelector} for this build
      */
     public SkippyConfiguration(
             boolean generateCoverageForSkippedTests,
             Optional<String> repositoryExtensionClass,
-            Optional<String> predictionModifierClass,
-            Optional<String> classFileSelectorClass
+            Optional<String> predictionModifierClass
     ) {
         this.generateCoverageForSkippedTests = generateCoverageForSkippedTests;
         this.repositoryExtensionClass = repositoryExtensionClass.orElse(DefaultRepositoryExtension.class.getName());
         this.predictionModifierClass = predictionModifierClass.orElse(DefaultPredictionModifier.class.getName());
-        this.classFileSelectorClass = classFileSelectorClass.orElse(DefaultClassFileSelector.class.getName());
     }
 
     /**
@@ -75,7 +71,7 @@ public class SkippyConfiguration {
             Constructor<?> constructor = clazz.getConstructor(Path.class);
             return (SkippyRepositoryExtension) constructor.newInstance(projectDir);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to create repository extension %s: %s.".formatted(repositoryExtensionClass, e.getMessage()), e);
+            throw new RuntimeException("Unable to create repository extension %s: %s.".formatted(repositoryExtensionClass, e), e);
         }
     }
 
@@ -90,22 +86,7 @@ public class SkippyConfiguration {
             Constructor<?> constructor = clazz.getConstructor();
             return (PredictionModifier) constructor.newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Unable to create prediction modifier %s: %s.".formatted(predictionModifierClass, e.getMessage()), e);
-        }
-    }
-
-    /**
-     * Returns the {@link ClassFileSelector} for this build.
-     *
-     * @return the {@link ClassFileSelector} for this build
-     */
-    ClassFileSelector classFileSelector() {
-        try {
-            Class<?> clazz = Class.forName(classFileSelectorClass);
-            Constructor<?> constructor = clazz.getConstructor();
-            return (ClassFileSelector) constructor.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to create class file selector %s: %s.".formatted(classFileSelectorClass, e.getMessage()), e);
+            throw new RuntimeException("Unable to create prediction modifier %s: %s.".formatted(predictionModifierClass, e), e);
         }
     }
 
@@ -121,7 +102,6 @@ public class SkippyConfiguration {
         boolean coverageForSkippedTests = false;
         Optional<String> repositoryExtension = Optional.empty();
         Optional<String> predictionModifier = Optional.empty();
-        Optional<String> classFileSelector = Optional.empty();
         while (true) {
             var key = tokenizer.next();
             tokenizer.skip(':');
@@ -135,9 +115,6 @@ public class SkippyConfiguration {
                 case "predictionModifier":
                     predictionModifier = Optional.of(tokenizer.next());
                     break;
-                case "classFileSelector":
-                    classFileSelector = Optional.of(tokenizer.next());
-                    break;
             }
             tokenizer.skipIfNext(',');
             if (tokenizer.peek('}')) {
@@ -145,7 +122,7 @@ public class SkippyConfiguration {
                 break;
             }
         }
-        return new SkippyConfiguration(coverageForSkippedTests, repositoryExtension, predictionModifier, classFileSelector);
+        return new SkippyConfiguration(coverageForSkippedTests, repositoryExtension, predictionModifier);
     }
 
     /**
@@ -158,10 +135,9 @@ public class SkippyConfiguration {
         {
             "coverageForSkippedTests": "%s",
             "repositoryExtension": "%s",
-            "predictionModifier": "%s",
-            "classFileSelector": "%s"
+            "predictionModifier": "%s"
         }
-        """.formatted(generateCoverageForSkippedTests, repositoryExtensionClass, predictionModifierClass, classFileSelectorClass);
+        """.formatted(generateCoverageForSkippedTests, repositoryExtensionClass, predictionModifierClass);
     }
 
     @Override

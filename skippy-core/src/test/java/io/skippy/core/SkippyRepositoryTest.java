@@ -16,7 +16,9 @@
 
 package io.skippy.core;
 
+import com.example.LeftPadderTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -43,24 +45,34 @@ public class SkippyRepositoryTest {
     void setUp() throws URISyntaxException {
         projectDir = Paths.get(getClass().getResource(".").toURI());
         skippyRepository = SkippyRepository.getInstance(SkippyConfiguration.DEFAULT, projectDir, null);
-        skippyRepository.deleteSkippyFolder();
+        skippyRepository.resetSkippyFolder();
         skippyFolder = SkippyFolder.get(projectDir);
+        skippyRepository.resetSkippyFolder();
     }
 
     @Test
-    void testDeleteSkippyFolder() {
+    void testResetSkippyFolder() throws IOException {
+        createDirectories(skippyFolder.resolve("tmp"));
+        if (false == exists(skippyFolder.resolve("test-impact-analysis.json"))) {
+            createFile(skippyFolder.resolve("test-impact-analysis.json"));
+        }
+        assertTrue(exists(skippyFolder.resolve("tmp")));
+        assertTrue(exists(skippyFolder.resolve("test-impact-analysis.json")));
+
+        skippyRepository.resetSkippyFolder();
+
         assertTrue(exists(skippyFolder));
-        skippyRepository.deleteSkippyFolder();
-        assertFalse(exists(skippyFolder));
+        assertFalse(exists(skippyFolder.resolve("tmp")));
+        assertFalse(exists(skippyFolder.resolve("test-impact-analysis.json")));
     }
 
     @Test
     void testSaveConfiguration() throws IOException {
         var configFile = skippyFolder.resolve("config.json");
+        deleteIfExists(configFile);
         assertFalse(exists(skippyFolder.resolve("config.json")));
         var config = new SkippyConfiguration(
             true,
-            Optional.empty(),
             Optional.empty(),
             Optional.empty()
         );
@@ -70,8 +82,7 @@ public class SkippyRepositoryTest {
             {
                 "coverageForSkippedTests": "true",
                 "repositoryExtension": "io.skippy.core.DefaultRepositoryExtension",
-                "predictionModifier": "io.skippy.core.DefaultPredictionModifier",
-                "classFileSelector": "io.skippy.core.DefaultClassFileSelector"
+                "predictionModifier": "io.skippy.core.DefaultPredictionModifier"
             }
         """);
     }
@@ -79,12 +90,12 @@ public class SkippyRepositoryTest {
     @Test
     void testSaveCustomConfiguration() throws IOException {
         var configFile = skippyFolder.resolve("config.json");
+        deleteIfExists(configFile);
         assertFalse(exists(skippyFolder.resolve("config.json")));
         var config = new SkippyConfiguration(
                 false,
                 Optional.of("com.example.RepositoryExtension"),
-                Optional.of("com.example.PredictionModifier"),
-                Optional.of("com.example.ClassFileSelector")
+                Optional.of("com.example.PredictionModifier")
         );
         skippyRepository.saveConfiguration(config);
         var content = readString(configFile, StandardCharsets.UTF_8);
@@ -92,8 +103,7 @@ public class SkippyRepositoryTest {
             {
                 "coverageForSkippedTests": "false",
                 "repositoryExtension": "com.example.RepositoryExtension",
-                "predictionModifier": "com.example.PredictionModifier",
-                "classFileSelector": "com.example.ClassFileSelector"
+                "predictionModifier": "com.example.PredictionModifier"
             }
         """);
     }
@@ -105,36 +115,6 @@ public class SkippyRepositoryTest {
         assertTrue(exists(logFile));
         skippyRepository.deleteLogFiles();
         assertFalse(exists(logFile));
-    }
-
-    @Test
-    void testSaveTemporaryJaCoCoExecutionDataForCurrentBuild() throws Exception {
-        var execFile = Paths.get(getClass().getResource("com.example.LeftPadderTest.exec").toURI());
-        assertFalse(exists(skippyFolder.resolve("com.example.LeftPadderTest.exec")));
-        skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild("com.example.LeftPadderTest", "00000000", readAllBytes(execFile));
-        assertTrue(exists(skippyFolder.resolve("com.example.LeftPadderTest.00000000.exec")));
-    }
-
-    @Test
-    void testReadTemporaryJaCoCoExecutionDataForCurrentBuild() throws Exception {
-        var execFile = Paths.get(getClass().getResource("com.example.LeftPadderTest.exec").toURI());
-        skippyRepository.saveTemporaryJaCoCoExecutionDataForCurrentBuild("com.example.LeftPadderTest", "00000000", readAllBytes(execFile));
-        var resultSet = skippyRepository.readTemporaryJaCoCoExecutionDataForCurrentBuild();
-        assertEquals(1, resultSet.size());
-        var result = resultSet.get(0);
-        assertEquals(
-            asList(
-                "com.example.LeftPadder",
-                "com.example.LeftPadderTest",
-                "com.example.StringUtils"
-            ),
-            result.coveredClasses().stream()
-                .filter(className -> className.startsWith("com.example"))
-                .sorted()
-                .toList()
-        );
-        assertEquals("com.example.LeftPadderTest", result.testClassName());
-        assertArrayEquals(readAllBytes(execFile), result.jacocoExecutionData());
     }
 
     @Test
@@ -239,30 +219,6 @@ public class SkippyRepositoryTest {
         writeString(skippyFolder.resolve("LATEST"), testImpactAnalysis.getId(), StandardCharsets.UTF_8);
         writeString(skippyFolder.resolve("test-impact-analysis.json"), testImpactAnalysis.toJson(), StandardCharsets.UTF_8);
         assertEquals(testImpactAnalysis, skippyRepository.readLatestTestImpactAnalysis());
-    }
-
-    @Test
-    void testDeleteTags() {
-        skippyRepository.tagTest("com.example.FooTest", TestTag.FAILED);
-        assertTrue(exists(skippyFolder.resolve("tags.txt")));
-        skippyRepository.deleteTestTags();
-        assertFalse(exists(skippyFolder.resolve("tags.txt")));
-    }
-
-    @Test
-    void testTagging()  {
-        // a test is considered PASSED until it is tagged as FAILED
-        assertEquals(asList(TestTag.PASSED), skippyRepository.getTestTags("com.example.Test1"));
-        skippyRepository.tagTest("com.example.Test1", TestTag.FAILED);
-        assertEquals(asList(TestTag.FAILED), skippyRepository.getTestTags("com.example.Test1"));
-    }
-
-    @Test
-    void testTaggingAlwaysRun()  {
-        // a test is considered PASSED until it is tagged as FAILED
-        assertEquals(asList(TestTag.PASSED), skippyRepository.getTestTags("com.example.Test1"));
-        skippyRepository.tagTest("com.example.Test1", TestTag.ALWAYS_EXECUTE);
-        assertEquals(asList(TestTag.PASSED, TestTag.ALWAYS_EXECUTE), skippyRepository.getTestTags("com.example.Test1"));
     }
 
 }

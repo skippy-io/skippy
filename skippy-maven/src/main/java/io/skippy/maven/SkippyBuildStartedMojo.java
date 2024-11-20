@@ -48,9 +48,6 @@ public class SkippyBuildStartedMojo extends AbstractMojo {
     @Parameter(property = "predictionModifier")
     private String predictionModifier;
 
-    @Parameter(property = "classFileSelector")
-    private String classFileSelector;
-
     @Component
     private MavenSession session;
 
@@ -60,8 +57,7 @@ public class SkippyBuildStartedMojo extends AbstractMojo {
         var skippyConfiguration = new SkippyConfiguration(
                 coverageForSkippedTests,
                 Optional.ofNullable(repository),
-                Optional.ofNullable(predictionModifier),
-                Optional.ofNullable(classFileSelector)
+                Optional.ofNullable(predictionModifier)
         );
         var skippyApi = new SkippyBuildApi(
                 skippyConfiguration,
