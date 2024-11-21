@@ -38,4 +38,7 @@ import java.util.List;
  * @author Florian McKee
  */
 record TestRecording(String className, Path outputFolder, List<TestTag> tags, List<ClassNameAndJaCoCoId> coveredClasses, byte[] jacocoExecutionData) {
+    public String getPath() {
+        return "%s/%s".formatted(outputFolder, className);
+    }
 }

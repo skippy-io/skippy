@@ -19,16 +19,16 @@ package io.skippy.core;
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.skippy.core.JacocoUtil.mergeExecutionData;
 import static io.skippy.core.JacocoUtil.swallowJacocoExceptions;
 import static io.skippy.core.SkippyConstants.PREDICTIONS_LOG_FILE;
+import static io.skippy.core.PathUtil.getRelativePath;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.StandardOpenOption.*;
 import static java.util.Arrays.asList;
@@ -136,10 +136,12 @@ public final class SkippyTestApi {
                 if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {
                     skippyRepository.tagTest(test, TestTag.ALWAYS_EXECUTE);
                 }
+                var outputFolder = getRelativePath(Path.of(""), test);
                 if (predictionWithReason.reason().details().isPresent()) {
                     Files.writeString(
                         SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
-                        "%s,%s,%s,\"%s\"%s".formatted(
+                        "%s,%s,%s,%s,\"%s\"%s".formatted(
+                                outputFolder,
                                 test.getName(),
                                 predictionWithReason.prediction(),
                                 predictionWithReason.reason().category(),
@@ -150,7 +152,8 @@ public final class SkippyTestApi {
                 } else {
                     Files.writeString(
                             SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),
-                            "%s,%s,%s%s".formatted(
+                            "%s,%s,%s,%s%s".formatted(
+                                    outputFolder,
                                     test.getName(),
                                     predictionWithReason.prediction(),
                                     predictionWithReason.reason().category(),
@@ -160,8 +163,8 @@ public final class SkippyTestApi {
                 }
                 predictions.put(test, predictionWithReason.prediction());
                 return predictionWithReason.prediction() != Prediction.SKIP;
-            } catch (IOException e) {
-                throw new UncheckedIOException("Unable to check if test %s needs to be executed: %s.".formatted(test.getName(), e), e);
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to check if test %s needs to be executed: %s.".formatted(test.getName(), e), e);
             }
         });
     }

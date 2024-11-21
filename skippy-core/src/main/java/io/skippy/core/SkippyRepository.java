@@ -24,14 +24,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static io.skippy.core.HashUtil.hashWith8Digits;
-import static java.lang.System.lineSeparator;
+import static io.skippy.core.PathUtil.getRelativePath;
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.*;
 
 /**
  * Repository for storage and retrieval of
@@ -142,8 +140,8 @@ public final class SkippyRepository {
             }
             return Files.readAllLines(predictionsLog, StandardCharsets.UTF_8).stream().
                     map(line -> {
-                        var className = line.split(",")[0];
-                        var prediction = Prediction.valueOf(line.split(",")[1]);
+                        var className = line.split(",")[1];
+                        var prediction = Prediction.valueOf(line.split(",")[2]);
                         return new ClassNameAndPrediction(className, prediction);
                     })
                     .toList();
@@ -327,14 +325,9 @@ public final class SkippyRepository {
 
     private Path getFolderWithTestRecording(Class<?> testClass) {
         try {
-            // e.g. /user/foo/repos/my-project/build/classes/java/test/
-            var pathToTest = Path.of(testClass.getProtectionDomain().getCodeSource().getLocation().toURI());
-            // e.g. build/classes/java/test/
-            var pathToTestRelativeToProject = projectDir.toAbsolutePath().relativize(pathToTest);
-            // e.g. .skippy/tmp/build/classes/java/test/
             var execFileFolder = SkippyFolder.get(projectDir)
                     .resolve("tmp")
-                    .resolve(pathToTestRelativeToProject);
+                    .resolve(getRelativePath(projectDir, testClass));
             return Files.createDirectories(execFileFolder);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -363,5 +356,13 @@ public final class SkippyRepository {
         }
     }
 
+    public void log(String statement) {
+        var logFile = SkippyFolder.get(projectDir).resolve("logging.log");
+        try {
+            Files.write(logFile, asList(statement), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to write log statement: %s.".formatted(e), e);
+        }
+    }
 }
 

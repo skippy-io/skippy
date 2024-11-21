@@ -16,9 +16,11 @@
 
 package io.skippy.core;
 
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.IntStream;
 
+import static io.skippy.core.PathUtil.getRelativePath;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toMap;
@@ -210,8 +212,25 @@ final class ClassFileContainer {
                 .filter(classFile -> classFile.getOutputFolder().equals(testRecording.outputFolder()))
                 .toList();
         if (matchesByClassNameAndJaCoCoId.size() != 1) {
-            throw new IllegalStateException("Expected exactly one match for %s but found %s: %s".formatted(testRecording, matchesByClassNameAndJaCoCoId.size(), matchesByClassNameAndJaCoCoId));
+            throw new IllegalStateException("Expected exactly one match for %s but found %s: %s".formatted(testRecording.getPath(), matchesByClassNameAndJaCoCoId.size(), matchesByClassNameAndJaCoCoId));
         }
         return matchesByClassNameAndJaCoCoId.get(0);
     }
+
+    public Optional<Integer> getIdByClass(Class<?> clazz, List<Integer> candidates) {
+        var idsByClassName = getIdsByClassName(clazz.getName()).stream().filter(candidates::contains).toList();
+        if (idsByClassName.size() == 0) {
+            return Optional.empty();
+        }
+        if (idsByClassName.size() == 1) {
+            return Optional.of(idsByClassName.get(0));
+        }
+        for (var id : idsByClassName) {
+            if (getById(id).getOutputFolder().equals(getRelativePath(Path.of("."), clazz))) {
+                return Optional.of(id);
+            }
+        }
+        return Optional.empty();
+    }
+
 }
