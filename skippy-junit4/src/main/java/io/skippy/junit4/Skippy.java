@@ -26,8 +26,8 @@ import org.junit.rules.TestRule;
  * <pre>
  * public class FooTest {
  *
- *    {@literal @}ClassRule
- *     public static TestRule skippyRule = Skippy.predictWithSkippy();
+ *    {@literal @}Rule
+ *     public TestRule skippyRule = Skippy.predictWithSkippy();
  *
  *    {@literal @}Test
  *     public void testFoo() {

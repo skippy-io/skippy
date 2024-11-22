@@ -30,12 +30,12 @@ public final class CoverageFileCallbacks implements BeforeAllCallback, AfterAllC
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        context.getTestClass().ifPresent(skippyTestApi::beforeTest);
+        context.getTestClass().ifPresent(skippyTestApi::beforeAll);
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
-        context.getTestClass().ifPresent(skippyTestApi::afterTest);
+        context.getTestClass().ifPresent(skippyTestApi::afterAll);
     }
 
 }

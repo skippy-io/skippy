@@ -113,23 +113,15 @@ public final class SkippyBuildApi {
         var executionId = skippyConfiguration.generateCoverageForSkippedTests() ?
                 Optional.of(skippyRepository.saveJacocoExecutionData(testRecording.jacocoExecutionData())) :
                 Optional.<String>empty();
-        return new AnalyzedTest(
-                classFileContainer.getId(classFile),
-                testRecording.tags(),
-                getCoveredClassesIds(testRecording, classFileContainer), executionId);
+        return AnalyzedTest.from(classFileContainer, classFile, testRecording.tags(), getCoveredClasses(testRecording, classFileContainer), executionId);
     }
 
-    private List<Integer> getCoveredClassesIds(TestRecording testRecording, ClassFileContainer classFileContainer) {
-        var coveredClassIds = new LinkedList<Integer>();
+    private List<ClassFile> getCoveredClasses(TestRecording testRecording, ClassFileContainer classFileContainer) {
+        var result = new LinkedList<ClassFile>();
         for (var coveredClass : testRecording.coveredClasses()) {
-            for (var candidate : classFileContainer.getClassFilesByClassName(coveredClass.className())) {
-                if (candidate.getJaCoCoId() == coveredClass.jaCoCoId()) {
-                    coveredClassIds.add(classFileContainer.getId(candidate));
-                }
-
-            }
+            result.addAll(classFileContainer.getClassFilesMatching(coveredClass));
         }
-        return coveredClassIds;
+        return result;
     }
 
 }

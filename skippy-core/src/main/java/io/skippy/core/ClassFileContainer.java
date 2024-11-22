@@ -92,37 +92,21 @@ final class ClassFileContainer {
                 .collect(toMap(i -> i, i -> sorted.get(i))));
     }
 
-    /**
-     * Returns the ids of the classes that match the provided class name.
-     * <br /><br />
-     * Note that class names might not be unique within a project:
-     * <pre>
-     *     src/integration-test/java/com.example.FooTest
-     *     src/functional-test/java/com.example.FooTest
-     * </pre>
-     * That's why this method returns a list.
-     *
-     * @param className a class name
-     * @return the ids of the classes that match the provided class name
-     */
-    private List<Integer> getIdsByClassName(String className) {
-        if (false == idsByClassName.containsKey(className)) {
-            return emptyList();
-        }
-        return idsByClassName.get(className);
-    }
-
     Set<ClassFile> getClassFiles() {
         return unmodifiableSet(classFiles);
     }
 
     /**
-     * Returns
-     * @param className
-     * @return
+     * Returns all {@link ClassFile}s that match the given {@code classNameAndJaCoCoId}
+     *
+     * @param classNameAndJaCoCoId a {@link ClassNameAndJaCoCoId}
+     * @return all {@link ClassFile}s that match the given {@code classNameAndJaCoCoId}
      */
-    List<ClassFile> getClassFilesByClassName(String className) {
-        return getIdsByClassName(className).stream().map(this::getById).toList();
+    List<ClassFile> getClassFilesMatching(ClassNameAndJaCoCoId classNameAndJaCoCoId) {
+        return idsByClassName.getOrDefault(classNameAndJaCoCoId.className(), emptyList()).stream()
+                .map(this::getById)
+                .filter(classFile -> classFile.getJaCoCoId() == classNameAndJaCoCoId.jaCoCoId())
+                .toList();
     }
 
     /**
@@ -144,6 +128,35 @@ final class ClassFileContainer {
      */
     ClassFile getById(int id) {
         return classFilesById.get(id);
+    }
+
+    ClassFile getClassFileFor(TestRecording testRecording) {
+        var matchesByClassName = idsByClassName.getOrDefault(testRecording.className(), emptyList()).stream().map(this::getById).toList();
+        var matchesByClassNameAndJaCoCoId = matchesByClassName.stream()
+                .filter(classFile -> classFile.getOutputFolder().equals(testRecording.outputFolder()))
+                .toList();
+        if (matchesByClassNameAndJaCoCoId.size() != 1) {
+            throw new IllegalStateException("Expected exactly one match for %s but found %s: %s".formatted(testRecording.getPath(), matchesByClassNameAndJaCoCoId.size(), matchesByClassNameAndJaCoCoId));
+        }
+        return matchesByClassNameAndJaCoCoId.get(0);
+    }
+
+    Optional<AnalyzedTest> getAnalyzedTestForTestClass(Class<?> clazz, List<AnalyzedTest> analyzedTests) {
+        var analyzedTestIds = analyzedTests.stream().map(AnalyzedTest::getTestClassId).toList();
+        var matchingIdsByClassName = idsByClassName.getOrDefault(clazz.getName(), emptyList()).stream()
+                .filter(analyzedTestIds::contains).toList();
+        if (matchingIdsByClassName.size() == 0) {
+            return Optional.empty();
+        }
+        if (matchingIdsByClassName.size() == 1) {
+            return analyzedTests.stream().filter(analyzedTest -> analyzedTest.getTestClassId() == matchingIdsByClassName.get(0)).findFirst();
+        }
+        for (var id : matchingIdsByClassName) {
+            if (getById(id).getOutputFolder().equals(getRelativePath(Path.of("."), clazz))) {
+                return analyzedTests.stream().filter(analyzedTest -> analyzedTest.getTestClassId() == id).findFirst();
+            }
+        }
+        return Optional.empty();
     }
 
     String toJson() {
@@ -204,33 +217,6 @@ final class ClassFileContainer {
     @Override
     public int hashCode() {
         return Objects.hash(classFilesById);
-    }
-
-    ClassFile getClassFileFor(TestRecording testRecording) {
-        var matchesByClassName = getClassFilesByClassName(testRecording.className());
-        var matchesByClassNameAndJaCoCoId = matchesByClassName.stream()
-                .filter(classFile -> classFile.getOutputFolder().equals(testRecording.outputFolder()))
-                .toList();
-        if (matchesByClassNameAndJaCoCoId.size() != 1) {
-            throw new IllegalStateException("Expected exactly one match for %s but found %s: %s".formatted(testRecording.getPath(), matchesByClassNameAndJaCoCoId.size(), matchesByClassNameAndJaCoCoId));
-        }
-        return matchesByClassNameAndJaCoCoId.get(0);
-    }
-
-    public Optional<Integer> getIdByClass(Class<?> clazz, List<Integer> candidates) {
-        var idsByClassName = getIdsByClassName(clazz.getName()).stream().filter(candidates::contains).toList();
-        if (idsByClassName.size() == 0) {
-            return Optional.empty();
-        }
-        if (idsByClassName.size() == 1) {
-            return Optional.of(idsByClassName.get(0));
-        }
-        for (var id : idsByClassName) {
-            if (getById(id).getOutputFolder().equals(getRelativePath(Path.of("."), clazz))) {
-                return Optional.of(id);
-            }
-        }
-        return Optional.empty();
     }
 
 }

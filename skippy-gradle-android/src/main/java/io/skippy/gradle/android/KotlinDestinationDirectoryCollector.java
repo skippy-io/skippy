@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 final class KotlinDestinationDirectoryCollector {
     private KotlinDestinationDirectoryCollector() {}
 
-    private static Stream<File> collect(Project project) {
+    static Stream<File> collect(Project project) {
         return project.getTasks().stream()
                 .filter(task -> task.getName().startsWith("compile") && task.getName().endsWith("Kotlin"))
                 .filter(task -> task instanceof KotlinCompileTool)
@@ -39,8 +39,4 @@ final class KotlinDestinationDirectoryCollector {
                 .map(kotlinCompileTool -> kotlinCompileTool.getDestinationDirectory().get().getAsFile());
     }
 
-    static Stream<File> collectIfExists(Project project) {
-        return collect(project)
-                .filter(File::exists);
-    }
 }

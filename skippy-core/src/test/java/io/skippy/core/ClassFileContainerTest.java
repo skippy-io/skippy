@@ -16,11 +16,17 @@
 
 package io.skippy.core;
 
+import com.example.BarTest;
+import com.example.FooTest;
+import com.example.LeftPadderTest;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -172,6 +178,98 @@ public class ClassFileContainerTest {
                 }
             }
         """);
+    }
+    @Test
+    void testGetClassFileForTestRecording() {
+        var container = ClassFileContainer.parse(new Tokenizer(
+                """
+                    {
+                        "0": {
+                            "name": "com.example.FooTest",
+                            "path": "com.example.FooTest.class",
+                            "outputFolder": "src/main/java",
+                            "hash": "Foo#hash"
+                        },
+                        "1": {
+                            "name": "com.example.FooTest",
+                            "path": "com.example.FooTest.class",
+                            "outputFolder": "src/main/kotlin",
+                            "hash": "Foo#hash"
+                        }
+                    }
+                """));
+
+        var recordingForJavaTest = new TestRecording("com.example.FooTest", Path.of("src/main/java"), emptyList(), emptyList(), null);
+        var classFileForJavaTest = container.getClassFileFor(recordingForJavaTest);
+
+        assertEquals("com.example.FooTest", classFileForJavaTest.getClassName());
+        assertEquals(Path.of("src/main/java"), classFileForJavaTest.getOutputFolder());
+
+        var recordingForKotlinTest = new TestRecording("com.example.FooTest", Path.of("src/main/kotlin"), emptyList(), emptyList(), null);
+        var classFileForKotlinTest = container.getClassFileFor(recordingForKotlinTest);
+
+        assertEquals("com.example.FooTest", classFileForKotlinTest.getClassName());
+        assertEquals(Path.of("src/main/kotlin"), classFileForKotlinTest.getOutputFolder());
+    }
+
+    @Test
+    void testGetAnalyzedTestForTestClass_1() {
+        var container = ClassFileContainer.parse(new Tokenizer(
+                """
+                    {
+                        "0": {
+                            "name": "com.example.FooTest",
+                            "path": "com.example.FooTest.class",
+                            "outputFolder": "src/main/java",
+                            "hash": "Foo#hash"
+                        },
+                        "1": {
+                            "name": "com.example.BarTest",
+                            "path": "com.example.BarTest.class",
+                            "outputFolder": "src/main/java",
+                            "hash": "Foo#hash"
+                        }
+                    }
+                """));
+        var analyzedTests = List.of(
+                new AnalyzedTest(0, emptyList(), emptyList(), Optional.empty()),
+                new AnalyzedTest(1, emptyList(), emptyList(), Optional.empty())
+        );
+        assertEquals(0, container.getAnalyzedTestForTestClass(FooTest.class, analyzedTests).get().getTestClassId());
+        assertEquals(1, container.getAnalyzedTestForTestClass(BarTest.class, analyzedTests).get().getTestClassId());
+        assertEquals(Optional.empty(), container.getAnalyzedTestForTestClass(LeftPadderTest.class, analyzedTests));
+    }
+
+    @Test
+    void testGetAnalyzedTestForTestClass_2() {
+        var container = ClassFileContainer.parse(new Tokenizer(
+                """
+                    {
+                        "0": {
+                            "name": "com.example.FooTest",
+                            "path": "com.example.FooTest.class",
+                            "outputFolder": "build/classes/java/kotlin-test",
+                            "hash": "Foo#hash"
+                        },
+                        "1": {
+                            "name": "com.example.FooTest",
+                            "path": "com.example.FooTest.class",
+                            "outputFolder": "build/classes/java/test",
+                            "hash": "Foo#hash"
+                        },
+                        "3": {
+                            "name": "com.example.FooTest",
+                            "path": "com.example.FooTest.class",
+                            "outputFolder": "build/classes/java/groovy-test",
+                            "hash": "Foo#hash"
+                        }
+                    }
+                """));
+        var analyzedTests = List.of(
+                new AnalyzedTest(0, emptyList(), emptyList(), Optional.empty()),
+                new AnalyzedTest(1, emptyList(), emptyList(), Optional.empty())
+        );
+        assertEquals(1, container.getAnalyzedTestForTestClass(FooTest.class, analyzedTests).get().getTestClassId());
     }
 
 }

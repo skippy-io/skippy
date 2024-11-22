@@ -170,11 +170,28 @@ public final class SkippyTestApi {
     }
 
     /**
-     * Prepares for the capturing of a JaCoCo execution data file for {@code testClass} before any tests in the class are executed.
+     * Informs Skippy that {@code testMethod} in {@code testClass} is about to be executed.
+     * <br /><br />
+     * Note: This method is only intended to be used by Skippy's JUnit4 library since it does not support nested tests.
      *
-     * @param testClass a test class
+     * @param testClass the test {@link Class}
+     * @param testMethod the name of the test method.
      */
-    public void beforeTest(Class<?> testClass) {
+    public void before(Class<?> testClass, String testMethod) {
+        Profiler.profile("SkippyTestApi#prepareExecFileGeneration", () -> {
+            swallowJacocoExceptions(() -> {
+                IAgent agent = RT.getAgent();
+                agent.reset();
+            });
+        });
+    }
+
+    /**
+     * Informs Skippy that the tests in {@code testClass} are about to be executed.
+     *
+     * @param testClass the test {@link Class}
+     */
+    public void beforeAll(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareExecFileGeneration", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
@@ -188,21 +205,34 @@ public final class SkippyTestApi {
     }
 
     /**
-     * Writes a JaCoCo execution data and classpath file after all tests in for {@code testClass} have been executed:
-     * <ul>
-     *     <li>The execution data file contains the test's coverage</li>
-     *     <li>The classpath file contains the test's classpath</li>
-     * </ul>
+     * Informs Skippy that a test method in the test methods in the {@code testClass} has been executed.
+     * <br /><br />
+     * Note: This method is only intended to be used by Skippy's JUnit4 library since it does not support nested tests.
      *
-     * @param testClass a test class
+     * @param testClass the test {@link Class}
+     * @param testMethod the name of the test method.
      */
-    public void afterTest(Class<?> testClass) {
-        Profiler.profile("SkippyTestApi#writeExecAndClasspathFile", () -> {
+    public void after(Class<?> testClass, String testMethod) {
+        Profiler.profile("SkippyTestApi#after", () -> {
+            swallowJacocoExceptions(() -> {
+                IAgent agent = RT.getAgent();
+                skippyRepository.after(testClass, testMethod, agent.getExecutionData(true));
+            });
+        });
+    }
+
+    /**
+     * Informs Skippy that all test methods in the {@code testClass} have been executed.
+     *
+     * @param testClass the test {@link Class}
+     */
+    public void afterAll(Class<?> testClass) {
+        Profiler.profile("SkippyTestApi#afterAll", () -> {
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 var executionData = executionDataStack.lastElement();
                 executionData.add(agent.getExecutionData(true));
-                skippyRepository.afterTest(testClass, mergeExecutionData(executionData));
+                skippyRepository.afterAll(testClass, mergeExecutionData(executionData));
                 executionDataStack.pop();
                 if (isNestedTest()) {
                     addExecutionDataToParent(executionData);
