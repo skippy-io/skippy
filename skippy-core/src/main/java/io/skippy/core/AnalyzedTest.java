@@ -61,6 +61,15 @@ final class AnalyzedTest implements Comparable<AnalyzedTest> {
         this.executionId = executionId;
     }
 
+    static AnalyzedTest from(ClassFileContainer classFileContainer, ClassFile classFile, List<TestTag> tags, List<ClassFile> coveredClasses, Optional<String> executionId) {
+        return new AnalyzedTest(
+                classFileContainer.getId(classFile),
+                tags,
+                coveredClasses.stream().map(classFileContainer::getId).toList(),
+                executionId
+        );
+    }
+
     /**
      * Returns the id of the test class in the {@link ClassFileContainer}.
      *

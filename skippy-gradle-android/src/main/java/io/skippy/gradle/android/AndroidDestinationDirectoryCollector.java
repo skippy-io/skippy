@@ -31,15 +31,11 @@ import java.util.stream.Stream;
 final class AndroidDestinationDirectoryCollector {
     private AndroidDestinationDirectoryCollector() {}
 
-    private static Stream<File> collect(Project project) {
+    static Stream<File> collect(Project project) {
         return project.getTasks()
                 .withType(JavaCompile.class)
                 .stream()
                 .map(task -> task.getDestinationDirectory().getAsFile().get());
     }
 
-    static Stream<File> collectIfExists(Project project) {
-        return collect(project)
-                .filter(File::exists);
-    }
 }

@@ -4,7 +4,13 @@ import org.jacoco.core.internal.data.CRC64;
 
 import java.io.IOException;
 
-public record ClassNameAndJaCoCoId(String className, long jaCoCoId) implements Comparable<ClassNameAndJaCoCoId> {
+/**
+ * Coverage data extracted from a JaCoCo execution data file.
+ *
+ * @param className the name of the covered class
+ * @param jaCoCoId the JaCoCo class id of the covered class
+ */
+record ClassNameAndJaCoCoId(String className, long jaCoCoId) implements Comparable<ClassNameAndJaCoCoId> {
 
     static ClassNameAndJaCoCoId from(Class<?> clazz) {
         String resourcePath = clazz.getName().replace('.', '/') + ".class";

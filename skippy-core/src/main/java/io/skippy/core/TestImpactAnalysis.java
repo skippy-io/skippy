@@ -137,12 +137,12 @@ public final class TestImpactAnalysis {
                 if (NOT_FOUND.equals(this)) {
                     return PredictionWithReason.execute(new Reason(TEST_IMPACT_ANALYSIS_NOT_FOUND, Optional.empty()));
                 }
-                var maybeAnalyzedTestId = classFileContainer.getIdByClass(testClazz, analyzedTests.stream().map(AnalyzedTest::getTestClassId).toList());
+                var maybeAnalyzedTest = classFileContainer.getAnalyzedTestForTestClass(testClazz, analyzedTests);
 
-                if (maybeAnalyzedTestId.isEmpty()) {
+                if (maybeAnalyzedTest.isEmpty()) {
                     return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));
                 }
-                var analyzedTest = analyzedTests.stream().filter(test -> test.getTestClassId() == maybeAnalyzedTestId.get()).findFirst().get();
+                var analyzedTest = maybeAnalyzedTest.get();
                 var testClass = classFileContainer.getById(analyzedTest.getTestClassId());
 
                 var classFileLocation = getRelativePath(Path.of(""), testClazz);
@@ -196,6 +196,7 @@ public final class TestImpactAnalysis {
                 }
                 return PredictionWithReason.skip(new Reason(NO_CHANGE, Optional.empty()));
             } catch (Exception e) {
+                if (true) throw new RuntimeException(e);
                 return PredictionWithReason.execute(new Reason(INTERNAL_ERROR_IN_PREDICTION_LOGIC, Optional.of(e.toString())));
             }
         });
