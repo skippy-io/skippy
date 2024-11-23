@@ -39,7 +39,7 @@ The best way to get started are the introductory tutorials for Gradle and Maven:
 - [Getting Started with Skippy, Gradle & JUnit 5](https://www.skippy.io/tutorials/skippy-gradle-junit5)
 - [Getting Started with Skippy, Maven & JUnit 5](https://www.skippy.io/tutorials/skippy-maven-junit5)
 
-From there, a good next steps is the [Reference Documentation](https://www.skippy.io/docs).
+From there, a good next step is the [Reference Documentation](https://www.skippy.io/docs).
 
 ## Teaser
 
