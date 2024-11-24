@@ -61,6 +61,11 @@ public record Reason(Category category, Optional<String> details) {
         TEST_FAILED_PREVIOUSLY,
 
         /**
+         * An error occurred in the prediction logic.
+         */
+        INTERNAL_ERROR_IN_PREDICTION_LOGIC,
+
+        /**
          * The test is tagged as {@link TestTag#ALWAYS_EXECUTE}.
          */
         TEST_TAGGED_AS_ALWAYS_EXECUTE,
@@ -83,11 +88,6 @@ public record Reason(Category category, Optional<String> details) {
          * The class file of the test was not found on the file system.
          */
         TEST_CLASS_CLASS_FILE_NOT_FOUND,
-
-        /**
-         * The class file of a covered class  was not found on the file system.
-         */
-        COVERED_CLASS_CLASS_FILE_NOT_FOUND,
 
         /**
          * Coverage for skipped tests is enabled but the test has no execution id. The test needs to be re-run in order

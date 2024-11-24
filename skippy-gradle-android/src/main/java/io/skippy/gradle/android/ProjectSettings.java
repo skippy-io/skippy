@@ -41,8 +41,8 @@ class ProjectSettings implements Serializable {
     }
 
     static ProjectSettings from(Project project) {
-        var androidClassesDirs = AndroidDestinationDirectoryCollector.collectIfExists(project);
-        var kotlinClassesDirs = KotlinDestinationDirectoryCollector.collectIfExists(project);
+        var androidClassesDirs = AndroidDestinationDirectoryCollector.collect(project);
+        var kotlinClassesDirs = KotlinDestinationDirectoryCollector.collect(project);
         var allClassesDirs = Stream.concat(kotlinClassesDirs, androidClassesDirs).toList();
 
         Path projectDir = project.getProjectDir().toPath();

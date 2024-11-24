@@ -47,7 +47,12 @@ jobs:
         SKIPPY_PRIVATE_KEY: ${{ secrets.SKIPPY_PRIVATE_KEY }}
         SKIPPY_PRIVATE_KEY_SECRET: ${{ secrets.SKIPPY_PRIVATE_KEY_SECRET }}
 
-    - name: Deploy plugins to Gradle Plugin Portal
+    - name: Deploy skippy-gradle to Gradle Plugin Portal
       uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
       with:
         arguments: :skippy-gradle:publishPlugins -PpublishToGradlePluginPortal=true -Pgradle.publish.key=${{ secrets.GRADLE_PLUGIN_PORTAL_KEY }} -Pgradle.publish.secret=${{ secrets.GRADLE_PLUGIN_PORTAL_SECRET }}
+
+    - name: Deploy skippy-gradle-android to Gradle Plugin Portal
+      uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
+      with:
+        arguments: :skippy-gradle-android:publishPlugins -PpublishToGradlePluginPortal=true -Pgradle.publish.key=${{ secrets.GRADLE_PLUGIN_PORTAL_KEY }} -Pgradle.publish.secret=${{ secrets.GRADLE_PLUGIN_PORTAL_SECRET }}

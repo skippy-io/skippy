@@ -17,10 +17,12 @@
 package io.skippy.core;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 
 import static io.skippy.core.Reason.Category.*;
 import static io.skippy.core.HashUtil.hashWith32Digits;
+import static io.skippy.core.PathUtil.getRelativePath;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
@@ -131,68 +133,72 @@ public final class TestImpactAnalysis {
      */
     PredictionWithReason predict(Class<?> testClazz, SkippyConfiguration configuration, SkippyRepository skippyRepository) {
         return Profiler.profile("TestImpactAnalysis#predict", () -> {
-            if (NOT_FOUND.equals(this)) {
-                return PredictionWithReason.execute(new Reason(TEST_IMPACT_ANALYSIS_NOT_FOUND, Optional.empty()));
-            }
-            var maybeAnalyzedTest = analyzedTests.stream()
-                    .filter(test -> classFileContainer.getById(test.getTestClassId()).getClassName().equals(testClazz.getName()))
-                    .findFirst();
-            if (maybeAnalyzedTest.isEmpty()) {
-                return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));
-            }
-            var analyzedTest = maybeAnalyzedTest.get();
-            var testClass = classFileContainer.getById(analyzedTest.getTestClassId());
-
-            if (analyzedTest.isTaggedAs(TestTag.FAILED)) {
-                return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
-            }
-
-            if (analyzedTest.isTaggedAs(TestTag.ALWAYS_EXECUTE)) {
-                return PredictionWithReason.execute(new Reason(TEST_TAGGED_AS_ALWAYS_EXECUTE, Optional.empty()));
-            }
-
-            if (testClass.classFileNotFound()) {
-                return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of("test class file: %s".formatted(testClass.getPath().toString()))));
-            }
-
-            if (testClass.hasChanged()) {
-                return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
-            }
-
-            if (configuration.generateCoverageForSkippedTests()) {
-                if (analyzedTest.getExecutionId().isEmpty()) {
-                        return PredictionWithReason.execute(new Reason(MISSING_EXECUTION_ID, Optional.empty()));
-                } else {
-                    if (skippyRepository.readJacocoExecutionData(analyzedTest.getExecutionId().get()).isEmpty()) {
-                        return PredictionWithReason.execute(new Reason(UNABLE_TO_READ_EXECUTION_DATA, Optional.empty()));
-                    }
+            try {
+                if (NOT_FOUND.equals(this)) {
+                    return PredictionWithReason.execute(new Reason(TEST_IMPACT_ANALYSIS_NOT_FOUND, Optional.empty()));
                 }
-            }
-            for (var coveredClassId : analyzedTest.getCoveredClassesIds()) {
-                var coveredClass = classFileContainer.getById(coveredClassId);
-                if (coveredClass.classFileNotFound()) {
-                    return PredictionWithReason.execute(new Reason(COVERED_CLASS_CLASS_FILE_NOT_FOUND, Optional.of("covered class: %s".formatted(coveredClass.getPath().toString()))));
-                }
-                if (coveredClass.hasChanged()) {
-                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of("covered class: %s".formatted(coveredClass.getClassName()))));
-                }
-                var maybeCoveredTest = analyzedTests.stream()
-                        .filter(test -> test.getTestClassId() == coveredClassId)
-                        .findFirst();
-                if (maybeCoveredTest.isPresent()) {
-                    var coveredTest = maybeCoveredTest.get();
-                    if (coveredTest.isTaggedAs(TestTag.FAILED)) {
-                        return PredictionWithReason.execute(new Reason(COVERED_TEST_TAGGED_AS_FAILED, Optional.of("covered test: %s".formatted(coveredClass.getClassName()))));
-                    }
-                    if (coveredTest.isTaggedAs(TestTag.ALWAYS_EXECUTE)) {
-                        return PredictionWithReason.execute(new Reason(COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, Optional.of("covered test: %s".formatted(coveredClass.getClassName()))));
-                    }
-                }
+                var maybeAnalyzedTest = classFileContainer.getAnalyzedTestForTestClass(testClazz, analyzedTests);
+
                 if (maybeAnalyzedTest.isEmpty()) {
                     return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));
                 }
+                var analyzedTest = maybeAnalyzedTest.get();
+                var testClass = classFileContainer.getById(analyzedTest.getTestClassId());
+
+                var classFileLocation = getRelativePath(Path.of(""), testClazz);
+                skippyRepository.log("Mapping class %s/%s to AnalyzedTest[%s/%s]".formatted(classFileLocation, testClazz.getName(), testClass.getOutputFolder(), testClass.getClassName()));
+
+                if (analyzedTest.isTaggedAs(TestTag.FAILED)) {
+                    return PredictionWithReason.execute(new Reason(TEST_FAILED_PREVIOUSLY, Optional.empty()));
+                }
+
+                if (analyzedTest.isTaggedAs(TestTag.ALWAYS_EXECUTE)) {
+                    return PredictionWithReason.execute(new Reason(TEST_TAGGED_AS_ALWAYS_EXECUTE, Optional.empty()));
+                }
+
+                if (testClass.classFileNotFound()) {
+                    return PredictionWithReason.execute(new Reason(TEST_CLASS_CLASS_FILE_NOT_FOUND, Optional.of("test class file: %s".formatted(testClass.getPath().toString()))));
+                }
+
+                if (testClass.hasChanged()) {
+                    return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_TEST, Optional.empty()));
+                }
+
+                if (configuration.generateCoverageForSkippedTests()) {
+                    if (analyzedTest.getExecutionId().isEmpty()) {
+                            return PredictionWithReason.execute(new Reason(MISSING_EXECUTION_ID, Optional.empty()));
+                    } else {
+                        if (skippyRepository.readJacocoExecutionData(analyzedTest.getExecutionId().get()).isEmpty()) {
+                            return PredictionWithReason.execute(new Reason(UNABLE_TO_READ_EXECUTION_DATA, Optional.empty()));
+                        }
+                    }
+                }
+                for (var coveredClassId : analyzedTest.getCoveredClassesIds()) {
+                    var coveredClass = classFileContainer.getById(coveredClassId);
+                    if (coveredClass.classFileNotFound()) {
+                        continue;
+                    }
+                    if (coveredClass.hasChanged()) {
+                        return PredictionWithReason.execute(new Reason(BYTECODE_CHANGE_IN_COVERED_CLASS, Optional.of("covered class: %s".formatted(coveredClass.getClassName()))));
+                    }
+                    var maybeCoveredTest = analyzedTests.stream()
+                            .filter(test -> test.getTestClassId() == coveredClassId)
+                            .findFirst();
+                    if (maybeCoveredTest.isPresent()) {
+                        var coveredTest = maybeCoveredTest.get();
+                        if (coveredTest.isTaggedAs(TestTag.FAILED)) {
+                            return PredictionWithReason.execute(new Reason(COVERED_TEST_TAGGED_AS_FAILED, Optional.of("covered test: %s".formatted(coveredClass.getClassName()))));
+                        }
+                        if (coveredTest.isTaggedAs(TestTag.ALWAYS_EXECUTE)) {
+                            return PredictionWithReason.execute(new Reason(COVERED_TEST_TAGGED_AS_ALWAYS_EXECUTE, Optional.of("covered test: %s".formatted(coveredClass.getClassName()))));
+                        }
+                    }
+                }
+                return PredictionWithReason.skip(new Reason(NO_CHANGE, Optional.empty()));
+            } catch (Exception e) {
+                if (true) throw new RuntimeException(e);
+                return PredictionWithReason.execute(new Reason(INTERNAL_ERROR_IN_PREDICTION_LOGIC, Optional.of(e.toString())));
             }
-            return PredictionWithReason.skip(new Reason(NO_CHANGE, Optional.empty()));
         });
     }
 

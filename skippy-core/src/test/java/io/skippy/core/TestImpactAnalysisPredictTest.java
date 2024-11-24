@@ -225,39 +225,6 @@ public class TestImpactAnalysisPredictTest {
             assertEquals("test class file: com/example/LeftPadderTest$Bla.class", predictionWithReason.reason().details().get());
         }
 
-        @Test
-        void testPredictCoveredClassClassFileNotFound() throws ClassNotFoundException {
-            var testImpactAnalysis = TestImpactAnalysis.parse("""
-             {
-                "classes": {
-                    "0": {
-                        "name": "com.example.LeftPadder",
-                        "path": "com/example/LeftPadder$Bla.class",
-                        "outputFolder": "build/classes/java/test",
-                        "hash": "00000000"
-                    },
-                    "1": {
-                        "name": "com.example.LeftPadderTest",
-                        "path": "com/example/LeftPadderTest.class",
-                        "outputFolder": "build/classes/java/test",
-                        "hash": "80E52EBA"
-                    }
-                },
-                "tests": [
-                    {
-                        "class": "1",
-                        "tags": ["PASSED"],
-                        "coveredClasses": ["0", "1"]
-                    }
-                ]
-            }
-        """);
-            var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
-            assertEquals(EXECUTE, predictionWithReason.prediction());
-            assertEquals(COVERED_CLASS_CLASS_FILE_NOT_FOUND, predictionWithReason.reason().category());
-            assertEquals("covered class: com/example/LeftPadder$Bla.class", predictionWithReason.reason().details().get());
-        }
-
     }
 
     @Nested

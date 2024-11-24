@@ -24,14 +24,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static io.skippy.core.HashUtil.hashWith8Digits;
-import static java.lang.System.lineSeparator;
+import static io.skippy.core.PathUtil.getRelativePath;
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.*;
 
 /**
  * Repository for storage and retrieval of
@@ -142,8 +140,8 @@ public final class SkippyRepository {
             }
             return Files.readAllLines(predictionsLog, StandardCharsets.UTF_8).stream().
                     map(line -> {
-                        var className = line.split(",")[0];
-                        var prediction = Prediction.valueOf(line.split(",")[1]);
+                        var className = line.split(",")[1];
+                        var prediction = Prediction.valueOf(line.split(",")[2]);
                         return new ClassNameAndPrediction(className, prediction);
                     })
                     .toList();
@@ -168,13 +166,12 @@ public final class SkippyRepository {
     }
 
     /**
-     * Allows Skippy's JUnit libraries to temporarily save test execution data in the Skippy folder.
-     * The data will be automatically deleted after the build finishes.
+     * Records the execution data for all tests in {@code testClass}.
      *
-     * @param testClass the name of a test class (e.g., com.example.FooTest)
-     * @param jacocoExecutionData Jacoco execution data for the test.
+     * @param testClass the test {@link Class}
+     * @param jacocoExecutionData Jacoco execution data for all tests in {@code testClass}
      */
-    void afterTest(Class<?> testClass, byte[] jacocoExecutionData) {
+    void afterAll(Class<?> testClass, byte[] jacocoExecutionData) {
         try {
             Files.write(
                 getFolderWithTestRecording(testClass).resolve("%s.classpath".formatted(testClass.getName())),
@@ -187,9 +184,34 @@ public final class SkippyRepository {
     }
 
     /**
-     * Returns the test execution data written by {@link #afterTest(Class, byte[])}
+     * Records the execution for {@code testMethod} in {@code testClass}.
      *
-     * @return the test execution data written by {@link #afterTest(Class, byte[])}
+     * @param testClass the test {@link Class}
+     * @param testMethod the name of the test method
+     * @param jacocoExecutionData JaCoCo execution data for {@code testMethod}
+     */
+    void after(Class<?> testClass, String testMethod, byte[] jacocoExecutionData) {
+        try {
+            Files.write(
+                getFolderWithTestRecording(testClass).resolve("%s.classpath".formatted(testClass.getName())),
+                getClassPath(), CREATE, TRUNCATE_EXISTING
+            );
+            var execFile = getFolderWithTestRecording(testClass).resolve("%s.exec".formatted(testClass.getName()));
+            if (exists(execFile)) {
+                var merged = JacocoUtil.mergeExecutionData(asList(Files.readAllBytes(execFile), jacocoExecutionData));
+                Files.write(getFolderWithTestRecording(testClass).resolve("%s.exec".formatted(testClass.getName())), merged, CREATE, TRUNCATE_EXISTING);
+            } else {
+                Files.write(getFolderWithTestRecording(testClass).resolve("%s.exec".formatted(testClass.getName())), jacocoExecutionData, CREATE, TRUNCATE_EXISTING);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to save temporary test execution data file for current build: %s / %s.".formatted(testClass.getName(), e), e);
+        }
+    }
+
+    /**
+     * Returns the test execution data written by {@link #afterAll(Class, byte[])}
+     *
+     * @return the test execution data written by {@link #afterAll(Class, byte[])}
      */
     List<TestRecording> getTestRecordings() {
         var result = new ArrayList<TestRecording>();
@@ -273,7 +295,7 @@ public final class SkippyRepository {
             var versionFile = SkippyFolder.get(projectDir).resolve(Path.of("LATEST"));
             Files.writeString(versionFile, testImpactAnalysis.getId(), StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING);
             extension.saveTestImpactAnalysis(testImpactAnalysis);
-            deleteDirectory(SkippyFolder.get(projectDir).resolve("tmp"));
+            deleteTmpFolder();
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to save TestImpactAnalysis %s: %s".formatted(testImpactAnalysis.getId(), e), e);
         }
@@ -327,14 +349,9 @@ public final class SkippyRepository {
 
     private Path getFolderWithTestRecording(Class<?> testClass) {
         try {
-            // e.g. /user/foo/repos/my-project/build/classes/java/test/
-            var pathToTest = Path.of(testClass.getProtectionDomain().getCodeSource().getLocation().toURI());
-            // e.g. build/classes/java/test/
-            var pathToTestRelativeToProject = projectDir.toAbsolutePath().relativize(pathToTest);
-            // e.g. .skippy/tmp/build/classes/java/test/
             var execFileFolder = SkippyFolder.get(projectDir)
                     .resolve("tmp")
-                    .resolve(pathToTestRelativeToProject);
+                    .resolve(getRelativePath(projectDir, testClass));
             return Files.createDirectories(execFileFolder);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -363,5 +380,13 @@ public final class SkippyRepository {
         }
     }
 
+    void log(String statement) {
+        var logFile = SkippyFolder.get(projectDir).resolve("logging.log");
+        try {
+            Files.write(logFile, asList(statement), StandardCharsets.UTF_8, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to write log statement: %s.".formatted(e), e);
+        }
+    }
 }
 

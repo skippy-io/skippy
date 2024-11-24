@@ -33,13 +33,8 @@ in response to misbehaving services, infrastructure issues, etc.
 
 ## Getting Started
 
-The best way to get started are the introductory tutorials for Gradle and Maven:
-- [Getting Started with Skippy, Gradle & JUnit 5](https://www.skippy.io/tutorials/skippy-gradle-junit5)
-- [Getting Started with Skippy, Maven & JUnit 5](https://www.skippy.io/tutorials/skippy-maven-junit5)
-
-From there, good next steps are:
-- [How Skippy Works - A Deep Dive](https://www.skippy.io/tutorials/how-skippy-works)
-- [Reference Documentation](https://www.skippy.io/docs)
+The best way to get started are the [Introductory Tutorials](https://www.skippy.io/tutorials). From there, a good next
+step is the [Reference Documentation](https://www.skippy.io/docs).
 
 ## Teaser
 
@@ -49,11 +44,11 @@ Let's take a whirlwind tour of Skippy, Gradle & JUnit 5. The concepts are simila
 
 ```groovy
      plugins {
-+        id 'io.skippy' version '0.0.23'
++        id 'io.skippy' version '0.0.24'
      }
     
      dependencies {
-+        testImplementation 'io.skippy:skippy-junit5:0.0.23'
++        testImplementation 'io.skippy:skippy-junit5:0.0.24'
      }
 ```
 
@@ -184,6 +179,7 @@ This repo contains the following sub-projects:
 
 - [skippy-core](skippy-core/README.md): Common functionality for all libraries in this repo
 - [skippy-gradle](skippy-gradle/README.md): Skippy's Test Impact Analysis for Gradle
+- [skippy-gradle-android](skippy-gradle-android/README.md): Skippy's Test Impact Analysis for Gradle & Android
 - [skippy-maven](skippy-maven/README.md): Skippy's Test Impact Analysis for Maven
 - [skippy-junit4](skippy-junit4/README.md): Skippy's Predictive Test Selection For JUnit 4
 - [skippy-junit5](skippy-junit5/README.md): Skippy's Predictive Test Selection For JUnit 5
