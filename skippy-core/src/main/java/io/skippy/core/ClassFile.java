@@ -105,7 +105,7 @@ public final class ClassFile implements Comparable<ClassFile> {
      *
      * @return the fully qualified class name (e.g., com.example.Foo)
      */
-    String getClassName() {
+    public String getClassName() {
         return className;
     }
 
@@ -116,6 +116,15 @@ public final class ClassFile implements Comparable<ClassFile> {
      */
     Path getOutputFolder() {
         return outputFolder;
+    }
+
+    /**
+     * Returns the fully-qualified path of the corresponding {@link Class} file (e.g., /home/foo/repo/build/classes/java/main/com/example/Foo.class).
+     *
+     * @return the fully-qualified path of the corresponding {@link Class} file
+     */
+    public Path getFullyQualifiedPath() {
+        return fullyQualifiedPath;
     }
 
     /**

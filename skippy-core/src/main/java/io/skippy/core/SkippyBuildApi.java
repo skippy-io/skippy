@@ -17,6 +17,8 @@
 package io.skippy.core;
 
 import java.util.*;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 /**
  * API that is used by Skippy's Gradle and Maven plugins to remove the Skippy folder and to inform Skippy about events
@@ -124,4 +126,30 @@ public final class SkippyBuildApi {
         return result;
     }
 
+    public List<ClassFile> getExclusions() {
+        var tia = skippyRepository.readLatestTestImpactAnalysis();
+        return classFileCollector.collect().stream()
+                .filter(classFile -> {
+                    var prediction = tia.predict(toClass(classFile), skippyConfiguration, skippyRepository);
+                    return prediction.prediction() == Prediction.SKIP;
+                })
+                .toList();
+    }
+
+    private Class<?> toClass(ClassFile classFile) {
+        try {
+            var fullyQualifiedOutputFolder = classFile.getFullyQualifiedPath();
+            var outputFolder = fullyQualifiedOutputFolder;
+            var dotsInClassName = classFile.getClassName().chars().filter(ch -> ch == '.').count();
+            for (int i = 0; i <= dotsInClassName; i++) {
+                outputFolder = outputFolder.getParent();
+            }
+            var url = outputFolder.toUri().toURL();
+            try (var classLoader = new URLClassLoader(new URL[] { url } )) {
+                return classLoader.loadClass(classFile.getClassName());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

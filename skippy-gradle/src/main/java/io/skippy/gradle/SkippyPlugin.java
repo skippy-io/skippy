@@ -17,12 +17,8 @@
 package io.skippy.gradle;
 
 import io.skippy.core.Profiler;
-import io.skippy.core.TestTag;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
-import org.gradle.api.tasks.testing.TestDescriptor;
-import org.gradle.api.tasks.testing.TestListener;
-import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 
 /**
@@ -55,7 +51,19 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
             project.getTasks().withType(SkippyCleanTask.class).forEach( task -> task.getProjectSettings().set(projectSettings));
             project.getTasks().withType(SkippyAnalyzeTask.class).forEach( task -> task.getProjectSettings().set(projectSettings));
 
-            action.getTasks().withType(Test.class, testTask -> testTask.finalizedBy("skippyAnalyze"));
+            action.getTasks().withType(Test.class, testTask -> {
+                testTask.finalizedBy("skippyAnalyze");
+                testTask.doFirst(task -> {
+                    projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> {
+                        for (var test : skippyBuildApi.getExclusions()) {
+                            var exclusion = "**/%s.*".formatted(test.getClassName().replaceAll("\\.", "/"));
+                            testTask.getLogger().lifecycle("Adding exclusion %s".formatted(exclusion));
+                            testTask.exclude(exclusion);
+                        }
+                    });
+                });
+            });
+
             projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> skippyBuildApi.buildStarted());
         });
     }
