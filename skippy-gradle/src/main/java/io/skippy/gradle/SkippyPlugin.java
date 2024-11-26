@@ -55,7 +55,9 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
                 testTask.finalizedBy("skippyAnalyze");
                 testTask.doFirst(task -> {
                     projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> {
-                        for (var test : skippyBuildApi.getExclusions()) {
+                        var exclusions = skippyBuildApi.getExclusions();
+                        testTask.getLogger().lifecycle("Exclusions that will be added: %s".formatted(exclusions.size()));
+                        for (var test : exclusions) {
                             var exclusion = "**/%s.*".formatted(test.getClassName().replaceAll("\\.", "/"));
                             testTask.getLogger().lifecycle("Adding exclusion %s".formatted(exclusion));
                             testTask.exclude(exclusion);
