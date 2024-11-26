@@ -19,14 +19,7 @@ package io.skippy.gradle;
 import io.skippy.core.Profiler;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.testing.Test;
-import org.gradle.api.tasks.testing.TestDescriptor;
-import org.gradle.api.tasks.testing.TestListener;
-import org.gradle.api.tasks.testing.TestResult;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 
 /**
  * The Skippy plugin adds the
@@ -71,49 +64,8 @@ final class SkippyPlugin implements org.gradle.api.Plugin<Project> {
                 });
             });
 
-
-            action.getTasks().withType(Test.class, testTask -> {
-                testTask.finalizedBy("skippyAnalyze");
-                testTask.addTestListener(new TestListener() {
-                    @Override
-                    public void beforeSuite(TestDescriptor testDescriptor) {
-                    }
-
-                    @Override
-                    public void afterSuite(TestDescriptor testDescriptor, TestResult testResult) {
-                    }
-
-                    @Override
-                    public void beforeTest(TestDescriptor testDescriptor) {
-                        var testClass = loadClass(testTask, testDescriptor.getClassName());
-                        projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> skippyBuildApi.beforeTest(testClass));
-                    }
-
-                    @Override
-                    public void afterTest(TestDescriptor testDescriptor, TestResult testResult) {
-                        var testClass = loadClass(testTask, testDescriptor.getClassName());
-                        projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> skippyBuildApi.afterTest(testClass));
-                    }
-                });
-            });
-
             projectSettings.ifBuildSupportsSkippy(skippyBuildApi -> skippyBuildApi.buildStarted());
         });
     }
 
-    private Class<?> loadClass(Test testTask, String className) {
-        try {
-            var urls = testTask.getClasspath().getFiles().stream().map(file -> {
-                try {
-                    return file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            }).toList();
-            var classloader = new URLClassLoader(urls.toArray(new URL[]{}));
-            return classloader.loadClass(className);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

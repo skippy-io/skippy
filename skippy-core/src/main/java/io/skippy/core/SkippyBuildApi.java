@@ -152,12 +152,4 @@ public final class SkippyBuildApi {
             throw new RuntimeException(e);
         }
     }
-
-    public void beforeTest(Class<?> testClass) {
-        SkippyTestApi.INSTANCE.before(testClass, null);
-    }
-
-    public void afterTest(Class<?> testClass) {
-        SkippyTestApi.INSTANCE.after(testClass, null);
-    }
 }
