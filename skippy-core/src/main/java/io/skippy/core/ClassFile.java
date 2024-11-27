@@ -93,7 +93,7 @@ public final class ClassFile implements Comparable<ClassFile> {
      */
     public static ClassFile fromFileSystem(Path projectDir, Path outputFolder, Path classFile) {
         return new ClassFile(
-            ClassNameExtractor.getFullyQualifiedClassName(classFile),
+            ClassUtil.getFullyQualifiedClassName(classFile),
                 classFile,
                 outputFolder.relativize(classFile), projectDir.relativize(outputFolder),
                 exists(classFile) ? HashUtil.debugAgnosticHash(classFile) : ""

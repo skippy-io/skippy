@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static io.skippy.core.PathUtil.getRelativePath;
+import static io.skippy.core.ClassUtil.getOutputFolder;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toMap;
@@ -152,7 +152,7 @@ final class ClassFileContainer {
             return analyzedTests.stream().filter(analyzedTest -> analyzedTest.getTestClassId() == matchingIdsByClassName.get(0)).findFirst();
         }
         for (var id : matchingIdsByClassName) {
-            if (getById(id).getOutputFolder().equals(getRelativePath(Path.of("."), clazz))) {
+            if (getById(id).getOutputFolder().equals(getOutputFolder(Path.of("."), clazz))) {
                 return analyzedTests.stream().filter(analyzedTest -> analyzedTest.getTestClassId() == id).findFirst();
             }
         }

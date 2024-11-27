@@ -22,7 +22,7 @@ import java.util.*;
 
 import static io.skippy.core.Reason.Category.*;
 import static io.skippy.core.HashUtil.hashWith32Digits;
-import static io.skippy.core.PathUtil.getRelativePath;
+import static io.skippy.core.ClassUtil.getOutputFolder;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
@@ -139,13 +139,17 @@ public final class TestImpactAnalysis {
                 }
                 var maybeAnalyzedTest = classFileContainer.getAnalyzedTestForTestClass(testClazz, analyzedTests);
 
+                if (false == ClassUtil.locationAvailable(testClazz)) {
+                    return PredictionWithReason.execute(new Reason(CLASS_FILE_LOCATION_UNAVAILABLE, Optional.empty()));
+                }
+
                 if (maybeAnalyzedTest.isEmpty()) {
-                    return PredictionWithReason.execute(new Reason(NO_DATA_FOUND_FOR_TEST, Optional.empty()));
+                    return PredictionWithReason.execute(new Reason(NO_IMPACT_DATA_FOUND_FOR_TEST, Optional.empty()));
                 }
                 var analyzedTest = maybeAnalyzedTest.get();
                 var testClass = classFileContainer.getById(analyzedTest.getTestClassId());
 
-                var classFileLocation = getRelativePath(Path.of(""), testClazz);
+                var classFileLocation = getOutputFolder(Path.of(""), testClazz);
                 skippyRepository.log("Mapping class %s/%s to AnalyzedTest[%s/%s]".formatted(classFileLocation, testClazz.getName(), testClass.getOutputFolder(), testClass.getClassName()));
 
                 if (analyzedTest.isTaggedAs(TestTag.FAILED)) {
