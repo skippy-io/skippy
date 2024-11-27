@@ -22,17 +22,47 @@ import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.nio.file.Files.newInputStream;
 
 /**
- * Extracts the fully-qualified class name (e.g., com.example.Foo) from a class file.
+ * Static utility methods that primarily operate on {@link Class} objects.
  *
  * @author Florian McKee
  */
-final class ClassNameExtractor {
+class ClassUtil {
+
+    /**
+     * Return the output folder of {@code clazz} relative to the {@code projectFolder}.
+     *
+     * @param projectFolder (e.g. /home/foo/repos/my-project)
+     * @param clazz (e.g., com.example.Foo)
+     * @return the output folder of {@code clazz} relative to the {@code projectFolder} (e.g., build/classes/java/test)
+     */
+    static Path getOutputFolder(Path projectFolder, Class<?> clazz) {
+        try {
+            return projectFolder.toAbsolutePath().relativize((Path.of(clazz.getProtectionDomain().getCodeSource().getLocation().toURI())));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Unable to obtain output folder for class %s in project %s: %s".formatted(clazz.getName(), projectFolder, e), e);
+        }
+    }
+
+    /**
+     * Returns {@code true} if the location for {@code clazz} is available, {@code false} otherwise.
+     *
+     * @param clazz a {@link Class} object
+     * @return {@code true} if the location for {@code clazz} is available, {@code false} otherwise
+     */
+    static boolean locationAvailable(Class<?> clazz) {
+        try {
+            return clazz.getProtectionDomain().getCodeSource().getLocation() != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     /**
      * Extracts the fully-qualified class name (e.g., com.example.Foo) from the {@code classFile}.

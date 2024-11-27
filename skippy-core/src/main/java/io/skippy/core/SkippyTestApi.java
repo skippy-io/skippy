@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static io.skippy.core.JacocoUtil.mergeExecutionData;
 import static io.skippy.core.JacocoUtil.swallowJacocoExceptions;
 import static io.skippy.core.SkippyConstants.PREDICTIONS_LOG_FILE;
-import static io.skippy.core.PathUtil.getRelativePath;
+import static io.skippy.core.ClassUtil.getOutputFolder;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.StandardOpenOption.*;
 import static java.util.Arrays.asList;
@@ -136,7 +136,7 @@ public final class SkippyTestApi {
                 if (predictionWithReason.prediction() == Prediction.ALWAYS_EXECUTE) {
                     skippyRepository.tagTest(test, TestTag.ALWAYS_EXECUTE);
                 }
-                var outputFolder = getRelativePath(Path.of(""), test);
+                var outputFolder = getOutputFolder(Path.of(""), test);
                 if (predictionWithReason.reason().details().isPresent()) {
                     Files.writeString(
                         SkippyFolder.get().resolve(PREDICTIONS_LOG_FILE),

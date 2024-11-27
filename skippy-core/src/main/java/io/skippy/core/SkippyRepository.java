@@ -24,7 +24,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static io.skippy.core.PathUtil.getRelativePath;
+import static io.skippy.core.ClassUtil.getOutputFolder;
 import static java.nio.file.Files.*;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -351,7 +351,7 @@ public final class SkippyRepository {
         try {
             var execFileFolder = SkippyFolder.get(projectDir)
                     .resolve("tmp")
-                    .resolve(getRelativePath(projectDir, testClass));
+                    .resolve(getOutputFolder(projectDir, testClass));
             return Files.createDirectories(execFileFolder);
         } catch (Exception e) {
             throw new RuntimeException(e);
