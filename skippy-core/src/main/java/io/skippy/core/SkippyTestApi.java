@@ -22,17 +22,20 @@ import org.jacoco.agent.rt.RT;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.skippy.core.ClassUtil.getOutputFolder;
 import static io.skippy.core.JacocoUtil.mergeExecutionData;
 import static io.skippy.core.JacocoUtil.swallowJacocoExceptions;
 import static io.skippy.core.SkippyConstants.PREDICTIONS_LOG_FILE;
-import static io.skippy.core.ClassUtil.getOutputFolder;
 import static java.lang.System.lineSeparator;
-import static java.nio.file.StandardOpenOption.*;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
 
 /**
  * API that is used by Skippy's JUnit libraries to query for skip-or-execute predictions and to trigger the generation of .exec files.
@@ -114,6 +117,9 @@ public final class SkippyTestApi {
      * @param tag the {@link TestTag}
      */
     public void tagTest(Class<?> testClass, TestTag tag) {
+        if (false == ClassUtil.locationAvailable(testClass)) {
+            return;
+        }
         skippyRepository.tagTest(testClass, tag);
     }
 
@@ -125,6 +131,9 @@ public final class SkippyTestApi {
      */
     public boolean testNeedsToBeExecuted(Class<?> test) {
         return Profiler.profile("SkippyTestApi#testNeedsToBeExecuted", () -> {
+            if (false == ClassUtil.locationAvailable(test)) {
+                return true;
+            }
             try {
                 // re-use prediction made for the first test method in a class for all subsequent test methods
                 if (predictions.containsKey(test)) {
@@ -179,6 +188,9 @@ public final class SkippyTestApi {
      */
     public void before(Class<?> testClass, String testMethod) {
         Profiler.profile("SkippyTestApi#prepareExecFileGeneration", () -> {
+            if (false == ClassUtil.locationAvailable(testClass)) {
+                return;
+            }
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 agent.reset();
@@ -193,6 +205,9 @@ public final class SkippyTestApi {
      */
     public void beforeAll(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#prepareExecFileGeneration", () -> {
+            if (false == ClassUtil.locationAvailable(testClass)) {
+                return;
+            }
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 if (isNestedTest()) {
@@ -214,6 +229,9 @@ public final class SkippyTestApi {
      */
     public void after(Class<?> testClass, String testMethod) {
         Profiler.profile("SkippyTestApi#after", () -> {
+            if (false == ClassUtil.locationAvailable(testClass)) {
+                return;
+            }
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 skippyRepository.after(testClass, testMethod, agent.getExecutionData(true));
@@ -228,6 +246,9 @@ public final class SkippyTestApi {
      */
     public void afterAll(Class<?> testClass) {
         Profiler.profile("SkippyTestApi#afterAll", () -> {
+            if (false == ClassUtil.locationAvailable(testClass)) {
+                return;
+            }
             swallowJacocoExceptions(() -> {
                 IAgent agent = RT.getAgent();
                 var executionData = executionDataStack.lastElement();
