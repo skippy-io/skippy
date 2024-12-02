@@ -19,11 +19,6 @@ package io.skippy.core;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static io.skippy.core.Prediction.EXECUTE;
@@ -44,43 +39,6 @@ public class TestImpactAnalysisPredictTest {
             var predictionWithReason = testImpactAnalysis.predict(Class.forName("com.example.LeftPadderTest"), SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
             assertEquals(EXECUTE, predictionWithReason.prediction());
             assertEquals(TEST_IMPACT_ANALYSIS_NOT_FOUND, predictionWithReason.reason().category());
-        }
-
-        @Test
-        void testTestClassWithoutLocationInformation() throws ClassNotFoundException, URISyntaxException, IOException {
-            var testImpactAnalysis = TestImpactAnalysis.parse("""
-            {
-                "classes": {
-                    "0": {
-                        "name": "com.example.LeftPadderTest",
-                        "path": "com/example/LeftPadderTest.class",
-                        "outputFolder": "build/classes/java/test",
-                        "hash": "80E52EBA"
-                    }
-                },
-                "tests": [
-                    {
-                        "class": "0",
-                        "tags": ["PASSED"],
-                        "coveredClasses": ["0"]
-                    }
-                ]
-            }
-            """);
-            var location = Class.forName("com.example.LeftPadderTest").getProtectionDomain().getCodeSource().getLocation();
-            var pathToClassFile = Path.of(location.toURI()).resolve("com").resolve("example").resolve("LeftPadderTest.class");
-
-            class ByteArrayClassLoader extends ClassLoader {
-                public Class<?> loadClassFromBytes(String className, byte[] classBytes) {
-                    return defineClass(className, classBytes, 0, classBytes.length);
-                }
-            }
-
-            var testClass = new ByteArrayClassLoader().loadClassFromBytes("com.example.LeftPadderTest", Files.readAllBytes(pathToClassFile));
-
-            var predictionWithReason = testImpactAnalysis.predict(testClass, SkippyConfiguration.DEFAULT, SkippyRepository.getInstance(SkippyConfiguration.DEFAULT));
-            assertEquals(EXECUTE, predictionWithReason.prediction());
-            assertEquals(CLASS_FILE_LOCATION_UNAVAILABLE, predictionWithReason.reason().category());
         }
 
         @Test

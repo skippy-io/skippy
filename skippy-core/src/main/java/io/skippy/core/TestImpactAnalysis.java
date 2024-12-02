@@ -139,10 +139,6 @@ public final class TestImpactAnalysis {
                 }
                 var maybeAnalyzedTest = classFileContainer.getAnalyzedTestForTestClass(testClazz, analyzedTests);
 
-                if (false == ClassUtil.locationAvailable(testClazz)) {
-                    return PredictionWithReason.execute(new Reason(CLASS_FILE_LOCATION_UNAVAILABLE, Optional.empty()));
-                }
-
                 if (maybeAnalyzedTest.isEmpty()) {
                     return PredictionWithReason.execute(new Reason(NO_IMPACT_DATA_FOUND_FOR_TEST, Optional.empty()));
                 }

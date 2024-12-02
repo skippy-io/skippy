@@ -46,11 +46,6 @@ public record Reason(Category category, Optional<String> details) {
         NO_IMPACT_DATA_FOUND_FOR_TEST,
 
         /**
-         * Skippy was unable to obtain the location of the class file for the test.
-         */
-        CLASS_FILE_LOCATION_UNAVAILABLE,
-
-        /**
          * Bytecode change in test detected.
          */
         BYTECODE_CHANGE_IN_TEST,
