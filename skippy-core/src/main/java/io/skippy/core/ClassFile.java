@@ -96,7 +96,7 @@ public final class ClassFile implements Comparable<ClassFile> {
             ClassUtil.getFullyQualifiedClassName(classFile),
                 classFile,
                 outputFolder.relativize(classFile), projectDir.relativize(outputFolder),
-                exists(classFile) ? HashUtil.debugAgnosticHash(classFile) : ""
+                exists(classFile) ? HashUtil.hashWith8Digits(classFile) : ""
         );
     }
 
@@ -200,7 +200,7 @@ public final class ClassFile implements Comparable<ClassFile> {
     }
 
     boolean hasChanged() {
-        return ! hash.equals(HashUtil.debugAgnosticHash(outputFolder.resolve(path)));
+        return ! hash.equals(HashUtil.hashWith8Digits(outputFolder.resolve(path)));
     }
 
     boolean classFileNotFound() {

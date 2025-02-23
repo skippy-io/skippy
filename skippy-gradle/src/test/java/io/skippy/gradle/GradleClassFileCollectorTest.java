@@ -62,7 +62,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.LeftPadder",
                 "path": "com/example/LeftPadder.class",
                 "outputFolder": "build/classes/java/main",
-                "hash": "8E994DD8"
+                "hash": "F92CB11C"
             }
         """);
 
@@ -71,7 +71,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.RightPadder",
                 "path": "com/example/RightPadder.class",
                 "outputFolder": "build/classes/java/main",
-                "hash": "F7F27006"
+                "hash": "2D81BD6B"
             }
         """);
 
@@ -80,7 +80,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.StringUtils",
                 "path": "com/example/StringUtils.class",
                 "outputFolder": "build/classes/java/main",
-                "hash": "ECE5D94D"
+                "hash": "7D217A72"
             }
         """);
 
@@ -89,7 +89,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.LeftPadderTest",
                 "path": "com/example/LeftPadderTest.class",
                 "outputFolder": "build/classes/java/test",
-                "hash": "83A72152"
+                "hash": "BAF12482"
             }
         """);
 
@@ -98,7 +98,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.RightPadderTest",
                 "path": "com/example/RightPadderTest.class",
                 "outputFolder": "build/classes/java/test",
-                "hash": "E5FB1274"
+                "hash": "E67702CC"
             }
         """);
 
@@ -107,7 +107,7 @@ public class GradleClassFileCollectorTest {
                 "name": "com.example.TestConstants",
                 "path": "com/example/TestConstants.class",
                 "outputFolder": "build/classes/java/test",
-                "hash": "119F463C"
+                "hash": "4D6F7271"
             }
         """);
     }

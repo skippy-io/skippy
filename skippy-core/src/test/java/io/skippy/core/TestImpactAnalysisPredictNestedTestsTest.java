@@ -36,49 +36,49 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                         "name": "com.example.ClassA",
                         "path": "com/example/ClassA.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "3041DC84"
+                        "hash": "0DDD7384"
                     },
                     "1": {
                         "name": "com.example.ClassB",
                         "path": "com/example/ClassB.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "37FA6DE7"
+                        "hash": "D8D9EC2D"
                     },
                     "2": {
                         "name": "com.example.ClassC",
                         "path": "com/example/ClassC.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "B17DF734"
+                        "hash": "61B23117"
                     },
                     "3": {
                         "name": "com.example.ClassD",
                         "path": "com/example/ClassD.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "41C10CEE"
+                        "hash": "280B53B2"
                     },
                     "4": {
                         "name": "com.example.NestedTestsTest",
                         "path": "com/example/NestedTestsTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "7797EB55"
+                        "hash": "492D2AD3"
                     },
                     "5": {
                         "name": "com.example.NestedTestsTest$Level2BarTest",
                         "path": "com/example/NestedTestsTest$Level2BarTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "5780C183"
+                        "hash": "30316E0B"
                     },
                     "6": {
                         "name": "com.example.NestedTestsTest$Level2FooTest",
                         "path": "com/example/NestedTestsTest$Level2FooTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "3E35762B"
+                        "hash": "D63C7B06"
                     },
                     "7": {
                         "name": "com.example.NestedTestsTest$Level2FooTest$Level3Test",
                         "path": "com/example/NestedTestsTest$Level2FooTest$Level3Test.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "FA83D453"
+                        "hash": "9AFD1143"
                     }
                 },
                 "tests": [
@@ -121,13 +121,13 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                         "name": "com.example.ClassA",
                         "path": "com/example/ClassA.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "3041DC84"
+                        "hash": "0DDD7384"
                     },
                     "1": {
                         "name": "com.example.ClassB",
                         "path": "com/example/ClassB.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "37FA6DE7"
+                        "hash": "D8D9EC2D"
                     },
                     "2": {
                         "name": "com.example.ClassC",
@@ -139,31 +139,31 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                         "name": "com.example.ClassD",
                         "path": "com/example/ClassD.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "41C10CEE"
+                        "hash": "280B53B2"
                     },
                     "4": {
                         "name": "com.example.NestedTestsTest",
                         "path": "com/example/NestedTestsTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "7797EB55"
+                        "hash": "492D2AD3"
                     },
                     "5": {
                         "name": "com.example.NestedTestsTest$Level2BarTest",
                         "path": "com/example/NestedTestsTest$Level2BarTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "5780C183"
+                        "hash": "30316E0B"
                     },
                     "6": {
                         "name": "com.example.NestedTestsTest$Level2FooTest",
                         "path": "com/example/NestedTestsTest$Level2FooTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "3E35762B"
+                        "hash": "D63C7B06"
                     },
                     "7": {
                         "name": "com.example.NestedTestsTest$Level2FooTest$Level3Test",
                         "path": "com/example/NestedTestsTest$Level2FooTest$Level3Test.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "FA83D453"
+                        "hash": "9AFD1143"
                     }
                 },
                 "tests": [
@@ -206,49 +206,49 @@ public class TestImpactAnalysisPredictNestedTestsTest {
                         "name": "com.example.ClassA",
                         "path": "com/example/ClassA.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "3041DC84"
+                        "hash": "0DDD7384"
                     },
                     "1": {
                         "name": "com.example.ClassB",
                         "path": "com/example/ClassB.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "37FA6DE7"
+                        "hash": "D8D9EC2D"
                     },
                     "2": {
                         "name": "com.example.ClassC",
                         "path": "com/example/ClassC.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "B17DF734"
+                        "hash": "61B23117"
                     },
                     "3": {
                         "name": "com.example.ClassD",
                         "path": "com/example/ClassD.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "41C10CEE"
+                        "hash": "280B53B2"
                     },
                     "4": {
                         "name": "com.example.NestedTestsTest",
                         "path": "com/example/NestedTestsTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "7797EB55"
+                        "hash": "492D2AD3"
                     },
                     "5": {
                         "name": "com.example.NestedTestsTest$Level2BarTest",
                         "path": "com/example/NestedTestsTest$Level2BarTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "5780C183"
+                        "hash": "30316E0B"
                     },
                     "6": {
                         "name": "com.example.NestedTestsTest$Level2FooTest",
                         "path": "com/example/NestedTestsTest$Level2FooTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "3E35762B"
+                        "hash": "D63C7B06"
                     },
                     "7": {
                         "name": "com.example.NestedTestsTest$Level2FooTest$Level3Test",
                         "path": "com/example/NestedTestsTest$Level2FooTest$Level3Test.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "FA83D453"
+                        "hash": "9AFD1143"
                     }
                 },
                 "tests": [

@@ -102,8 +102,8 @@ public class ClassFileTest {
 
     @ParameterizedTest
     @CsvSource(value = {
-            "com/example/LeftPadder.class:8E994DD8",
-            "com/example/LeftPadderTest.class:80E52EBA"
+            "com/example/LeftPadder.class:1DADCFC2",
+            "com/example/LeftPadderTest.class:F826F518"
     }, delimiter = ':')
     void getHash(String fileName, String expectedValue) {
         var classFile = Path.of(fileName);

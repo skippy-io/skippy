@@ -50,13 +50,13 @@ public class TestImpactAnalysisPredictTest {
                         "name": "com.example.LeftPadder",
                         "path": "com/example/LeftPadder.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "8E994DD8"
+                        "hash": "1DADCFC2"
                     },
                     "1": {
                         "name": "com.example.LeftPadderTest",
                         "path": "com/example/LeftPadderTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "80E52EBA"
+                        "hash": "F826F518"
                     }
                 },
                 "tests": [
@@ -141,7 +141,7 @@ public class TestImpactAnalysisPredictTest {
                         "name": "com.example.LeftPadderTest",
                         "path": "com/example/LeftPadderTest.class",
                         "outputFolder": "build/classes/java/test",
-                        "hash": "80E52EBA"
+                        "hash": "F826F518"
                     }
                 },
                 "tests": [
@@ -238,7 +238,7 @@ public class TestImpactAnalysisPredictTest {
                             "name": "com.example.LeftPadderTest",
                             "path": "com/example/LeftPadderTest.class",
                             "outputFolder": "build/classes/java/test",
-                            "hash": "80E52EBA"
+                            "hash": "F826F518"
                         }
                     },
                     "tests": [
@@ -267,7 +267,7 @@ public class TestImpactAnalysisPredictTest {
                             "name": "com.example.LeftPadderTest",
                             "path": "com/example/LeftPadderTest.class",
                             "outputFolder": "build/classes/java/test",
-                            "hash": "80E52EBA"
+                            "hash": "F826F518"
                         }
                     },
                     "tests": [
@@ -299,7 +299,7 @@ public class TestImpactAnalysisPredictTest {
                             "name": "com.example.LeftPadderTest",
                             "path": "com/example/LeftPadderTest.class",
                             "outputFolder": "build/classes/java/test",
-                            "hash": "80E52EBA"
+                            "hash": "F826F518"
                         }
                     },
                     "tests": [

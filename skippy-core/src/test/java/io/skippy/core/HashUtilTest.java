@@ -35,7 +35,7 @@ public class HashUtilTest {
     @Test
     void testHashOfClassFile() {
         var classFile = Path.of("build/classes/java/test").resolve("com/example/StringUtils.class");
-        assertEquals("BF9A6640", HashUtil.debugAgnosticHash(classFile));
+        assertEquals("E5550DA2", HashUtil.hashWith8Digits(classFile));
     }
 
 

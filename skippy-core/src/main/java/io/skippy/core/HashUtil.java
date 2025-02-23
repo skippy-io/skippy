@@ -16,11 +16,6 @@
 
 package io.skippy.core;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
@@ -59,23 +54,13 @@ final class HashUtil {
     }
 
     /**
-     * Generates a 8-digit hexadecimal hash for the {@code classfile} that is agnostic of debug information.
-     *
-     * If the only difference between two class files is debug information within the bytecode, their hash will be the same.
-     * <br /><br />
-     * This allows Skippy to treat certain changes like
-     * <ul>
-     *     <li>change in formatting and indentation,</li>
-     *     <li>updated JavaDocs and</li>
-     *     <li>addition of newlines and linebreaks</li>
-     * </ul>
-     * as 'no-ops'.
+     * Generates an 8-digit hexadecimal hash of the {@code classfile}.
      *
      * @param classFile a class file
-     * @return a 8-digit hexadecimal  hash of the {@code classfile} that is agnostic of debug information
+     * @return an 8-digit hexadecimal  hash of the {@code classfile}
      */
-    static String debugAgnosticHash(Path classFile) {
-        return hashWith8Digits(getBytecodeWithoutDebugInformation(classFile));
+    static String hashWith8Digits(Path classFile) {
+        return hashWith8Digits(readByteCode(classFile));
     }
 
     private static String fullHash(byte[] data) {
@@ -88,14 +73,11 @@ final class HashUtil {
         }
     }
 
-    private static byte[] getBytecodeWithoutDebugInformation(Path classFile) {
+    private static byte[] readByteCode(Path classFile) {
         try (var inputStream = newInputStream(classFile)) {
-            var classWriter = new ClassWriter(Opcodes.ASM9);
-            var classVisitor = new ClassVisitor(Opcodes.ASM9, classWriter) {};
-            new ClassReader(inputStream).accept(classVisitor, ClassReader.SKIP_DEBUG);
-            return classWriter.toByteArray();
+            return inputStream.readAllBytes();
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to get bytecode without debug information for class file %s: %s".formatted(classFile, e), e);
+            throw new UncheckedIOException("Unable to read bytecode for class file %s: %s".formatted(classFile, e), e);
         }
     }
 
