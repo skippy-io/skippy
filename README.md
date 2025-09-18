@@ -4,6 +4,10 @@
 
 Mono-repo for all Skippy projects.
 
+## Project Status: No Longer Actively Maintained
+This project is no longer being actively maintained due to lack of available time.
+Feel free to fork, modify, and use the code as you see fit. Issues and pull requests may not receive responses.
+
 ## What is it?
 
 Skippy is a Test Impact Analysis & Predictive Test Selection framework for Java and the JVM. It cuts down on unnecessary testing
@@ -14,8 +18,6 @@ Skippy is specifically designed to prevent regressions in your codebase.
 It supports all types of tests where the tests and the code under test run in the same JVM.
 It is best suited for deterministic tests, even those prone to occasional flakiness.
 It provides the most value for test suites that are either slow or flaky (regardless of whether the test suite contains unit, integration, or functional tests).
-
-[![Skippy.io in 3 minutes](skippy-in-3-mins.png)](http://www.youtube.com/watch?v=VZ_MmQI0mOA "Skippy.io in 3 minutes")
 
 ## What is it not?
 
