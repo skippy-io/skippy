@@ -4,6 +4,11 @@
 
 Mono-repo for all Skippy projects.
 
+## Project Status: No Longer Actively Maintained
+
+This project is no longer being actively maintained due to lack of available time.
+Feel free to fork, modify, and use the code as you see fit. Issues and pull requests may not receive responses.
+
 ## What is it?
 
 Skippy is a Test Impact Analysis & Predictive Test Selection framework for Java and the JVM. It cuts down on unnecessary testing
